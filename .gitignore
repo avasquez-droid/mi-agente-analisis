@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+salidas/*
+!salidas/.gitkeep
+.DS_Store
+*.log

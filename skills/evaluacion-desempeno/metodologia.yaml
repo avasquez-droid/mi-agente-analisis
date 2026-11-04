@@ -1,0 +1,81 @@
+nombre: Evaluación de desempeño del equipo
+descripcion: >
+  Modelo de evaluación por competencias con criterios ponderados. Cada criterio se
+  califica en una escala de 1 a 5 y se convierte a 0-100 para obtener un puntaje global.
+
+escala:
+  min: 1
+  max: 5
+
+# Columnas donde buscar el nombre de la persona y el grupo (se prueban en orden)
+columna_nombre: [Nombre, Colaborador, Empleado, Persona]
+columna_grupo: [Área, Area, Departamento, Equipo, Unidad]
+
+criterios:
+  - nombre: Productividad
+    peso: 25
+    columnas: [Productividad, Resultados, Cumplimiento de metas]
+    descripcion: Logro de objetivos y volumen de trabajo entregado.
+  - nombre: Calidad
+    peso: 25
+    columnas: [Calidad, Calidad del trabajo, Precisión]
+    descripcion: Exactitud, cuidado y bajo nivel de errores.
+  - nombre: Puntualidad
+    peso: 15
+    columnas: [Puntualidad, Asistencia, Cumplimiento de plazos]
+    descripcion: Cumplimiento de horarios y plazos.
+  - nombre: Trabajo en equipo
+    peso: 20
+    columnas: [Trabajo en equipo, Colaboración, Cooperación]
+    descripcion: Colaboración y apoyo a los compañeros.
+  - nombre: Comunicación
+    peso: 15
+    columnas: [Comunicación, Comunicacion, Habilidades comunicativas]
+    descripcion: Claridad al transmitir información y escuchar.
+
+bandas:
+  - nombre: Sobresaliente
+    min: 85
+    max: 100
+    descripcion: Supera consistentemente las expectativas del rol.
+    acciones:
+      - Reconocer públicamente los logros y evaluar un plan de carrera o promoción.
+      - Asignar el rol de mentor para compañeros en desarrollo.
+  - nombre: Competente
+    min: 70
+    max: 84.99
+    descripcion: Cumple las expectativas del rol de forma sólida.
+    acciones:
+      - Definir un objetivo de desarrollo específico para alcanzar el nivel sobresaliente.
+      - Ofrecer proyectos de mayor responsabilidad.
+  - nombre: En desarrollo
+    min: 55
+    max: 69.99
+    descripcion: Cumple parcialmente; necesita apoyo en criterios concretos.
+    acciones:
+      - Acordar un plan de desarrollo individual con metas mensuales.
+      - Asignar un mentor y revisar avances cada dos semanas.
+  - nombre: Requiere atención
+    min: 0
+    max: 54.99
+    descripcion: Desempeño por debajo de lo esperado; requiere intervención inmediata.
+    acciones:
+      - Reunión individual para identificar causas y acordar un plan de mejora con seguimiento semanal.
+      - Capacitación focalizada en el criterio más débil y reevaluación a 30 días.
+
+recomendaciones_por_criterio:
+  Productividad:
+    - Fijar metas semanales medibles y revisar su cumplimiento en una reunión breve de seguimiento.
+    - Eliminar tareas de bajo valor y priorizar con una matriz de impacto/esfuerzo.
+  Calidad:
+    - Implementar una lista de verificación y revisión entre pares antes de entregar.
+    - Analizar las causas de los errores recurrentes y capacitar sobre ellas.
+  Puntualidad:
+    - Acordar expectativas claras de horarios y plazos; registrar y conversar los incumplimientos.
+    - Planificar las entregas con hitos intermedios para evitar retrasos de último momento.
+  Trabajo en equipo:
+    - Organizar sesiones de trabajo colaborativo y rotación de roles en proyectos.
+    - Reconocer públicamente las conductas de apoyo entre compañeros.
+  Comunicación:
+    - Taller práctico de comunicación efectiva (claridad, escucha activa, retroalimentación).
+    - Establecer canales y formatos estándar para reportar avances.
