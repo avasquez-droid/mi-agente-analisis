@@ -89,10 +89,10 @@ def test_cli(tmp_path):
     out = subprocess.run(
         [sys.executable, "-m", "core.cli", "analizar", str(EJEMPLO), "--formatos", "md",
          "--salida", str(tmp_path)],
-        cwd=RAIZ, capture_output=True, text=True,
+        cwd=RAIZ, capture_output=True, text=True, encoding="utf-8",
     )
     assert out.returncode == 0, out.stderr
     assert "Puntaje global" in out.stdout
     out = subprocess.run([sys.executable, "-m", "core.cli", "explorar", str(EJEMPLO)],
-                         cwd=RAIZ, capture_output=True, text=True)
+                         cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
     assert json.loads(out.stdout)["columnas"] >= 7

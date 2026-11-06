@@ -17,6 +17,10 @@ from .excel_reader import listar_hojas
 
 
 def main(argv: list[str] | None = None) -> int:
+    # En Windows la salida por tubería usa cp1252 y falla con caracteres como "→".
+    for flujo in (sys.stdout, sys.stderr):
+        if hasattr(flujo, "reconfigure"):
+            flujo.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(prog="agente", description="Agente de Análisis Inteligente")
     sub = parser.add_subparsers(dest="comando", required=True)
 
