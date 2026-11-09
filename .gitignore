@@ -6,3 +6,7 @@ salidas/*
 !salidas/.gitkeep
 .DS_Store
 *.log
+
+# Material real de clientes (informes, contratos): nunca al repositorio
+privado/
+*.rar

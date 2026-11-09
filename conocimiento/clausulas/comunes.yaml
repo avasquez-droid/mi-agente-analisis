@@ -1,0 +1,182 @@
+# CLÁUSULAS COMUNES — texto estándar de los contratos 2026 (base: contratos de devolución,
+# planificación ISD, aduanero y cobranza firmados en 2026).
+#
+# Sintaxis: Jinja2. Variables disponibles en todas las cláusulas:
+#   cliente.*   razon_social, ruc, representante, cargo, cedula (opcional), tratamiento
+#               ("el señor" / "la señora"), ciudad, provincia, correos (lista), persona ("juridica"/"natural")
+#   census.*    datos de conocimiento/entidades.yaml (razon_social, ruc, representante.nombre...)
+#   fecha       fecha de firma (usar el filtro |fecha_larga)
+#   v.*         variables propias del servicio (ver cada archivo en servicios/)
+# Filtros: |fecha_larga  |usd (USD $450.000,00)  |letras (Cuatrocientos Cincuenta Mil 00/100)  |pct
+#
+# Cada cláusula es una lista de párrafos. Un párrafo que empieza con "a) ", "b) "... lleva el
+# literal en negrita. Un párrafo que empieza con "- " se escribe como viñeta.
+
+# Orden por defecto (cada servicio puede redefinirlo con `orden:`)
+orden:
+  - intervinientes
+  - antecedentes
+  - prestacion
+  - plazo
+  - honorarios
+  - obligaciones
+  - terminacion
+  - naturaleza
+  - notificacion
+  - confidencialidad
+  - proteccion_datos
+  - aceptacion
+
+titulo: CONTRATO DE PRESTACIÓN DE SERVICIOS DE {{ (v.titulo_tipo or v.tipo_servicio or 'asesoría legal y tributaria') | upper }}
+
+encabezado: >-
+  Conste por el presente instrumento, un contrato de prestación de servicios de
+  {{ v.tipo_servicio | default('asesoría legal y tributaria') }}, que celebran el día de hoy,
+  {{ fecha | fecha_larga }}, las partes, al tenor de las siguientes cláusulas:
+
+clausulas:
+  intervinientes:
+    titulo: INTERVINIENTES
+    parrafos:
+      - >-
+        a) Por una parte, {% if cliente.persona == 'natural' %}{{ cliente.tratamiento | default('el señor') }}
+        {{ cliente.razon_social }}, con cédula de ciudadanía No. {{ cliente.cedula }}{% if cliente.ruc %} y Registro Único de Contribuyentes No. {{ cliente.ruc }}{% endif %}{% else %}la compañía
+        {{ cliente.razon_social }}, con Registro Único de Contribuyentes No. {{ cliente.ruc }}, por intermedio de su
+        {{ cliente.cargo }}, {{ cliente.tratamiento | default('el señor') }} {{ cliente.representante }}{% if cliente.cedula %}
+        con cédula de ciudadanía No. {{ cliente.cedula }}{% endif %}{% endif %}, parte a la que, en adelante y para los efectos
+        del presente contrato, podrá denominárselo simplemente como “El Contratante”; y,
+      - >-
+        b) Por otra parte, la compañía {{ census.razon_social }}, con Registro Único de Contribuyentes
+        No. {{ census.ruc }}, por intermedio de su {{ census.representante.cargo }}, abogado
+        {{ census.representante.nombre }}, parte a la que, en adelante y para todos los efectos del
+        presente contrato, podrá denominárselo simplemente como “El Contratado”.
+
+  antecedente_census: >-
+    {{ census.razon_social }}, domiciliada en la ciudad de {{ census.domicilio }}, {{ census.actividad }};
+
+  antecedente_cierre: >-
+    Por las razones expuestas, y por conocer “El Contratante” de la experiencia, la eficiencia y
+    diligencia profesional que “El Contratado” emplea en su oficio, “El Contratante” decide
+    contratar los servicios profesionales de {{ census.razon_social }}, para la prestación de los
+    servicios mencionados en los literales anteriores.
+
+  terminacion:
+    titulo: TERMINACIÓN DEL CONTRATO
+    parrafos:
+      - >-
+        El presente contrato termina por el cumplimiento total de las obligaciones contractuales de
+        conformidad con el plazo estipulado por las partes, los que se podrán prorrogar o simplemente
+        cumplir y dar por terminado la relación contractual entre “El Contratante”, y “El Contratado”.
+        El trámite de terminación del contrato por las causas antes señaladas se regirá de acuerdo con
+        lo que estipula las normas de las distintas Codificaciones tanto por las del Código Civil como
+        por las del Código Orgánico General de Procesos.
+
+  naturaleza:
+    titulo: NATURALEZA JURÍDICA DE LA RELACIÓN Y DOMICILIO
+    parrafos:
+      - >-
+        El presente contrato por su naturaleza es civil, y las partes renuncian a cualquier domicilio
+        expreso o de residencia tácito y dejan constancia que se someterán a los jueces de lo civil de
+        la ciudad de {{ census.ciudad_jueces }} y al trámite {{ v.tramite | default('sumario') }} establecido en el
+        Código Orgánico General de Procesos.
+
+  notificacion:
+    titulo: DOMICILIO Y NOTIFICACIÓN
+    parrafos:
+      - >-
+        Las partes designan los siguientes domicilios como lugares para recibir documentos,
+        comunicaciones, citaciones, notificaciones administrativas o legales y emplazamientos:
+      - "“EL CONTRATADO” — Correo electrónico: {{ census.correo_notificaciones }}"
+      - "“EL CONTRATANTE” — Correo electrónico: {{ cliente.correos | join('; ') }}"
+      - >-
+        Las direcciones electrónicas, consignadas son las que las partes aceptan como domicilios
+        válidos para recibir citaciones o notificaciones derivadas de cualquier acción judicial o
+        administrativa relacionada con el presente acuerdo, de conformidad con el artículo 55.1 del
+        Código Orgánico General de Procesos vigente a la fecha.
+      - >-
+        Mientras una parte no indique a la otra, por escrito y con aviso de recepción, de otro lugar
+        para tal efecto, las comunicaciones, citaciones, notificaciones y emplazamientos que se hagan
+        en los lugares cuya dirección quedó señalada anteriormente, las mismas tendrán plena validez y
+        surtirán todos los efectos legales correspondientes.
+      - >-
+        Cualquier cambio de domicilio o correo deberá ser notificado por la parte respectiva con al
+        menos diez (10) días de anticipación, no teniendo validez jurídica su cambio sin notificación
+        expresa a la otra parte.
+
+  confidencialidad:
+    titulo: CONFIDENCIALIDAD
+    parrafos:
+      - >-
+        {{ census.nombre_corto }} queda obligada a no revelar, divulgar o difundir, facilitar,
+        transmitir, bajo cualquier forma, a ninguna persona física o jurídica, sea ésta pública o
+        privada, y a no utilizar para su propio beneficio o para beneficio de cualquier persona física
+        o jurídica, pública o privada, toda información proporcionada por “El Contratante”.
+
+  proteccion_datos:
+    titulo: PROTECCIÓN DE DATOS
+    parrafos:
+      - >-
+        En caso de que con motivo de la ejecución del presente Contrato llegase a existir entre las
+        partes una remisión y/o transferencia de información personal de los empleados, accionistas,
+        contratistas, clientes, consumidores y/o subcontratistas de las Partes y/o de información
+        personal de terceros, que constituyan datos personales, las Partes se obligan a cumplir con lo
+        contenido en la Constitución de la República del Ecuador, y cualquier otra normativa aplicable,
+        cada una en su calidad de responsable o encargado, según corresponda, obligándose siempre a lo
+        siguiente:
+      - >-
+        a) Respetar en todo momento los principios de licitud, consentimiento, información, calidad,
+        finalidad, lealtad, proporcionalidad y responsabilidad en el tratamiento de los Datos Personales;
+      - >-
+        b) Mantener en estricta confidencialidad y no divulgar los Datos Personales, ni hacer uso de
+        estos para fines distintos a aquellos por los que se le comunicaron, sin la previa autorización
+        por escrito de la Parte emisora;
+      - >-
+        c) Respetar los términos y condiciones del aviso de privacidad correspondiente que la Parte
+        emisora ponga a su disposición;
+      - d) Contar con los mecanismos y procedimientos necesarios para proteger los Datos Personales;
+      - >-
+        e) Informar de manera inmediata al responsable/transferente en caso de que ocurra una
+        vulneración de seguridad que ponga en riesgo los Datos Personales recibidos de parte de ésta; y,
+      - >-
+        f) Tomar las medidas de seguridad tecnológicas, físicas y administrativas necesarias a fin de
+        prevenir el uso y/o divulgación indebida de los Datos Personales.
+
+  aceptacion:
+    titulo: ACEPTACIÓN
+    parrafos:
+      - >-
+        Las partes aceptan el contenido del presente contrato en todas sus estipulaciones y por ello se
+        comprometen a cumplir todas y cada una de las obligaciones que contraen, en fe de lo cual y para
+        los fines legales, lo firman en dos ejemplares de igual tenor y valor, en la misma fecha de su
+        celebración.
+      - >-
+        Para constancia y ratificación de cada una de las cláusulas, las partes firman este documento
+        por duplicado, el día de hoy, {{ fecha | fecha_larga }}.
+
+  # Cláusulas opcionales (se activan desde el archivo del servicio con `extras:`)
+  cambio_abogado:
+    titulo: CAMBIO DE ABOGADO Y TERMINACIÓN ANTICIPADA
+    parrafos:
+      - >-
+        En caso de que “El Contratante” decida dar por terminado el presente contrato de forma
+        anticipada, o sustituir, remover o prescindir de los servicios de “El Contratado” antes de la
+        conclusión del servicio contratado, sea cual fuere la causa o motivo, incluyendo el cambio de
+        abogado o firma patrocinadora, “El Contratante” deberá cancelar a “El Contratado” la totalidad
+        de los honorarios pactados en la cláusula {{ ordinal_de('honorarios') }}, una vez que recupere
+        efectivamente los valores reclamados, ya sea mediante la emisión de notas de crédito,
+        devolución en efectivo, compensación o cualquier otro mecanismo de reconocimiento y devolución.
+
+  anticorrupcion:
+    titulo: ANTICORRUPCIÓN
+    parrafos:
+      - >-
+        Las partes que suscriben el presente contrato declaran expresamente que no han ofrecido,
+        ofrecen u ofrecerán, y no han efectuado o efectuarán ningún pago, préstamo de servicio
+        ilegítimo o prohibido por la ley, entretenimiento, viajes, obsequios, dádiva monetaria indebida
+        o cualquier otro beneficio o ventaja económica o de otro tipo, a ningún funcionario,
+        trabajador o autoridad que hubiere tenido o tenga que ver en la resolución del servicio por el
+        cual se está contratando. Cualquier violación de esta cláusula será considerada como un
+        incumplimiento material del contrato y la parte no infractora tendrá el derecho de rescindir el
+        contrato sin responsabilidad alguna. Además, las partes acuerdan cooperar plenamente en
+        cualquier investigación relacionada con posibles violaciones de leyes anticorrupción que
+        involucren a cualquiera de las partes.

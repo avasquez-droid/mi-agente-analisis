@@ -1,0 +1,78 @@
+# Autorización de Depósito Aduanero — base: contrato modelo 2026.
+# OJO: el contrato modelo anuncia "las siguientes actividades:" pero no las enumera. Las
+# actividades de abajo son una PROPUESTA basada en sus obligaciones; validar con el área aduanera.
+variables:
+  honorario: {descripcion: "Honorario fijo USD (por defecto: tarifario)", ejemplo: 20000}
+
+antecedentes:
+  - >-
+    Es el caso, que “El Contratante” requiere de los servicios profesionales de “El Contratado” para
+    la asesoría, gestión y acompañamiento integral en el proceso de obtención de la resolución de
+    autorización del régimen de Depósito Aduanero emitida por el Servicio Nacional de Aduana del
+    Ecuador (SENAE);
+cierre_antecedentes: true
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS
+  parrafos:
+    - >-
+      Con los antecedentes antes expuestos, la compañía {{ cliente.razon_social }}, contrata los
+      servicios profesionales de {{ census.razon_social }}, para la asesoría legal y aduanera en el
+      proceso de implementación del régimen de Depósito Aduanero, hasta la obtención de la resolución
+      de autorización emitida por el Servicio Nacional de Aduana del Ecuador (SENAE). El servicio
+      comprenderá las siguientes actividades:
+    - a) Diagnóstico de los requisitos legales, operativos y de infraestructura exigidos por el SENAE para el régimen de Depósito Aduanero.       # PROPUESTA
+    - b) Preparación del expediente técnico y legal de la solicitud de autorización.                                                      # PROPUESTA
+    - c) Presentación de la solicitud y seguimiento del trámite ante el SENAE a través del sistema ECUAPASS, incluida la atención de requerimientos.   # PROPUESTA
+    - d) Acompañamiento durante la inspección técnica que realice el SENAE previo a la emisión de la resolución de autorización.            # PROPUESTA
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - >-
+      El plazo de duración del presente contrato es desde la suscripción del contrato hasta que el
+      Servicio Nacional de Aduana del Ecuador (SENAE) emita la resolución de autorización del régimen
+      de Depósito Aduanero solicitada en cumplimiento de la cláusula {{ ordinal_de('prestacion') }} del
+      presente instrumento. El plazo del trámite estará sujeto a los tiempos de gestión y respuesta de
+      la Administración Aduanera, por lo que “El Contratado” no será responsable por demoras
+      imputables al SENAE o a terceros, ni por demoras derivadas de la falta de entrega oportuna de
+      información o del incumplimiento de requisitos de infraestructura u operativos a cargo de
+      “El Contratante”.
+
+honorarios:
+  titulo: HONORARIOS POR SERVICIOS
+  parrafos:
+    - >-
+      Las partes fijan de común acuerdo, por el pago de los servicios profesionales objeto del presente
+      contrato, un honorario de {{ v.honorario | usd }} ({{ v.honorario | letras | upper }} DÓLARES DE LOS
+      ESTADOS UNIDOS DE AMÉRICA) más IVA, que será pagado de la siguiente forma:
+    - >-
+      a) El {{ t.anticipo_pct | pct }} más IVA, es decir {{ (v.honorario * t.anticipo_pct / 100) | usd }} más
+      IVA, a la suscripción del presente contrato; y,
+    - >-
+      b) El saldo, es decir {{ (v.honorario * (100 - t.anticipo_pct) / 100) | usd }} más IVA, contra la
+      emisión de la resolución favorable de autorización del régimen de Depósito Aduanero por parte del SENAE.
+    - >-
+      Los honorarios no incluyen análisis tributario, ni ningún tipo de gasto, tales como: gastos
+      notariales, peritajes, traducciones, apostillas, legalizaciones, certificaciones, tasas (incluida
+      la tasa de inspección del SENAE), pólizas de seguro, adecuaciones de infraestructura, sistemas
+      informáticos de control de inventarios, ni otros costos adicionales que pudieran generarse
+      durante la ejecución del servicio. Tampoco incluyen movilización, hospedaje y/o alimentación en
+      los casos en que el personal de “El Contratado” necesite movilizarse fuera de la ciudad de
+      Guayaquil para atender diligencias. Dichos valores deberán ser asumidos y cancelados de forma
+      directa por “El Contratante”.
+
+obligaciones:
+  titulo: OBLIGACIONES DE LAS PARTES
+  parrafos:
+    - "Las partes de común acuerdo convienen establecer como obligaciones de cada una de ellas las siguientes:"
+    - "Obligaciones de “El Contratado”:"
+    - a) Brindar asesoría técnica y legal en base al ordenamiento jurídico aduanero, en especial el COPCI, su Reglamento y la normativa emitida por el SENAE, dentro del proceso de autorización del régimen de Depósito Aduanero.
+    - b) Revisar y calificar la información y documentación entregada por “El Contratante”. Esta documentación servirá única y exclusivamente para la elaboración del expediente técnico y legal necesario dentro del trámite de autorización.
+    - c) Efectuar todas las gestiones necesarias ante el SENAE, a través del sistema ECUAPASS, para precautelar los intereses legales y económicos de “El Contratante” dentro del trámite por el cual se contrata el presente servicio.
+    - d) Informar oportunamente a “El Contratante” sobre el estado del trámite y los requerimientos formulados por la autoridad aduanera.
+    - e) Acompañar a “El Contratante” durante la inspección técnica que realice el SENAE previo a la emisión de la resolución de autorización.
+    - "Obligaciones de “El Contratante”:"
+    - a) Entregar a “El Contratado” toda la documentación e información necesaria y requerida para la preparación y presentación de la solicitud de autorización del régimen de Depósito Aduanero, de manera completa, veraz y oportuna.
+    - b) Cumplir con el plazo y la forma de pago correspondiente a los servicios profesionales que prestará “El Contratado”, según lo estipulado en el presente contrato.
+    - c) Respetar todos los términos establecidos en el contrato.

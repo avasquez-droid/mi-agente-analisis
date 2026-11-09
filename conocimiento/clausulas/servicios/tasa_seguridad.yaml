@@ -1,0 +1,84 @@
+# Pago indebido tasa de seguridad (importaciones desde Colombia) — base: contratos modelo 2026.
+variables:
+  importaciones_desde: {descripcion: "Inicio del periodo", ejemplo: "marzo 2026", requerido: true}
+  importaciones_hasta: {descripcion: "Fin del periodo", ejemplo: "abril del 2026", requerido: true}
+tipo_servicio: asesoría legal y tributaria
+
+antecedentes:
+  - >-
+    Es el caso, que “El Contratante” requiere de los servicios de asesoría legal tributaria y
+    patrocinio judicial de “El Contratado” para la asesoría y acompañamiento en la presentación de
+    reclamos administrativos de pago indebido ante el Servicio Nacional de Aduana del Ecuador, y
+    posterior demandas de impugnación ante el Tribunal Distrital de lo Contencioso Tributario de
+    Guayaquil en caso de ser necesaria, contra las Declaraciones Aduaneras emitidas por el Servicio
+    Nacional de Aduana del Ecuador (SENAE), a través de las cuales se pagó la tasa de seguridad
+    establecida por haber realizado importaciones cuyo país de origen o procedencia sea Colombia.
+cierre_antecedentes: true
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS
+  parrafos:
+    - >-
+      Con los antecedentes antes expuestos, la compañía {{ cliente.razon_social }}, contrata los
+      servicios profesionales de {{ census.razon_social }}, para la asesoría legal tributaria y
+      patrocinio judicial en la presentación de reclamos administrativos de pago indebido de la
+      denominada tasa de seguridad por las importaciones realizadas por “El Contratante” desde
+      Colombia, que se presentarán ante el Servicio Nacional de Aduana del Ecuador (SENAE) respecto a
+      las importaciones realizadas desde {{ v.importaciones_desde }} hasta los valores a recuperar que se
+      generen por importaciones efectuadas hasta {{ v.importaciones_hasta }}; y posterior de una o varias
+      demandas de impugnación que se presentarán ante el Tribunal Distrital de lo Contencioso
+      Tributario de Guayaquil, en caso de ser necesaria por resolución negativa de los reclamos de
+      pago indebido.
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - >-
+      El plazo de duración del presente contrato es desde la suscripción del contrato hasta que el
+      Servicio Nacional de Aduana del Ecuador emita la resolución correspondiente a los reclamos
+      administrativos de pago indebido que “El Contratado” presentará en cumplimiento de la cláusula
+      {{ ordinal_de('prestacion') }} del presente instrumento, respecto de las importaciones efectuadas
+      desde {{ v.importaciones_desde }} hasta {{ v.importaciones_hasta }}. En caso de aceptación total o
+      parcial del reclamo administrativo, el plazo se extenderá hasta la emisión y acreditación efectiva
+      de las notas de crédito en el sistema correspondiente de la Administración Aduanera. En caso de
+      que la resolución administrativa sea total o parcialmente negativa y se requiera la impugnación
+      judicial, el plazo se extenderá hasta que exista pronunciamiento en firme por parte de la
+      autoridad judicial competente que resuelva dichas impugnaciones; y, de ser el caso, hasta la
+      acreditación efectiva de las notas de crédito que se generen como consecuencia del proceso judicial.
+
+honorarios:
+  titulo: HONORARIOS POR SERVICIOS
+  parrafos:
+    - "Las partes fijan de común acuerdo por pago de los servicios legales y tributarios, de conformidad con el presente contrato, lo siguiente:"
+    - >-
+      Un honorario del {{ v.porcentaje | pct }} más IVA sobre los valores recuperados a través de los
+      reclamos por pago indebido o demandas de impugnación judicial con sus intereses. Los cuales serán
+      pagados de la siguiente manera:
+    - "{% for e in t.etapas %}- El {{ e.valor | pct }} {{ e.hito }}{{ '; y,' if not loop.last else '.' }}\n{% endfor %}"
+    - >-
+      En caso de que la sentencia de primera instancia no sea favorable, el valor total del honorario,
+      esto es el {{ v.porcentaje | pct }} + IVA, se pagará contra acreditación de la nota de crédito a favor
+      de la compañía.
+    - >-
+      Los gastos por peritajes, gastos notariales, y cualquier gasto adicional que se efectúe en la
+      prestación del servicio, deberá ser cubierto por “El Contratante”, debiendo ser cancelados de
+      forma directa.
+    - >-
+      Los honorarios incluyen la defensa de “El Contratante” en caso de presentarse recurso de casación
+      y/o acción extraordinaria de protección por cualquiera de las partes dentro del o los procesos
+      judiciales que sustancie las demandas de impugnación judicial que se presenten en caso de ser
+      necesarias por resolución negativa de los reclamos de pago indebido inicial.
+
+obligaciones:
+  titulo: OBLIGACIONES DE LAS PARTES
+  parrafos:
+    - "Las partes de común acuerdo convienen establecer como obligaciones de cada una de ellas las siguientes:"
+    - "Obligaciones de “El Contratado”:"
+    - a) Brindar asesoría técnica y legal en base al ordenamiento jurídico-tributario dentro de los Reclamos Administrativos de pago indebido y Demandas de Impugnación Judicial, contra las Declaraciones Aduaneras emitidas por el Servicio Nacional de Aduana del Ecuador (SENAE).
+    - b) Revisar y calificar la información entregada por “El Contratante”. Esta documentación servirá única y exclusivamente para la elaboración de los documentos necesarios dentro del Reclamo Administrativo y Demanda de Impugnación.
+    - c) Efectuar todas las gestiones legales necesarias para precautelar los intereses legales y económicos de “El Contratante” en los reclamos administrativos a presentar y demandas de impugnación, y por lo cual se contrata el presente servicio.
+    - d) Representar a “El Contratante” en las diferentes audiencias que se lleven a cabo en caso de la presentación de las demandas de impugnación.
+    - "Obligaciones de “El Contratante”:"
+    - a) Entregar a “El Contratado” toda la documentación necesaria y requerida para la presentación de los Reclamos Administrativos de pago indebido, y posteriores demandas de impugnación judicial, contra las Declaraciones Aduaneras emitidas por el Servicio Nacional de Aduana del Ecuador (SENAE), a través de las cuales se pagó la denominada Tasa de Seguridad por las importaciones realizadas desde Colombia.
+    - b) Cumplir con el plazo y la forma de pago correspondiente a los servicios profesionales que prestará “El Contratado”, según lo estipulado en el presente contrato.
+    - c) Respetar todos los términos establecidos en el contrato.

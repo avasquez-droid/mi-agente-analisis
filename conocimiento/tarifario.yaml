@@ -1,0 +1,129 @@
+# TARIFARIO — cuantías y honorarios por servicio.
+#
+# VALORES PROVISIONALES: `valor` es la propuesta por defecto del agente y `rango_contratos`
+# lo observado en los contratos 2024-2026 (mín–máx, mediana). Corregir `valor` y, si aplica,
+# `minimo` y `maximo` (límites que el agente no puede pasar sin aprobación).
+# Todos los honorarios son "más IVA".
+#
+# Modelos:
+#   porcentaje      % sobre la base (valor recuperado / ahorro / cuantía)
+#   escalonado      % según el tiempo de acreditación (tramos)
+#   por_via         % distinto en vía administrativa y judicial, con pagos por etapa
+#   etapas          % total pagado en hitos procesales
+#   fijo            monto fijo, con anticipo y saldo
+#   mensual         fee mensual
+
+devolucion_iva:
+  modelo: porcentaje
+  valor: 5.0
+  rango_contratos: {min: 2.0, max: 10.0, mediana: 5.0, n: 76}
+  minimo: 2.0
+  maximo: 10.0
+  forma_pago: 100 % contra acreditación de la nota de crédito; reliquidación incluye intereses.
+
+devolucion_ir:
+  modelo: escalonado
+  tramos:                              # según meses entre la solicitud y la acreditación
+    - {hasta_meses: 5, valor: 7.0}
+    - {desde_meses: 5, valor: 5.0}
+  rango_contratos: {min: 2.5, max: 12.0, mediana: 6.5, n: 36}
+  forma_pago: 100 % contra resolución favorable y nota de crédito.
+
+planificacion_isd:
+  modelo: porcentaje
+  valor: 7.0
+  rango_contratos: {min: 5.0, max: 10.0, mediana: 7.0, n: 27}
+  minimo: 5.0
+  maximo: 10.0
+  forma_pago: Proporcional al ahorro efectivo contra cada desembolso al exterior durante 12 meses.
+
+pago_indebido_isd:
+  modelo: porcentaje
+  valor: 20.0
+  rango_contratos: {min: 17.5, max: 25.0, mediana: 23.5, n: 3}
+  forma_pago: 100 % contra acreditación de la nota de crédito (incluye intereses).
+
+reclamo_aranceles_omc:
+  modelo: por_via
+  administrativo: 10.0
+  judicial: 20.0
+  etapas_judicial:                     # suma = judicial
+    - {hito: "Sentencia dictada por el Tribunal Distrital de lo Contencioso Tributario de Guayaquil que determine el reintegro de los valores solicitados", valor: 5.0}
+    - {hito: "ejecutoría de sentencia de primera instancia, sea por no presentación de recurso de casación, inadmisión del recurso o sentencia de la Sala Especializada de lo Contencioso Tributario de la Corte Nacional de Justicia que acepte la pretensión de la demanda", valor: 5.0}
+    - {hito: "acreditación de la nota de crédito incluido intereses en el sistema Ecuapass (saldo)", valor: 10.0}
+  rango_contratos: {min: 4.0, max: 40.0, mediana: 12.25, n: 28}
+  forma_pago: Vía administrativa 100 % contra nota de crédito en Ecuapass; vía judicial por etapas.
+
+tasa_seguridad:
+  modelo: porcentaje
+  valor: 7.0
+  rango_contratos: {min: 2.5, max: 20.0, mediana: 7.5, n: 8}
+  etapas:
+    - {hito: "a la fecha de sentencia de primera instancia favorable", valor: 2.0}
+    - {hito: "contra acreditación de la nota de crédito a favor de la compañía, desmaterializada en el sistema Ecuapass del valor pagado indebidamente más sus respectivos intereses", valor: 5.0}
+  forma_pago: 2 % con sentencia favorable y 5 % con la nota de crédito; si la sentencia no es favorable, todo contra nota de crédito.
+
+deposito_aduanero:
+  modelo: fijo
+  valor: 20000.0
+  anticipo_pct: 50
+  rango_contratos: {min: 20000.0, max: 20000.0, n: 1}
+  forma_pago: 50 % a la firma y 50 % contra la resolución favorable del SENAE.
+
+cobranza_extrajudicial:
+  modelo: porcentaje
+  valor: 10.0
+  anticipo_usd: 500.0
+  rango_contratos: {min: 4.0, max: 25.0, mediana: 10.0, n: 17}
+  forma_pago: Anticipo a la firma; saldo contra acuerdo o recuperación, a prorrata si es por cuotas.
+
+cobranza_judicial:
+  modelo: etapas
+  valor: 15.0
+  etapas:                              # % del honorario total en cada hito
+    - {hito: Calificación de la demanda, valor: 5}
+    - {hito: Sentencia oral de primera instancia, valor: 10}
+    - {hito: Sentencia de apelación oral, valor: 10}
+    - {hito: Mandamiento de ejecución (con recuperación), valor: 75}
+  sin_recuperacion_pct: 25
+  forma_pago: Contra recuperación o acuerdo extrajudicial, lo que ocurra primero.
+
+outsourcing_contable:
+  modelo: mensual
+  valor: 500.0
+  limite_transacciones: 90
+  rango_contratos: {min: 250.0, max: 1530.0, n: 5}
+  adicional: {toma_fisica_inventario: 400.0}
+  forma_pago: Facturación los primeros 6 días de cada mes.
+
+defensa_laboral:
+  modelo: fijo
+  valor: null                          # PENDIENTE: no hay contrato laboral tipo en el material
+  anticipo_pct: 50
+  forma_pago: PENDIENTE
+
+planificacion_tributaria:
+  modelo: fijo
+  valor: 4000.0
+  anticipo_pct: 50
+  rango_contratos: {min: 1000.0, max: 50000.0, n: 16}
+  forma_pago: 50 % a la firma y 50 % a la entrega del informe.
+
+disminucion_autorretencion:
+  modelo: porcentaje
+  valor: 5.0
+  rango_contratos: {min: 5.0, max: 25.0, mediana: 5.25, n: 4}
+  forma_pago: PENDIENTE (confirmar base de cálculo)
+
+devolucion_iva_inmobiliario:
+  modelo: porcentaje
+  valor: 5.0
+  registro_miduvi_fijo: 1000.0         # contratos MIDUVI: 1.000–1.500, 50 % anticipo
+  forma_pago: 100 % contra acreditación de la nota de crédito.
+
+revision_obligaciones:
+  modelo: fijo
+  valor: 3000.0
+  anticipo_pct: 50
+  rango_contratos: {min: 1200.0, max: 3000.0, n: 2}
+  forma_pago: 50 % a la firma y 50 % a la entrega del informe.

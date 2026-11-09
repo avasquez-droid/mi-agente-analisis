@@ -1,34 +1,21 @@
 # Preguntas frecuentes
 
-**¿Funciona con Claude y con GPT a la vez?**
-Sí. El código es el mismo; solo cambian las instrucciones: `CLAUDE.md` para Claude y `AGENTS.md`
-para Codex/GPT. Ambas se mantienen en `adapters/`.
+**¿De dónde salen las cifras del análisis?**
+De la ficha de cada empresa en el informe de investigación. El cuadro resumen solo se usa para
+detectar discrepancias, que se listan aparte.
 
-**¿Qué pasa si mi Excel tiene otros nombres de columna?**
-Añade los sinónimos en `columnas:` del `metodologia.yaml`. El agente también puede hacerlo por ti.
+**¿Los honorarios son oficiales?**
+No todavía. `conocimiento/tarifario.yaml` tiene valores por defecto y el rango observado en los
+contratos 2024-2026. Los marcados `# PROV` deben validarse.
 
-**¿Y si falta un criterio?**
-Se avisa y se redistribuyen los pesos entre los criterios presentes.
+**¿Puedo subir informes o contratos reales al repositorio?**
+No. Contienen datos personales. Guárdalos en `privado/` (ignorado por Git) o fuera del repo.
 
-**¿Puedo usar escala 1-10 o 0-100?**
-Sí. Si los datos superan la escala declarada se detecta automáticamente; también puedes fijarla
-en `escala:` del YAML.
+**El informe trae una sección nueva o con otro formato.**
+Pásale el archivo al agente: la lectura está en `core/informe_reader.py` (`CAMPOS` y `SECCIONES_FICHA`).
 
-**¿Puedo cambiar colores o logotipo del PDF?**
-Sí, en `core/report_pdf.py` (constante `AZUL`, estilos y encabezado).
+**Un servicio no tiene contrato tipo.**
+Ver "Agregar el contrato tipo de un servicio" en `docs/guia-uso.md`.
 
-**¿Dónde quedan los resultados?**
-En `salidas/` (ignorada por Git) o en la carpeta que pases con `--salida`.
-
-**¿El agente modifica mi archivo original?**
-No. Solo lo lee.
-
-**¿Cómo agrego una metodología nueva?**
-Sigue `docs/crear-skills.md`.
-
-**¿Puedo ejecutarlo sin agente?**
-Sí, con `python -m core.cli ...` o importando `core.agent.ejecutar` desde Python.
-
-**¿Los datos salen del equipo?**
-Con la CLI, nunca. Con un agente en la nube (ChatGPT, claude.ai) los datos se envían al
-proveedor; usa datos anonimizados si es necesario.
+**¿Dónde están las diferencias entre contratos?**
+En `docs/revision-contratos.md`.

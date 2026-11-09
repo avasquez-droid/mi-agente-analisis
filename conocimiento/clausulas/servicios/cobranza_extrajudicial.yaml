@@ -1,0 +1,58 @@
+# Cobranza extrajudicial — base: contrato modelo 2025, firmado por CENSUS COBRANZAS S.A.
+variables:
+  deudores:
+    descripcion: "Lista de deudores: [{nombre, monto}]"
+    ejemplo: [{nombre: "DEUDOR S.A.", monto: 71000}]
+    requerido: true
+  porcentaje: {descripcion: "Honorario % (por defecto: tarifario)", ejemplo: 10}
+  anticipo: {descripcion: "Anticipo USD (por defecto: tarifario)", ejemplo: 500}
+tipo_servicio: cobranza extrajudicial
+
+antecedentes:
+  - >-
+    Es el caso, que “El Contratante” es una compañía que requiere contratar los servicios de una
+    compañía que ofrezca servicios de cobro de deudas, mediante acciones extrajudiciales, que tengan
+    como objetivo la recuperación y cobro de los siguientes valores adeudados a favor de
+    {{ cliente.razon_social }}:{% for d in v.deudores %} ({{ loop.index }}) los valores que se encuentra
+    adeudando a su favor {{ d.nombre }}, esto es, la cantidad de {{ d.monto | usd }}{{ ';' if not loop.last else '.' }}{% endfor %}
+cierre_antecedentes: true
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS LEGALES
+  parrafos:
+    - >-
+      Con los antecedentes antes expuestos, “El Contratante” contrata los servicios profesionales de
+      {{ census.razon_social }}, para el servicio de cobranza extrajudicial de valores con la finalidad
+      de cobrar valores adeudados a favor de “El Contratante”.
+    - >-
+      Dados estos presupuestos, “El Contratante” contrata con “El Contratado” la prestación de los
+      servicios referidos en esta cláusula, aclarando que la gestión materia de los servicios
+      contratados incluye toda actividad realizada por “El Contratado” desde la suscripción de este
+      contrato hasta su terminación.
+    - "A fin de lograr el objetivo, dentro de las actividades a desarrollar tenemos lo siguiente:"
+    - 1) Elaboración y remisión de cartas de cobranza.
+    - 2) Elaboración y remisión de correos electrónicos de cobranza.
+    - 3) Realizar llamadas de cobranza.
+    - 4) Elaboración de acta de transacción.
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - Las partes declaran que el plazo es indefinido, por ende, su terminación es hasta la obtención final del objeto contratado.
+
+honorarios:
+  titulo: HONORARIOS
+  parrafos:
+    - >-
+      Las partes fijan de común acuerdo por pago de los servicios contratados de conformidad con el
+      presente contrato el {{ v.porcentaje | pct }} + IVA calculado sobre el valor de la cuantía a
+      recuperar, pagaderos de la siguiente forma:
+    - a) {{ v.anticipo | usd }} + IVA en calidad de anticipo a la suscripción del presente contrato; y,
+    - b) El saldo, contra acuerdo arribado.
+    - En caso de que la cobranza sea por cuotas, el valor de honorario se cancelará a prorrata de los valores que vaya cobrando el cliente.
+    - Para el cálculo de los honorarios se considera el valor de todo lo recuperado, que incluye capital, intereses, costas y cualquier otro recargo.
+    - En caso de que la cobranza se vaya resolviendo de forma individual, el honorario se irá cancelando conforme a cada caso o cada cobranza que se vaya efectuando.
+    - >-
+      Los gastos no están incluidos dentro de lo pactado por honorarios, tales como, gastos notariales,
+      viáticos, tasas, impuestos, entre otros, por lo que los gastos a incurrirse serán asumidos por
+      “El Contratante” previa aprobación del mismo, y con sustento en la factura correspondiente.

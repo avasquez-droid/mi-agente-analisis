@@ -1,0 +1,53 @@
+# Cobranza judicial — base: contratos modelo 2026.
+variables:
+  cuantia: {descripcion: "Cartera aproximada a cobrar (USD)", ejemplo: 15000, requerido: true}
+  porcentaje: {descripcion: "Honorario % (por defecto: tarifario)", ejemplo: 15}
+tipo_servicio: asesoría legal y cobranza judicial
+actividad_census: se dedica al asesoramiento legal, tributario y cobranza judicial
+
+antecedentes:
+  - >-
+    Es el caso, que “El Contratante” requiere contratar los servicios de una compañía que ofrezca
+    servicios de cobro de deudas, mediante acciones judiciales, que tengan como objetivo la
+    recuperación y cobro de valores adeudados a favor de {{ cliente.razon_social }} por parte de clientes.
+cierre_antecedentes: true
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS LEGALES
+  parrafos:
+    - >-
+      Con los antecedentes antes expuestos, la compañía {{ cliente.razon_social }}, contrata los
+      servicios profesionales de {{ census.razon_social }}, con la finalidad de iniciar las acciones
+      legales ante la justicia ordinaria para realizar el cobro de una cartera aproximada de
+      {{ v.cuantia | usd }} ({{ v.cuantia | letras | upper }} dólares de los Estados Unidos de América) que a la
+      presente fecha le adeudan.
+    - "A fin de lograr el objetivo, entre las actividades a desarrollar tenemos lo siguiente:"
+    - a) Redacción de demanda, recursos, escritos varios.
+    - b) Patrocinio en audiencias o conciliaciones.
+    - c) Impulsos procesales.
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - Las partes declaran que el plazo es indefinido, por ende, su terminación es hasta la obtención final del objeto contratado.
+
+honorarios:
+  titulo: HONORARIOS
+  parrafos:
+    - >-
+      Las partes fijan de común acuerdo por pago de los servicios contratados de conformidad con el
+      presente contrato el {{ v.porcentaje | pct }} + IVA calculado sobre el valor de la cuantía a
+      recuperar, pagaderos de la siguiente forma:
+    - "{% for e in t.etapas %}{{ 'abcdefgh'[loop.index0] }}) {{ e.hito }}: {{ e.valor | pct }}\n{% endfor %}{{ 'abcdefgh'[t.etapas|length] }}) Imposibilidad de recuperación (sin recuperación): {{ t.sin_recuperacion_pct | pct }}."
+    - El valor de todo lo recuperado incluye capital, intereses, costas y cualquier otro recargo.
+    - >-
+      El pago de los honorarios será contra recuperación de valores o firma de acuerdo extrajudicial
+      (mediación, transacción, conciliación) o desistimiento, lo que ocurra primero. En caso de pago
+      por partes o cuotas, el honorario se cancelará a prorrata del pago de las mismas.
+    - >-
+      Los servicios contratados no incluyen gastos que se originen de la ejecución del presente
+      contrato, por lo que las costas tales como tasas notariales, tasas administrativas, copias
+      certificadas, viajes fuera de la ciudad de Guayaquil, peritajes, prensa, y en general cualquier
+      gasto en el que deba incurrirse para dar cumplimiento al presente contrato, correrán por cuenta
+      de “El Contratante”, al no estar comprendidos dentro de los honorarios profesionales de
+      “El Contratado”.

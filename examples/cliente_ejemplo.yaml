@@ -1,0 +1,12 @@
+# Datos del cliente para generar un contrato (FICTICIOS).
+razon_social: IMPORTADORA DEMO S.A.
+ruc: "0990000001001"
+persona: juridica            # juridica | natural
+representante: Juan Pérez Ficticio
+tratamiento: el señor        # el señor | la señora
+cargo: Gerente General
+cedula: ""                   # opcional
+ciudad: Guayaquil
+provincia: Guayas
+correos:
+  - gerencia@importadorademo.ec

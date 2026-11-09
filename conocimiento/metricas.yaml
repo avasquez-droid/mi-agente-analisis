@@ -1,0 +1,145 @@
+# MÉTRICAS DE VIABILIDAD — cuándo un cliente puede adquirir un servicio.
+#
+# TODOS LOS VALORES SON PROVISIONALES (marcados "# PROV"). Corregir los números; la lógica
+# no necesita cambios. Montos en USD.
+#
+# Cada servicio tiene:
+#   condiciones   lista de reglas sobre los campos del informe de investigación
+#   modo          todas = deben cumplirse todas | alguna = basta una
+#   base          expresión que estima el monto sobre el que se calculan honorarios
+#   requiere_dato información que NO viene en el informe y hay que pedir al cliente
+#
+# Campos disponibles (año_ref = año anterior a la fecha del informe; *_ultimo = último dato):
+#   ventas, ingreso_total, utilidad_neta, ir_causado, trabajadores, exportaciones,
+#   importaciones_no_producidos, importaciones_mp, importaciones, cxc_no_relacionadas,
+#   gasto_deterioro, ppe, sueldos, ct_iva_ref, ct_ir_ref, ct_iva_ultimo, ct_ir_ultimo,
+#   ct_iva_max_5a, isd_ref, isd_actual, isd_promedio, proyeccion_devolucion_ir,
+#   sercop_total, omc_total, reg70_total, reg21_total, juicios_laborales_demandado,
+#   juicios_cobro_actor, juicios_demandado, deudas_firmes, deudas_impugnadas,
+#   facilidades_pago, gran_contribuyente, cxc_sobre_ventas, objeto (texto)
+#
+# Operadores: >=, >, <=, <, ==, !=, contiene (texto, admite varias palabras separadas por |)
+
+devolucion_iva:
+  descripcion: Crédito tributario de IVA acumulado relevante
+  modo: todas
+  condiciones:
+    - {campo: ct_iva_ultimo, op: ">=", valor: 20000}        # PROV
+  base: ct_iva_ultimo
+  prioridad_alta_desde: 100000                              # PROV
+
+devolucion_ir:
+  descripcion: Retenciones/crédito de IR superiores al impuesto causado
+  modo: todas
+  condiciones:
+    - {campo: proyeccion_devolucion_ir, op: ">=", valor: 5000}   # PROV
+  base: proyeccion_devolucion_ir
+  prioridad_alta_desde: 50000                                    # PROV
+
+planificacion_isd:
+  descripcion: Pagos al exterior con ISD relevante
+  modo: todas
+  condiciones:
+    - {campo: isd_ref, op: ">=", valor: 20000}               # PROV
+  base: isd_ref * 1.0      # PROV: fracción del ISD anual que se espera optimizar (1.0 = 100 %)
+  prioridad_alta_desde: 100000                              # PROV
+
+pago_indebido_isd:
+  descripcion: Aseguradoras con ISD pagado (pólizas con el Estado / reaseguro)
+  modo: todas
+  condiciones:
+    - {campo: objeto, op: contiene, valor: "SEGURO|REASEGURO"}
+    - {campo: isd_ref, op: ">", valor: 0}
+  base: isd_ref
+  requiere_dato: Detalle de transferencias al exterior por ejecución de pólizas con entidades del Estado
+  prioridad_alta_desde: 100000                              # PROV
+
+reclamo_aranceles_omc:
+  descripcion: Importaciones con partidas sobre el techo arancelario OMC
+  modo: todas
+  condiciones:
+    - {campo: omc_total, op: ">", valor: 0}
+  base: omc_total
+  prioridad_alta_desde: 50000                               # PROV
+
+tasa_seguridad:
+  descripcion: Importaciones desde Colombia que pagaron la tasa de seguridad
+  modo: todas
+  condiciones:
+    - {campo: importaciones, op: ">=", valor: 100000}       # PROV
+  base: null
+  requiere_dato: Importaciones con origen o procedencia Colombia (el informe no trae el país de origen)
+  prioridad_alta_desde: null
+
+deposito_aduanero:
+  descripcion: Uso relevante de depósitos aduaneros públicos (Régimen 70)
+  modo: todas
+  condiciones:
+    - {campo: reg70_total, op: ">=", valor: 150000}         # PROV
+  base: reg70_total
+  prioridad_alta_desde: 1000000                             # PROV
+
+cobranza:
+  descripcion: Cartera por cobrar alta respecto de las ventas
+  modo: alguna
+  condiciones:
+    - {campo: cxc_no_relacionadas, op: ">=", valor: 100000}  # PROV
+    - {campo: cxc_sobre_ventas, op: ">=", valor: 0.30}       # PROV (30 % de las ventas)
+    - {campo: juicios_cobro_actor, op: ">=", valor: 1}
+  base: cxc_no_relacionadas
+  requiere_dato: Antigüedad de la cartera y deudores concretos a cobrar
+  prioridad_alta_desde: 300000                              # PROV
+
+outsourcing_contable:
+  descripcion: Empresa pequeña sin estructura contable propia
+  modo: todas
+  condiciones:
+    - {campo: trabajadores, op: "<=", valor: 10}            # PROV
+    - {campo: ingreso_total, op: "<=", valor: 2000000}      # PROV
+    - {campo: ingreso_total, op: ">", valor: 0}
+  base: null
+  prioridad_alta_desde: null
+
+defensa_laboral:
+  descripcion: Juicios laborales en contra
+  modo: todas
+  condiciones:
+    - {campo: juicios_laborales_demandado, op: ">=", valor: 1}
+  base: null
+  prioridad_alta_desde: null
+
+planificacion_tributaria:
+  descripcion: Impuesto a la renta causado relevante
+  modo: todas
+  condiciones:
+    - {campo: ir_causado, op: ">=", valor: 50000}           # PROV
+  base: ir_causado
+  prioridad_alta_desde: 200000                              # PROV
+
+disminucion_autorretencion:
+  descripcion: Exportador con crédito tributario de IR recurrente
+  modo: todas
+  condiciones:
+    - {campo: exportaciones, op: ">=", valor: 500000}       # PROV
+    - {campo: ct_ir_ultimo, op: ">=", valor: 20000}         # PROV
+  base: ct_ir_ultimo
+  prioridad_alta_desde: null
+
+devolucion_iva_inmobiliario:
+  descripcion: Constructora, inmobiliaria o fideicomiso de vivienda
+  modo: todas
+  condiciones:
+    - {campo: objeto, op: contiene, valor: "INMOBILIARI|CONSTRUC|VIVIENDA|FIDEICOMISO"}
+  base: ct_iva_ultimo
+  requiere_dato: Proyectos de vivienda de interés social y registro en el MIDUVI
+  prioridad_alta_desde: null
+
+revision_obligaciones:
+  descripcion: Deudas o facilidades de pago con el SRI
+  modo: alguna
+  condiciones:
+    - {campo: deudas_firmes, op: "==", valor: true}
+    - {campo: deudas_impugnadas, op: "==", valor: true}
+    - {campo: facilidades_pago, op: "==", valor: true}
+  base: null
+  prioridad_alta_desde: null

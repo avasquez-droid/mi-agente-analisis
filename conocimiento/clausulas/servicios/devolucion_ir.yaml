@@ -1,0 +1,60 @@
+# Devolución de pago en exceso de IR — base: contrato modelo sep-2026.
+variables:
+  ejercicio: {descripcion: "Ejercicio fiscal", ejemplo: 2025, requerido: true}
+
+antecedentes:
+  - >-
+    Es el caso, de que “El Contratante” requiere de los servicios de asesoría legal y tributaria de
+    “El Contratado” para la presentación y posterior defensa de la solicitud de pago en exceso de
+    Impuesto a la Renta por el ejercicio fiscal {{ v.ejercicio }} ante el Servicio de Rentas Internas; y,
+  - >-
+    Por tal consecuencia, contrata los servicios legales tributarios de {{ census.razon_social }}, a fin
+    de asesorar y gestionar de manera directa los servicios detallados en el literal b) de la presente cláusula.
+cierre_antecedentes: false
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS
+  parrafos:
+    - >-
+      Con los antecedentes antes expuestos, la compañía {{ cliente.razon_social }}, contrata los
+      servicios profesionales de {{ census.razon_social }}, para la presentación y posterior defensa de
+      la solicitud de pago en exceso de Impuesto a la Renta por el ejercicio fiscal {{ v.ejercicio }},
+      ante el Servicio de Rentas Internas, mencionado en la cláusula segunda del presente contrato.
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - >-
+      El plazo de duración del presente contrato es desde la suscripción del mismo hasta la
+      acreditación de las notas de crédito respectivas.
+
+honorarios:
+  titulo: HONORARIOS
+  parrafos:
+    - >-
+      Las partes fijan de común acuerdo por pago de los servicios legales, de conformidad con el
+      presente contrato, un honorario más IVA calculado sobre el valor por devolución realizado a favor
+      de “El Contratante” mediante nota de crédito desmaterializada, respecto al saldo acumulado de
+      Impuesto a la Renta que corresponda hasta el ejercicio fiscal {{ v.ejercicio }}. El porcentaje del
+      honorario se determinará en función del tiempo que transcurra entre la fecha de presentación de
+      la solicitud de devolución ante el Servicio de Rentas Internas y la fecha de acreditación
+      efectiva de los valores a favor de “El Contratante”, conforme a lo siguiente:
+    - >-
+      a) Si la acreditación se produce dentro de los {{ t.tramos[0].hasta_meses | letras_int }}
+      ({{ t.tramos[0].hasta_meses }}) meses contados desde la fecha de presentación del trámite, el
+      honorario será del {{ t.tramos[0].valor | pct_letras }} más IVA.
+    - >-
+      b) Si la acreditación se produce una vez transcurridos los {{ t.tramos[1].desde_meses | letras_int }}
+      ({{ t.tramos[1].desde_meses }}) meses contados desde la fecha de presentación del trámite, el
+      honorario será del {{ t.tramos[1].valor | pct_letras }} más IVA.
+    - "Los honorarios profesionales pactados serán pagaderos de la siguiente manera:"
+    - >-
+      El 100% de los honorarios, se lo cancelarán contra resultados favorables, esto es, al momento de
+      que el Servicio de Rentas Internas resuelva a favor, la solicitud de pago en exceso del Impuesto a
+      la Renta por el ejercicio fiscal {{ v.ejercicio }}, y se emita la correspondiente nota de crédito
+      desmaterializada y/o cartular a favor de “El Contratante”.
+    - >-
+      En caso de que el valor resuelto para su devolución, sea menor o mayor al valor en litigio, se
+      realizará la respectiva reliquidación de honorarios profesionales, sobre la totalidad del
+      porcentaje pactado, en función de los porcentajes anteriormente establecidos, e inclusive
+      intereses devueltos por el Servicio de Rentas Internas.

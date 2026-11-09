@@ -1,0 +1,90 @@
+# Planificación tributaria ISD — base: contratos modelo 2026.
+variables:
+  estructuracion_internacional: {descripcion: "true si incluye diseñar estructuración internacional", ejemplo: false}
+  isd_referencia: {descripcion: "ISD pagado del ejercicio de referencia (USD), opcional", ejemplo: 229446.71}
+  ejercicio_referencia: {descripcion: "Ejercicio del ISD de referencia", ejemplo: 2025}
+  porcentaje: {descripcion: "Honorario % sobre el ahorro (por defecto: tarifario)", ejemplo: 7}
+
+antecedentes:
+  - >-
+    Es el caso de que “El Contratante” requiere de los servicios de asesoría legal y tributaria de
+    “El Contratado”, con el objeto de realizar una Planificación Tributaria respecto al Impuesto a la
+    Salida de Divisas por los pagos realizados a sus proveedores en el exterior{% if v.estructuracion_internacional %},
+    y diseñar alternativas de estructuración internacional que permita fortalecer la rentabilidad de
+    la compañía en otras jurisdicciones{% endif %}.
+  - >-
+    Por tal consecuencia, contrata los servicios legales tributarios de {{ census.razon_social }}, a fin
+    de asesorar y gestionar de manera directa los servicios detallados en el literal b) de la presente cláusula.
+cierre_antecedentes: false
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS
+  parrafos:
+    - >-
+      Con los antecedentes antes expuestos, la compañía {{ cliente.razon_social }} contrata los
+      servicios de asesoría tributaria de {{ census.razon_social }}, a fin de que el Contratado realice
+      una Planificación Tributaria respecto al Impuesto a la Salida de Divisas por los pagos realizados
+      a sus proveedores en el exterior{% if v.estructuracion_internacional %}, y diseñe alternativas de
+      estructuración internacional que permita fortalecer la rentabilidad de la compañía en otras
+      jurisdicciones{% endif %}.
+    - "El alcance del servicio de {{ census.nombre_corto }}, comprenderá, pero no se limitará, a lo siguiente:"
+    - a) Análisis de la legislación tributaria vigente en Ecuador aplicable sobre el Impuesto a la Salida de Divisas, y su impacto en la compañía.
+    - b) Evaluación de la naturaleza de las operaciones de importación.
+    - c) Revisión de la estructura de la compañía respecto al pago a sus proveedores en el exterior.
+    - d) Conclusiones sobre el tratamiento del Impuesto a la Salida de Divisas, en aplicación a la normativa tributaria vigente en beneficio al contribuyente.
+    - e) Elaboración de un informe que contendrá un resumen de nuestro análisis y planteamiento de alternativas que se podrían adoptar para la optimización.
+    - >-
+      f) La ejecución de la planificación propuesta, incluye la calificación de proveedor(es) como
+      institución financiera no especializada ante la Superintendencia de Bancos del Ecuador; y los
+      registros de las operaciones de financiamiento en el Banco Central del Ecuador que se realizan
+      dentro de la vigencia del presente contrato, en caso de requerido. Sin embargo, en caso de que
+      “El Contratante” realice por su propia cuenta los registros en el BCE, estará en la obligación de
+      entregarle al “Contratado” dicho registro, exclusivamente para el seguimiento de los desembolsos
+      al exterior y por tanto, el cumplimiento de la planificación propuesta.
+    - >-
+      g) Defensa en sede administrativa ante el Servicio de Rentas Internas (SRI), en caso de que
+      existan observaciones relacionadas con el pago del Impuesto a la Salida de Divisas, como parte
+      del acompañamiento descrito en este contrato. Esta defensa es únicamente respecto de los
+      periodos en los que {{ census.razon_social }} haya brindado efectivamente el servicio de
+      acompañamiento tributario objeto del presente contrato.
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - >-
+      El plazo de duración del presente contrato será de doce (12) meses contados a partir del primer
+      desembolso al exterior, que incluya la optimización del ISD, producto del servicio descrito en el
+      presente contrato, durante este tiempo, “El Contratado” brindará el soporte necesario para la
+      implementación de las recomendaciones aceptadas por parte de {{ cliente.razon_social }}.
+    - >-
+      Durante dicho período, “El Contratante” se obliga a mantener vigente la relación contractual,
+      considerando que los honorarios establecidos se generarán contra cada desembolso que
+      “El Contratante” efectúe a su proveedor en el exterior y en consecuencia, se optimice el Impuesto
+      a la Salida de Divisas.
+
+honorarios:
+  titulo: HONORARIOS POR SERVICIOS
+  parrafos:
+    - >-
+      Las partes fijan de común acuerdo por pago de los servicios de planificación tributaria de
+      conformidad con el presente contrato, los siguientes valores:
+    - >-
+      a) Un honorario equivalente al {{ v.porcentaje | pct }} más el IVA, calculado sobre el ahorro
+      efectivamente generado respecto al Impuesto a la Salida de Divisas{% if v.isd_referencia %},
+      tomando como referencia el Impuesto a la Salida de Divisas correspondiente al ejercicio fiscal
+      {{ v.ejercicio_referencia }}, cuyo valor ascendió a {{ v.isd_referencia | usd }} de acuerdo a lo que
+      consta en el Servicio de Rentas Internas. En este contexto, el honorario estimado asciende a
+      {{ (v.isd_referencia * v.porcentaje / 100) | usd }} más IVA{% endif %}; pagadero contra cada pago
+      que la compañía realice a su proveedor en el exterior, durante el período de un año calendario.
+    - >-
+      b) El pago del honorario se realizará de manera proporcional al ahorro efectivo contra cada
+      desembolso que “El Contratante” efectúe a su proveedor(es) en el exterior, dentro del plazo de
+      vigencia del presente contrato conforme la cláusula anterior.
+    - >-
+      c) De manera expresa, las partes acuerdan que los honorarios profesionales pactados corresponden
+      exclusivamente a los servicios de planificación tributaria relacionados con el Impuesto a la
+      Salida de Divisas (ISD). En consecuencia, no se encuentran incluidos dentro de dichos honorarios
+      los gastos operativos o administrativos necesarios para la implementación de la estructura o de
+      las operaciones analizadas, tales como gastos notariales, costos de traducción de documentos,
+      legalizaciones, apostillas u otros costos asociados a trámites ante entidades públicas o
+      privadas, los cuales serán asumidos directamente por “El Contratante” de manera independiente.
