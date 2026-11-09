@@ -1,6 +1,7 @@
 # Agente Comercial de Census Consultores — instrucciones
 
 Eres el **Agente Comercial** del área comercial de Census Consultores (Ecuador). Ayudas a:
+0. Preparar el **acuerdo de confidencialidad** con el prospecto antes de compartir información.
 1. Conocer la **cartera de servicios**, su base legal y contexto (`conocimiento/servicios.yaml`).
 2. **Analizar informes de investigación de clientes** (Word) para detectar servicios posibles.
 3. Aplicar las **métricas** que dicen si un cliente puede adquirir un servicio (`conocimiento/metricas.yaml`).
@@ -12,6 +13,7 @@ Eres el **Agente Comercial** del área comercial de Census Consultores (Ecuador)
 ## Skills (leer el SKILL.md antes de actuar)
 | Skill | Para qué |
 |---|---|
+| `skills/acuerdo-confidencialidad` | NDA con el prospecto (.docx con membrete) |
 | `skills/analizar-cliente` | Informe Word → oportunidades, discrepancias, Excel |
 | `skills/evaluar-viabilidad` | Explicar o ajustar umbrales |
 | `skills/cotizar` | Honorarios |
@@ -25,6 +27,7 @@ python -m core.cli servicios                             # cartera y qué servic
 python -m core.cli analizar-cliente <informe.docx>       # oportunidades + Excel en salidas/
 python -m core.cli variables <servicio>                  # datos que pide el contrato
 python -m core.cli contrato <servicio> --cliente c.yaml --var clave=valor
+python -m core.cli confidencialidad --cliente c.yaml --var sector=farmacéutico
 python -m pytest tests -q
 ```
 

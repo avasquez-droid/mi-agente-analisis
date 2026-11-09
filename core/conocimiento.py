@@ -29,9 +29,29 @@ def tarifario() -> dict:
     return _yaml(CARPETA / "tarifario.yaml")
 
 
+def _fusionar(base: dict, extra: dict) -> dict:
+    salida = dict(base)
+    for k, v in (extra or {}).items():
+        salida[k] = _fusionar(salida[k], v) if isinstance(v, dict) and isinstance(salida.get(k), dict) else v
+    return salida
+
+
 @lru_cache(maxsize=None)
 def entidades() -> dict:
-    return _yaml(CARPETA / "entidades.yaml")
+    """Entidades Census. Los datos personales (p. ej. cédula del representante) no van al repo
+    público: se agregan en privado/entidades_local.yaml, que se fusiona encima si existe."""
+    base = _yaml(CARPETA / "entidades.yaml")
+    local = RAIZ / "privado" / "entidades_local.yaml"
+    return _fusionar(base, _yaml(local)) if local.exists() else base
+
+
+@lru_cache(maxsize=None)
+def documento(doc_id: str) -> dict:
+    ruta = CARPETA / "documentos" / f"{doc_id}.yaml"
+    if not ruta.exists():
+        disponibles = ", ".join(p.stem for p in (CARPETA / "documentos").glob("*.yaml"))
+        raise KeyError(f"Documento '{doc_id}' no existe. Disponibles: {disponibles}")
+    return _yaml(ruta)
 
 
 @lru_cache(maxsize=None)
@@ -57,5 +77,5 @@ def servicio(servicio_id: str) -> dict:
 
 
 def recargar() -> None:
-    for f in (servicios, metricas, tarifario, entidades, clausulas_comunes):
+    for f in (servicios, metricas, tarifario, entidades, clausulas_comunes, documento):
         f.cache_clear()

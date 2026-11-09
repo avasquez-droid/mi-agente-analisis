@@ -6,7 +6,7 @@ cartera que el cliente puede contratar, calcula honorarios y genera los contrato
 membrete de Census.
 
 ```
-Informe de investigación (Word) ──▶ métricas de viabilidad ──▶ servicios + honorarios ──▶ contrato .docx
+NDA ──▶ Informe de investigación (Word) ──▶ métricas de viabilidad ──▶ servicios + honorarios ──▶ contrato .docx
                                         conocimiento/                                     (propuesta y correo: pendientes)
 ```
 
@@ -14,6 +14,7 @@ Informe de investigación (Word) ──▶ métricas de viabilidad ──▶ ser
 
 | Proceso | Estado | Dónde |
 |---|---|---|
+| Acuerdo de confidencialidad (NDA) | Listo | `conocimiento/documentos/` |
 | Cartera de servicios, base legal y contexto | 15 servicios; bases legales por validar | `conocimiento/servicios.yaml` |
 | Análisis del informe de investigación del cliente | Listo (formato Census, Word) | `core/informe_reader.py` |
 | Métricas para saber si un cliente puede adquirir un servicio | Listo, **valores provisionales** | `conocimiento/metricas.yaml` |

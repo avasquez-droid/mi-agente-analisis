@@ -44,3 +44,20 @@ automáticamente y ajusta las referencias internas ("cláusula TERCERA", "litera
 `defensa_laboral`, `planificacion_tributaria`, `disminucion_autorretencion`,
 `devolucion_iva_inmobiliario`, `revision_obligaciones`. Para cada uno basta elegir un contrato
 modelo (sugeridos en `conocimiento/servicios.yaml`) y pasarlo a `conocimiento/clausulas/servicios/`.
+
+## 4. Acuerdo de confidencialidad (formato oct-2026)
+
+Plantilla en `conocimiento/documentos/acuerdo_confidencialidad.yaml`. Ajustes hechos al formato:
+
+| # | En el formato original | En la plantilla del agente |
+|---|---|---|
+| 1 | Census se define como “CENSUS CONSULTORES” pero en el texto aparece “CENSUSCONSULTORES” | Una sola denominación (variable `alias_census`) |
+| 2 | "…con cédula de ciudadanía No. …, la cual a su vez es, quien en adelante…" (frase incompleta) | "…en calidad de Gerente General, quien en adelante…" |
+| 3 | "información de tipo industrial, farmacéutico…" (propio de ese cliente) | Sector variable (`sector`) |
+| 4 | "esté o no incluida en la solicitud de oferta presentada" (resto de otra plantilla) | Eliminado |
+| 5 | "en el desarrollo del presente contrato" (es un acuerdo, no un contrato) | "en el desarrollo de una relación profesional de {objeto}" |
+| 6 | "«Información propia» los efectos" | "«Información propia» a los efectos" |
+
+**A decidir:** el acuerdo resuelve controversias por **arbitraje** (Cámara de Comercio de Guayaquil,
+3 árbitros), mientras que los contratos de servicios van a los **jueces civiles** en trámite
+sumario/ejecutivo. ¿Se mantiene esa diferencia?

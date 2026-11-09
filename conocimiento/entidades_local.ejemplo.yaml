@@ -1,0 +1,8 @@
+# Copiar como privado/entidades_local.yaml (ignorado por Git) y completar.
+# Aquí van los datos personales que no deben estar en el repositorio público.
+censusconsultores:
+  representante:
+    cedula: "0000000000"
+census_cobranzas:
+  representante:
+    cedula: "0000000000"

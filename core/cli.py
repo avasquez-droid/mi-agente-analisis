@@ -19,6 +19,7 @@ import yaml
 
 from . import conocimiento as kb
 from .contratos import generar_contrato
+from .documentos import generar_documento
 from .informe_reader import leer_informe
 from .oportunidades import analizar_grupo
 from .reporte_oportunidades import excel_oportunidades, resumen_markdown
@@ -78,6 +79,21 @@ def cmd_contrato(a):
             print(f"  - {p}")
 
 
+def cmd_confidencialidad(a):
+    cliente = yaml.safe_load(Path(a.cliente).read_text(encoding="utf-8")) if a.cliente else {}
+    variables = {}
+    for par in a.var or []:
+        k, _, v = par.partition("=")
+        variables[k.strip()] = _valor(v)
+    fecha = date.fromisoformat(a.fecha) if a.fecha else date.today()
+    d = generar_documento("acuerdo_confidencialidad", cliente, variables, fecha, a.salida)
+    print(f"Acuerdo generado: {d.archivo}")
+    if d.pendientes:
+        print("Pendientes (resaltados en amarillo):")
+        for p in d.pendientes:
+            print(f"  - {p}")
+
+
 def main(argv: list[str] | None = None) -> int:
     for flujo in (sys.stdout, sys.stderr):           # Windows: forzar UTF-8
         if hasattr(flujo, "reconfigure"):
@@ -105,6 +121,13 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--fecha", help="AAAA-MM-DD (por defecto hoy)")
     c.add_argument("--salida", default=None)
     c.set_defaults(f=cmd_contrato)
+
+    n = sub.add_parser("confidencialidad", help="Genera el acuerdo de confidencialidad (NDA) con el cliente")
+    n.add_argument("--cliente", help="YAML del cliente (puede incluir representada_por y cedula)")
+    n.add_argument("--var", action="append", help="objeto, sector, duracion_anios, ciudad_firma... (variable=valor)")
+    n.add_argument("--fecha", help="AAAA-MM-DD (por defecto hoy)")
+    n.add_argument("--salida", default=None)
+    n.set_defaults(f=cmd_confidencialidad)
 
     a = p.parse_args(argv)
     a.f(a)

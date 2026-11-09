@@ -97,3 +97,22 @@ def test_referencias_internas():
                                                          "importaciones_hasta": "diciembre 2025"})
     plazo = next(x for x in c.clausulas if x.clave == "plazo")
     assert "cláusula TERCERA" in plazo.parrafos[0]
+
+
+def test_acuerdo_confidencialidad(tmp_path):
+    from core.documentos import generar_documento
+    cliente = {**CLIENTE, "representada_por": "REPRESENTACIONES DEMO CIA. LTDA.", "cedula": "0000000001"}
+    d = generar_documento("acuerdo_confidencialidad", cliente, {"sector": "farmacéutico"}, date(2026, 10, 16), tmp_path)
+    texto = d.texto()
+    assert "quien a su vez es representada por Juan Pérez" in texto
+    assert "farmacéutico" in texto
+    assert "cinco (5) años" in texto
+    assert "a los 16 días del mes de octubre de 2026" in d.cierre
+    assert "CENSUSCONSULTORES”" not in texto        # una sola denominación de Census
+    assert d.archivo.exists()
+
+
+def test_confidencialidad_sin_cedula_queda_pendiente():
+    from core.documentos import armar_documento
+    d = armar_documento("acuerdo_confidencialidad", CLIENTE, {}, date(2026, 10, 16))
+    assert "cédula del representante" in d.pendientes
