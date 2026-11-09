@@ -116,3 +116,27 @@ def test_confidencialidad_sin_cedula_queda_pendiente():
     from core.documentos import armar_documento
     d = armar_documento("acuerdo_confidencialidad", CLIENTE, {}, date(2026, 10, 16))
     assert "cédula del representante" in d.pendientes
+
+
+@pytest.mark.parametrize("sid", [s for s, d in kb.servicios().items() if d.get("propuesta")])
+def test_textos_de_propuesta(sid):
+    import yaml
+    from core.propuestas import armar_propuesta, plantilla_servicio
+    variables = {k: m.get("ejemplo") for k, m in (plantilla_servicio(sid).get("variables") or {}).items()}
+    p = armar_propuesta(sid, {"razon_social": "EMPRESA DEMO S.A."}, variables, date(2026, 11, 9))
+    assert p.portada and p.objetivo and p.alcance and p.honorarios
+    assert "[COMPLETAR" not in p.texto(), f"{sid}: {p.pendientes}"
+
+
+def test_pptx_de_propuesta(tmp_path):
+    from core.propuestas import PLANTILLA, generar_propuesta
+    if not PLANTILLA.exists():
+        pytest.skip("La plantilla de propuestas es privada (privado/plantillas/propuesta_base.pptx)")
+    from pptx import Presentation
+    p = generar_propuesta("control_posterior_aduanero", {"razon_social": "EMPRESA DEMO S.A."},
+                          {"mercancia": "neumáticos", "periodo": "2024", "monto": 100000}, date(2026, 11, 9), tmp_path)
+    prs = Presentation(str(p.archivo))
+    textos = "\n".join(sh.text_frame.text for s in prs.slides for sh in s.shapes if sh.has_text_frame)
+    assert "EMPRESA DEMO S.A." in textos and "[COMPLETAR" not in textos
+    tabla = next(sh.table for s in prs.slides for sh in s.shapes if sh.has_table)
+    assert len(tabla.rows) == 5          # cabecera + 4 etapas

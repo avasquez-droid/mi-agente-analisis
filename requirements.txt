@@ -3,3 +3,4 @@ openpyxl>=3.1
 PyYAML>=6.0
 Jinja2>=3.1
 num2words>=0.5.13
+python-pptx>=1.0

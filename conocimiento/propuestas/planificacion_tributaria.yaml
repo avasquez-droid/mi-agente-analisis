@@ -1,0 +1,43 @@
+# Base: propuesta 2026 (Asesoría Tributaria).
+portada: "PLANIFICACIÓN TRIBUTARIA {{ v.ejercicio }}"
+variables:
+  ejercicio: {descripcion: "Ejercicio a planificar", ejemplo: 2026, requerido: true}
+  honorario: {descripcion: "Fijo USD (por defecto: tarifario)", ejemplo: 3000}
+asunto: "la planificación tributaria {{ v.ejercicio }}"
+antecedentes:
+  - >-
+    {{ cliente.razon_social }} se encuentra interesada en contratar el servicio de planificación
+    tributaria, con el objetivo de optimizar su carga tributaria para el periodo {{ v.ejercicio }}.
+  - >-
+    El servicio busca asegurar el cumplimiento de la normativa tributaria vigente, minimizando los
+    riesgos de revisiones, sanciones y multas; además de identificar oportunidades de optimización
+    y brindar asesoramiento especializado para la toma de decisiones estratégicas.
+secciones:
+  - titulo: Plazos y entregables
+    parrafos:
+      - >-
+        Entregable: informe con el resumen de nuestro análisis y las alternativas que se podrían
+        adoptar para la optimización. Estimamos concluir el análisis en 25 días laborables contados
+        desde la entrega de la información requerida.
+      - >-
+        Nuestros reportes son de uso exclusivo de la Administración y no deberán hacerse públicos
+        ni distribuirse a terceros sin nuestra aprobación.
+objetivo: >-
+  Optimizar la carga tributaria del ejercicio {{ v.ejercicio }} dentro del marco legal vigente.
+alcance:
+  - items:
+      - Análisis de la situación financiera y fiscal en cuentas clave (ingresos, sueldos y salarios, inventario, arrendamientos, cuentas por cobrar y gastos materiales) para identificar oportunidades y mejoras.
+      - Análisis de la legislación tributaria vigente y su impacto, identificando beneficios y exenciones aplicables.
+      - Revisión y optimización de la estructura de costos y gastos para reducir la base imponible del Impuesto a la Renta.
+      - Informe técnico con las mejores alternativas para su discusión y aprobación por la Alta Gerencia.
+      - Soporte en la implementación de la alternativa elegida y seguimiento hasta por dos meses (contratos, facturación relacionada, entre otros).
+      - "Verificación, con corte al 31 de diciembre de {{ v.ejercicio }}, del cumplimiento de los lineamientos y revisión de la conciliación tributaria."
+honorarios:
+  filas:
+    - servicio: "Planificación tributaria {{ v.ejercicio }}"
+      honorario: "Honorario fijo: {{ v.honorario | usd }} + IVA. Honorario variable: {{ t.variable_pct | pct }} sobre el ahorro en participación de trabajadores e Impuesto a la Renta."
+      forma_pago: "Fijo: {{ t.anticipo_pct | pct }} a la aceptación y saldo a la presentación del informe. Variable: 100 % concluida la implementación de las estrategias."
+  notas:
+    - >-
+      No incluye tasas notariales, de Registro Mercantil u otros gastos, ni la implementación de
+      figuras jurídicas dentro o fuera del país (si se recomienda constituir una compañía, se cotiza aparte).

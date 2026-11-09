@@ -7,7 +7,7 @@ membrete de Census.
 
 ```
 NDA ──▶ Informe de investigación (Word) ──▶ métricas de viabilidad ──▶ servicios + honorarios ──▶ contrato .docx
-                                        conocimiento/                                     (propuesta y correo: pendientes)
+                                        conocimiento/                     propuesta .pptx   (correo: pendiente)
 ```
 
 ## Procesos que cubre
@@ -20,7 +20,7 @@ NDA ──▶ Informe de investigación (Word) ──▶ métricas de viabilidad
 | Métricas para saber si un cliente puede adquirir un servicio | Listo, **valores provisionales** | `conocimiento/metricas.yaml` |
 | Cuantías y honorarios (tarifario) | Listo, **valores provisionales** | `conocimiento/tarifario.yaml` |
 | Contratos | 10 servicios con contrato tipo | `conocimiento/clausulas/` |
-| Propuestas | Pendiente de plantillas | `plantillas/propuestas/` |
+| Propuestas (PPTX) | 13 servicios; requiere la plantilla privada | `conocimiento/propuestas/` |
 | Correos | Pendiente de plantillas | `plantillas/correos/` |
 
 ## Inicio rápido
@@ -66,6 +66,7 @@ público): guárdalos en `privado/`. Los ejemplos de `examples/` son ficticios.
 ## Documentación
 - [Instalación](docs/instalacion.md) · [Guía de uso](docs/guia-uso.md) · [FAQ](docs/faq.md)
 - [Revisión de los 276 contratos y discrepancias a decidir](docs/revision-contratos.md)
+- [Revisión de las propuestas](docs/revision-propuestas.md)
 
 ## Pruebas
 ```bash

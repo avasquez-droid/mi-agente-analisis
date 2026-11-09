@@ -1,0 +1,32 @@
+# Base: propuesta 2026 (llegó en la carpeta de Aduana).
+portada: SERVICIO DE PATROCINIO Y ASESORÍA LEGAL
+variables:
+  procesos: {descripcion: "Descripción de los procesos en contra", ejemplo: "una acción de ejecución de acta de transacción", requerido: true}
+asunto: el servicio de patrocinio y asesoría legal
+antecedentes:
+  - >-
+    {{ cliente.razon_social }} registra en su contra {{ v.procesos }}, derivada(s) de obligaciones
+    previamente reconocidas, radicada(s) ante las unidades judiciales competentes.
+  - >-
+    En este contexto, la compañía requiere asistencia legal especializada para asumir su defensa y
+    definir estrategias que permitan gestionar adecuadamente el contingente judicial.
+objetivo: >-
+  Brindar asesoría y patrocinio legal integral para la defensa de los intereses de la compañía en
+  los procesos iniciados, con estrategias que permitan mitigar, reducir o negociar el impacto
+  económico de la reclamación.
+alcance:
+  - items:
+      - Análisis de las actas que originan las acciones de ejecución.
+      - Definición de la estrategia legal, incluidas alternativas de defensa, negociación o mecanismos de solución.
+      - Elaboración y presentación de escritos y actuaciones procesales.
+      - Preparación, proposición y actuación de los medios probatorios.
+      - Participación y patrocinio en audiencias y diligencias judiciales.
+      - Interposición de los recursos que correspondan.
+      - Asesoría estratégica continua, incluidos escenarios de negociación o acuerdos extrajudiciales.
+honorarios:
+  filas:
+    - servicio: Servicio de patrocinio y asesoría legal
+      honorario: "Honorario fijo: {{ t.fijo_pct_cuantia | pct }} de la cuantía de cada proceso + IVA. Fee de éxito: {{ t.exito_pct | pct }} + IVA sobre la contingencia evitada (cuantía demandada menos valor efectivamente pagado). El fijo es anticipo del fee de éxito y se descuenta al liquidarlo."
+      forma_pago: "Fijo en tres pagos de 1,33 % de la cuantía + IVA: a la aceptación; al mandamiento de ejecución o citación; y al concluir el proceso. Éxito: al concluir el proceso, siempre que exista ahorro respecto de la cuantía."
+  notas:
+    - Los honorarios no incluyen gastos notariales, inscripciones, peritajes ni otros costos del servicio.

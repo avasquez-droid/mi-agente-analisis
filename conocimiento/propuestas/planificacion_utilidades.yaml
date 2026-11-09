@@ -1,0 +1,52 @@
+# Base: propuestas 2026 (Asesoría Tributaria) — impuesto sobre utilidades no distribuidas.
+portada: PLANIFICACIÓN PARA OPTIMIZACIÓN DEL IMPUESTO SOBRE UTILIDADES NO DISTRIBUIDAS
+variables:
+  ejercicio: {descripcion: "Ejercicio en que se pagó el anticipo de dividendos", ejemplo: 2026, requerido: true}
+  utilidad_acumulada: {descripcion: "Utilidad acumulada al cierre anterior (USD)", ejemplo: 1850790.23}
+  impuesto_estimado: {descripcion: "Anticipo/impuesto aproximado (USD)", ejemplo: 23134.88}
+  incluir_reestructuracion: {descripcion: "true = cotiza también aumento de capital u holding", ejemplo: true}
+asunto: >-
+  la asesoría y planificación para la optimización del impuesto sobre utilidades no distribuidas
+  {%- if v.incluir_reestructuracion %}, incluido el aumento de capital o la constitución de una holding{% endif %}
+antecedentes:
+  - >-
+    De acuerdo con la Ley Orgánica de Transparencia Social y su reglamento, las compañías deben
+    pagar un impuesto sobre utilidades no distribuidas en función del monto acumulado.
+  - >-
+    En virtud de aquello, si la compañía no distribuyó dividendos en el periodo correspondiente de
+    {{ v.ejercicio }}, debió cancelar un anticipo de dividendos{% if v.impuesto_estimado %} de aproximadamente
+    {{ v.impuesto_estimado | usd }}{% endif %}{% if v.utilidad_acumulada %}, sobre una utilidad acumulada de
+    {{ v.utilidad_acumulada | usd }}{% endif %}.
+  - >-
+    Por ello, buscaremos la mejor estrategia —aumento de capital, constitución de una compañía
+    holding, distribución de dividendos— para que lo pagado sea considerado crédito tributario y
+    para optimizar el impuesto del siguiente ejercicio.
+objetivo: >-
+  Determinar la mejor estrategia para que el valor pagado como anticipo de dividendos de
+  {{ v.ejercicio }} pueda ser considerado crédito tributario, y plantear alternativas de ahorro para
+  el ejercicio siguiente.
+alcance:
+  - titulo: Planificación
+    items:
+      - "Revisión técnica de la situación financiera y fiscal y determinación del anticipo de dividendos de {{ v.ejercicio }}."
+      - Análisis de las utilidades acumuladas y de las cuentas contables que inciden en el impuesto sobre utilidades no distribuidas.
+      - "Evaluación del impacto tributario de los escenarios: aumento de capital, constitución de holding, distribución de dividendos y pago del anticipo."
+      - Informe técnico con la mejor estrategia para su discusión y aprobación por la Alta Gerencia.
+      - Soporte en la implementación y seguimiento hasta por dos meses.
+  - si: incluir_reestructuracion
+    titulo: Aumento de capital o constitución de holding
+    items:
+      - Acta de Junta General Extraordinaria y Universal que autoriza el aumento de capital, documento privado de aumento y marginación en la escritura de constitución; notificación a la Superintendencia.
+      - O bien, constitución de la S.A.S. holding — reserva de denominación, estatutos, nombramientos, inscripción, RUC y clave del SRI, carpeta societaria.
+      - Incluye revisión tributaria para elegir la figura societaria más conveniente.
+honorarios:
+  filas:
+    - servicio: Planificación para optimización del impuesto sobre utilidades no distribuidas
+      honorario: "Honorario fijo: {{ t.valor | usd }} + IVA. Honorario variable: {{ t.exito_pct | pct }} sobre el ahorro que se obtenga en el contingente del ejercicio siguiente."
+      forma_pago: "Fijo: 50 % a la aceptación y saldo a la presentación del informe. Variable: 50 % a la aceptación de la estrategia y saldo contra la implementación."
+    - si: incluir_reestructuracion
+      servicio: Aumento de capital o constitución de holding (incluye análisis tributario de la figura)
+      honorario: "{{ tarifa('reestructuracion_societaria').valor | usd }} + IVA"
+      forma_pago: 50 % a la aceptación y saldo contra la entrega del RUC de la compañía.
+  notas:
+    - Los gastos no están incluidos en los honorarios y serán cubiertos por el cliente.

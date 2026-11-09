@@ -15,7 +15,7 @@
 #   gasto_deterioro, ppe, sueldos, ct_iva_ref, ct_ir_ref, ct_iva_ultimo, ct_ir_ultimo,
 #   ct_iva_max_5a, isd_ref, isd_actual, isd_promedio, proyeccion_devolucion_ir,
 #   sercop_total, omc_total, reg70_total, reg21_total, juicios_laborales_demandado,
-#   juicios_cobro_actor, juicios_demandado, deudas_firmes, deudas_impugnadas,
+#   juicios_cobro_actor, juicios_civiles_demandado, juicios_demandado, deudas_firmes, deudas_impugnadas,
 #   facilidades_pago, gran_contribuyente, cxc_sobre_ventas, objeto (texto)
 #
 # Operadores: >=, >, <=, <, ==, !=, contiene (texto, admite varias palabras separadas por |)
@@ -142,4 +142,31 @@ revision_obligaciones:
     - {campo: deudas_impugnadas, op: "==", valor: true}
     - {campo: facilidades_pago, op: "==", valor: true}
   base: null
+  prioridad_alta_desde: null
+
+control_posterior_aduanero:
+  descripcion: Importador relevante (servicio reactivo; se ofrece si hay control posterior notificado)
+  modo: todas
+  condiciones:
+    - {campo: importaciones, op: ">=", valor: 500000}       # PROV
+  base: null
+  requiere_dato: Informe preliminar de control posterior o rectificación de tributos notificada por el SENAE
+  prioridad_alta_desde: null
+
+patrocinio_civil:
+  descripcion: Juicios en contra que no son laborales
+  modo: todas
+  condiciones:
+    - {campo: juicios_civiles_demandado, op: ">=", valor: 1}
+  base: null
+  requiere_dato: Cuantía y estado de cada proceso
+  prioridad_alta_desde: null
+
+planificacion_utilidades:
+  descripcion: Compañía rentable que acumula utilidades sin distribuir
+  modo: todas
+  condiciones:
+    - {campo: utilidad_neta, op: ">=", valor: 300000}       # PROV
+  base: null
+  requiere_dato: Utilidades acumuladas no distribuidas y anticipo de dividendos pagado (Superintendencia de Compañías)
   prioridad_alta_desde: null

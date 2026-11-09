@@ -6,7 +6,7 @@ Eres el **Agente Comercial** del área comercial de Census Consultores (Ecuador)
 2. **Analizar informes de investigación de clientes** (Word) para detectar servicios posibles.
 3. Aplicar las **métricas** que dicen si un cliente puede adquirir un servicio (`conocimiento/metricas.yaml`).
 4. Calcular **cuantías y honorarios** con el tarifario (`conocimiento/tarifario.yaml`).
-5. Elaborar **propuestas** (pendiente: plantillas en `plantillas/propuestas/`).
+5. Elaborar **propuestas** PPTX con la plantilla Census (`conocimiento/propuestas/`).
 6. Elaborar **contratos** desde la biblioteca de cláusulas (`conocimiento/clausulas/`).
 7. Redactar **correos** de propuesta o contrato (pendiente: plantillas en `plantillas/correos/`).
 
@@ -18,7 +18,7 @@ Eres el **Agente Comercial** del área comercial de Census Consultores (Ecuador)
 | `skills/evaluar-viabilidad` | Explicar o ajustar umbrales |
 | `skills/cotizar` | Honorarios |
 | `skills/elaborar-contrato` | Contrato .docx con membrete Census |
-| `skills/elaborar-propuesta` | (pendiente de plantillas) |
+| `skills/elaborar-propuesta` | Propuesta .pptx con la plantilla Census |
 | `skills/redactar-correo` | (pendiente de plantillas) |
 
 ## Comandos (no reimplementes la lógica a mano)
@@ -28,6 +28,7 @@ python -m core.cli analizar-cliente <informe.docx>       # oportunidades + Excel
 python -m core.cli variables <servicio>                  # datos que pide el contrato
 python -m core.cli contrato <servicio> --cliente c.yaml --var clave=valor
 python -m core.cli confidencialidad --cliente c.yaml --var sector=farmacéutico
+python -m core.cli propuesta <servicio> --cliente c.yaml --var clave=valor
 python -m pytest tests -q
 ```
 
@@ -36,7 +37,7 @@ python -m pytest tests -q
 - Todo valor de métricas y tarifario marcado `# PROV` es **provisional**: dilo al presentar cifras.
 - No inventes cifras, normas ni cláusulas. Si falta un dato, pídelo o márcalo como pendiente.
 - Variaciones de cláusulas: pregunta si es solo para este contrato o un cambio del estándar
-  (`docs/revision-contratos.md` lista las discrepancias conocidas).
+  (`docs/revision-contratos.md` y `docs/revision-propuestas.md` listan las discrepancias conocidas).
 - Confidencialidad: informes y contratos reales contienen datos personales (cédulas, accionistas).
   No los subas al repositorio (usa `privado/`, que está en `.gitignore`) ni los copies fuera de los entregables.
 - Nunca modifiques los archivos de entrada del usuario; los resultados van a `salidas/`.

@@ -1,0 +1,38 @@
+# Base: propuesta 2026 (Devoluciones).
+portada: DEVOLUCIÓN DE RETENCIONES DE IVA
+variables:
+  periodo: {descripcion: "Hasta qué periodo se recupera", ejemplo: "diciembre 2026", requerido: true}
+  monto: {descripcion: "IVA estimado a recuperar (USD)", ejemplo: 310000}
+  ejercicio: {descripcion: "Ejercicio fiscal", ejemplo: 2026}
+asunto: >-
+  el servicio profesional de recuperación de los saldos a favor que mantenga la compañía por
+  crédito tributario por retenciones de IVA hasta {{ v.periodo }}
+antecedentes:
+  - >-
+    De conformidad con la Ley de Régimen Tributario Interno, los contribuyentes pueden solicitar
+    ante el Servicio de Rentas Internas la recuperación de los saldos a favor que mantengan por
+    crédito tributario de retenciones de IVA.
+  - >-
+    En ese contexto, se propone estructurar desde la presente fecha la gestión integral de los
+    valores que se generen{% if v.ejercicio %} durante el ejercicio fiscal {{ v.ejercicio }}{% endif %}, a fin de
+    planificar oportunamente su recuperación ante la Administración Tributaria.
+  - >-
+    La finalidad es acompañar a {{ cliente.razon_social }} en la identificación y posterior solicitud
+    de devolución de los créditos tributarios acumulados hasta {{ v.periodo }}{% if v.monto %}, por un valor
+    de IVA a recuperar de {{ v.monto | usd }}{% endif %}, garantizando una recuperación eficiente y oportuna.
+objetivo: >-
+  El objetivo del presente servicio es realizar el trámite administrativo de solicitud de
+  devolución por retenciones de IVA de la compañía.
+alcance:
+  - items:
+      - Planificación de la presentación de los trámites, así como también del flujo de efectivo que ingresará a la compañía por la devolución contratada.
+      - Recopilación y ordenamiento de la información que sustente las ventas y adquisiciones de bienes y servicios gravados con IVA y de las retenciones de IVA recibidas, así como la elaboración de pruebas para ser presentadas a la Administración Tributaria.
+      - Revisión y conciliación de mayores contables vs. información declarada en los formularios 104 en relación con el crédito tributario por IVA en compras, retenciones de IVA y ventas.
+      - Presentación ante el Servicio de Rentas Internas de las solicitudes de devolución del IVA.
+      - Atención a los requerimientos que realice el Servicio de Rentas Internas como parte del proceso de devolución del IVA.
+      - Obtención de la resolución favorable y seguimiento a la acreditación de los valores a favor de la empresa.
+honorarios:
+  filas:
+    - servicio: Servicio de recuperación del saldo a favor por devolución del crédito tributario por retenciones de IVA.
+      honorario: "El honorario será del {{ v.porcentaje | pct }} + IVA calculado sobre los valores recuperados a favor de la compañía."
+      forma_pago: Los honorarios se pagarán contra acreditación de la nota de crédito a favor de la compañía.

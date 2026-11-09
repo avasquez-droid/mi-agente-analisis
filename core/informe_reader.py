@@ -360,6 +360,7 @@ def metricas(e: Empresa, anio_ref: int) -> dict:
     d["juicios_demandado"] = len(e.juicios_demandado)
     d["juicios_actor"] = len(e.juicios_actor)
     d["juicios_laborales_demandado"] = sum(1 for j in e.juicios_demandado if LABORAL.search(j["materia"]))
+    d["juicios_civiles_demandado"] = sum(1 for j in e.juicios_demandado if not LABORAL.search(j["materia"]))
     d["juicios_cobro_actor"] = sum(1 for j in e.juicios_actor if COBRO.search(j["materia"]))
     d["deudas_firmes"] = bool(e.deudas.get("deudas_firmes"))
     d["deudas_impugnadas"] = bool(e.deudas.get("deudas_impugnadas"))

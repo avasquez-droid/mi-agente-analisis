@@ -20,6 +20,7 @@ import yaml
 from . import conocimiento as kb
 from .contratos import generar_contrato
 from .documentos import generar_documento
+from .propuestas import generar_propuesta
 from .informe_reader import leer_informe
 from .oportunidades import analizar_grupo
 from .reporte_oportunidades import excel_oportunidades, resumen_markdown
@@ -34,13 +35,23 @@ def _valor(texto: str):
 
 def cmd_servicios(_):
     for sid, s in kb.servicios().items():
-        estado = "contrato tipo" if s.get("clausulas") else "SIN contrato tipo"
-        print(f"{sid:28} {s['materia']:18} {estado:18} {s['nombre']}")
+        estado = ("propuesta" if s.get("propuesta") else "-") + " / " + ("contrato" if s.get("clausulas") else "-")
+        print(f"{sid:28} {s.get('area', s['materia']):20} {estado:21} {s['nombre']}")
 
 
 def cmd_variables(a):
+    from .propuestas import plantilla_servicio
+    srv = kb.servicio(a.servicio)
+    if srv.get("propuesta"):
+        print(f"Propuesta de '{a.servicio}':")
+        for k, m in (plantilla_servicio(a.servicio).get("variables") or {}).items():
+            req = " (obligatoria)" if m.get("requerido") else ""
+            print(f"  {k}{req}: {m.get('descripcion')}  — ej.: {m.get('ejemplo')}")
+    if not srv.get("clausulas"):
+        print("(sin contrato tipo)")
+        return
     scl = kb.clausulas_servicio(a.servicio)
-    print(f"Variables de '{a.servicio}' (además de los datos del cliente):")
+    print(f"Contrato de '{a.servicio}' (además de los datos del cliente):")
     for k, m in (scl.get("variables") or {}).items():
         req = " (obligatoria)" if m.get("requerido") else ""
         print(f"  {k}{req}: {m.get('descripcion')}  — ej.: {m.get('ejemplo')}")
@@ -94,6 +105,23 @@ def cmd_confidencialidad(a):
             print(f"  - {p}")
 
 
+def cmd_propuesta(a):
+    cliente = yaml.safe_load(Path(a.cliente).read_text(encoding="utf-8")) if a.cliente else {}
+    variables = {}
+    if a.variables:
+        variables.update(yaml.safe_load(Path(a.variables).read_text(encoding="utf-8")) or {})
+    for par in a.var or []:
+        k, _, v = par.partition("=")
+        variables[k.strip()] = _valor(v)
+    fecha = date.fromisoformat(a.fecha) if a.fecha else date.today()
+    p = generar_propuesta(a.servicio, cliente, variables, fecha, a.salida)
+    print(f"Propuesta generada: {p.archivo}")
+    if p.pendientes:
+        print("Pendientes por completar:")
+        for x in p.pendientes:
+            print(f"  - {x}")
+
+
 def main(argv: list[str] | None = None) -> int:
     for flujo in (sys.stdout, sys.stderr):           # Windows: forzar UTF-8
         if hasattr(flujo, "reconfigure"):
@@ -128,6 +156,15 @@ def main(argv: list[str] | None = None) -> int:
     n.add_argument("--fecha", help="AAAA-MM-DD (por defecto hoy)")
     n.add_argument("--salida", default=None)
     n.set_defaults(f=cmd_confidencialidad)
+
+    pr = sub.add_parser("propuesta", help="Genera la propuesta de servicios (.pptx) con la plantilla Census")
+    pr.add_argument("servicio")
+    pr.add_argument("--cliente", help="YAML con razon_social y ciudad")
+    pr.add_argument("--variables", help="YAML con las variables de la propuesta")
+    pr.add_argument("--var", action="append", help="variable=valor (se puede repetir)")
+    pr.add_argument("--fecha", help="AAAA-MM-DD")
+    pr.add_argument("--salida", default=None)
+    pr.set_defaults(f=cmd_propuesta)
 
     a = p.parse_args(argv)
     a.f(a)

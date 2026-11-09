@@ -86,6 +86,17 @@ def estimar_honorario(servicio_id: str, base: float | None) -> dict:
     elif modelo == "fijo" and t.get("valor") is not None:
         r["monto"] = float(t["valor"])
         r["texto"] = f"USD {t['valor']:,.2f} + IVA ({t.get('anticipo_pct', 50)} % de anticipo)"
+    elif modelo == "fijo_mas_exito":
+        if t.get("valor") is not None:
+            r["monto"] = float(t["valor"])
+            r["texto"] = f"USD {t['valor']:,.2f} fijo + {t.get('exito_pct', 0):g} % del ahorro + IVA"
+        else:
+            r["porcentaje"] = float(t.get("fijo_pct_cuantia", 0))
+            r["texto"] = f"{t.get('fijo_pct_cuantia', 0):g} % de la cuantía + {t.get('exito_pct', 0):g} % de éxito + IVA"
+    elif modelo == "por_etapa":
+        etapas = t.get("etapas", [])
+        r["porcentaje"] = float(etapas[0]["valor"]) if etapas else None
+        r["texto"] = " / ".join(f"{e['valor']:g} % {e['etapa'].split(' (')[0].lower()}" for e in etapas) + " + IVA"
     elif modelo == "mensual" and t.get("valor") is not None:
         r["monto"] = float(t["valor"])
         r["texto"] = f"USD {t['valor']:,.2f} mensuales + IVA"
