@@ -87,7 +87,7 @@ clausulas:
         Las partes designan los siguientes domicilios como lugares para recibir documentos,
         comunicaciones, citaciones, notificaciones administrativas o legales y emplazamientos:
       - "“EL CONTRATADO” — Correo electrónico: {{ census.correo_notificaciones }}"
-      - "“EL CONTRATANTE” — Correo electrónico: {{ cliente.correos | join('; ') }}"
+      - "“EL CONTRATANTE” — Correo electrónico: {{ (cliente.correos | join('; ')) or '[COMPLETAR: correos del cliente]' }}"
       - >-
         Las direcciones electrónicas, consignadas son las que las partes aceptan como domicilios
         válidos para recibir citaciones o notificaciones derivadas de cualquier acción judicial o
