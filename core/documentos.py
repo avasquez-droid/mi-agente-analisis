@@ -17,7 +17,7 @@ from docx.oxml import OxmlElement
 from docx.shared import Cm, Pt
 
 from . import conocimiento as kb
-from .contratos import MESES, PLANTILLA_BASE, _entorno, ordinal
+from .contratos import MESES, PLANTILLA_BASE, _entorno, fijar_fuente_base, ordinal
 
 ROMANOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
 
@@ -93,6 +93,7 @@ def escribir_docx(gen: DocumentoGenerado, salida: Path) -> Path:
     d = kb.documento(gen.doc_id)
     fuente, tam = d.get("fuente", "Arial"), float(d.get("tamano", 11))
     doc = docx.Document(str(PLANTILLA_BASE))
+    fijar_fuente_base(doc, fuente, tam)
 
     def par(texto="", negrita=False, alinear=WD_ALIGN_PARAGRAPH.JUSTIFY, sangria=0.0, colgante=0.0):
         p = doc.add_paragraph()

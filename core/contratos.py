@@ -18,6 +18,7 @@ import docx
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX
 from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from docx.shared import Pt, Cm
 from jinja2 import ChainableUndefined, Environment
 from num2words import num2words
@@ -216,27 +217,44 @@ def armar_contrato(servicio_id: str, cliente: dict, variables: dict | None = Non
 
 
 # ----------------------------------------------------------------- Word
-def _run(p, texto, negrita=False):
+def fijar_fuente_base(doc, fuente: str, tamano: float) -> None:
+    """La plantilla trae Calibri 12 por defecto: líneas en blanco y lo que el abogado escriba
+    después saldrían en Calibri. Se fija la fuente del documento en el estilo Normal."""
+    normal = doc.styles["Normal"]
+    normal.font.name, normal.font.size = fuente, Pt(tamano)
+    rpr = normal.element.get_or_add_rPr()
+    fuentes = rpr.find(qn("w:rFonts"))
+    if fuentes is None:
+        fuentes = OxmlElement("w:rFonts")
+        rpr.insert(0, fuentes)
+    for atributo in ("w:ascii", "w:hAnsi", "w:cs", "w:eastAsia"):
+        fuentes.set(qn(atributo), fuente)
+    for tema in ("w:asciiTheme", "w:hAnsiTheme", "w:cstheme", "w:eastAsiaTheme"):
+        fuentes.attrib.pop(qn(tema), None)
+
+
+def _run(p, texto, negrita=False, fuente=None, tamano=None):
     """Agrega texto al párrafo resaltando los marcadores [COMPLETAR: ...]."""
     for trozo in re.split(r"(\[COMPLETAR: [^\]]+\])", texto):
         if not trozo:
             continue
         run = p.add_run(trozo)
         run.bold = negrita
-        run.font.name, run.font.size = FUENTE, Pt(TAMANO)
+        run.font.name, run.font.size = fuente or FUENTE, Pt(tamano or TAMANO)
+        run._r.get_or_add_rPr().get_or_add_rFonts().set(qn("w:cs"), fuente or FUENTE)
         if trozo.startswith("[COMPLETAR"):
             run.font.highlight_color = WD_COLOR_INDEX.YELLOW
             run.bold = True
     return p
 
 
-def _parrafo(doc, texto="", negrita=False, centrado=False):
+def _parrafo(doc, texto="", negrita=False, centrado=False, fuente=None, tamano=None):
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER if centrado else WD_ALIGN_PARAGRAPH.JUSTIFY
     p.paragraph_format.space_after = Pt(0)
     p.paragraph_format.line_spacing = 1.15
     if texto:
-        _run(p, texto, negrita)
+        _run(p, texto, negrita, fuente, tamano)
     return p
 
 
@@ -245,7 +263,9 @@ _LITERAL = re.compile(r"^((?:[a-z]|\d{1,2}|[ivx]+)\)|\(\d+\))\s+")
 
 def escribir_docx(contrato: ContratoGenerado, cliente: dict, entidad: dict, salida: Path) -> Path:
     doc = docx.Document(str(PLANTILLA_BASE))
-    _parrafo(doc, contrato.titulo, negrita=True, centrado=True)
+    fijar_fuente_base(doc, FUENTE, TAMANO)
+    # Título como en los contratos 2026: Tahoma 11, negrita, centrado
+    _parrafo(doc, contrato.titulo, negrita=True, centrado=True, fuente="Tahoma", tamano=11)
     _parrafo(doc)
     _parrafo(doc, contrato.encabezado)
     _parrafo(doc)

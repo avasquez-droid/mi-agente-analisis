@@ -147,3 +147,13 @@ def test_pptx_de_propuesta(tmp_path):
             hijos = [c.tag for c in par]
             if f"{ns}endParaRPr" in hijos:
                 assert hijos.index(f"{ns}endParaRPr") == len(hijos) - 1
+
+
+def test_fuente_del_documento(tmp_path):
+    """Normal debe quedar en la fuente del formato (no Calibri de la plantilla)."""
+    from core.documentos import generar_documento
+    c = generar_contrato("devolucion_iva", CLIENTE, {"periodo": "diciembre 2026"}, date(2026, 11, 9), tmp_path)
+    d = docx.Document(str(c.archivo))
+    assert d.styles["Normal"].font.name == "Georgia" and d.styles["Normal"].font.size.pt == 10.5
+    n = generar_documento("acuerdo_confidencialidad", CLIENTE, {}, date(2026, 11, 9), tmp_path)
+    assert docx.Document(str(n.archivo)).styles["Normal"].font.name == "Arial"
