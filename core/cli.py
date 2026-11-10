@@ -57,9 +57,22 @@ def cmd_variables(a):
         print(f"  {k}{req}: {m.get('descripcion')}  — ej.: {m.get('ejemplo')}")
 
 
+def _base_opcional():
+    try:
+        from .base_clientes import cargar_base
+        return cargar_base()
+    except FileNotFoundError:
+        return None
+
+
 def cmd_analizar(a):
     inf = leer_informe(a.informe)
-    r = analizar_grupo(inf)
+    base = _base_opcional()
+    r = analizar_grupo(inf, base)
+    if base:
+        conocidos = [e.nombre for e in inf.empresas if base.por_ruc(e.ruc)]
+        print(f"Base comercial: {len(conocidos)} de {len(inf.empresas)} empresas ya están en la base"
+              + (f" ({', '.join(conocidos)})" if conocidos else "") + ".\n")
     carpeta = Path(a.salida) if a.salida else kb.RAIZ / "salidas"
     base = re.sub(r"\W+", "_", inf.main.nombre if inf.main else inf.ruc_main).strip("_")
     archivos = {"xlsx": excel_oportunidades(
@@ -122,6 +135,45 @@ def cmd_propuesta(a):
             print(f"  - {x}")
 
 
+def _usd(v):
+    return f"${v:,.2f}" if v else "—"
+
+
+def cmd_base(a):
+    from .base_clientes import cargar_base
+    b = cargar_base(a.archivo)
+    if a.accion == "resumen":
+        r = b.resumen()
+        print(f"Base: {b.archivo} · {r['clientes']} clientes")
+        print("Estado en Census:", ", ".join(f"{k} {v}" for k, v in r["estado_census"]))
+        print("Estado del RUC:", ", ".join(f"{k} {v}" for k, v in r["estado_ruc"]))
+        print("Servicios (historial):", ", ".join(f"{k} {v}" for k, v in r["servicios"]))
+        print("Sectores principales:", ", ".join(f"{k} {v}" for k, v in r["sectores"]))
+        for o in b.observaciones:
+            print("Observación:", o)
+        return
+    encontrados = b.buscar(" ".join(a.texto or []))
+    if not encontrados:
+        print("No se encontró el cliente.")
+        return
+    for c in encontrados[:5]:
+        print(f"\n## {c['nombre']}  (RUC {c['ruc'] or 's/RUC'} · {c['estado_ruc'] or 's/estado'})")
+        print(f"Census: {c['estado_census']} · Grupo: {c['grupo'] or '—'} · Referidor: {c['referidor'] or '—'} · {c['ciudad']}")
+        print(f"Sector: {c['sector']} ({c['tipo_actividad']}) · Actividad: {c['objeto'][:90]}")
+        print(f"CT IVA {_usd(c['ct_iva_ref'])} · CT IR {_usd(c['ct_ir_ref'])} · IR causado {_usd(c['ir_causado'])} · "
+              f"Proyección IR {_usd(c['proyeccion_devolucion_ir'])}")
+        print(f"ISD {_usd(c['isd_ref'])} / {_usd(c['isd_actual'])} · Deudores comerciales {_usd(c['cxc_no_relacionadas'])} · "
+              f"Trabajadores (estimado) {c['trabajadores']:.0f}")
+        print(f"Accionistas: {len(c['accionistas'])} ({c['accionistas_pn']} personas naturales) · "
+              f"Administradores: {', '.join(n for n, _ in c['administradores']) or '—'}")
+        for s_ in c["servicios"]:
+            print(f"  - {s_['servicio']}: {s_['estado']} ({s_['fecha']}) {s_['detalle'][:70]}")
+        if c["observacion_comercial"]:
+            print(f"Observación comercial ({c['fecha_observacion']}): {c['observacion_comercial']}")
+    if len(encontrados) > 5:
+        print(f"\n… y {len(encontrados) - 5} coincidencias más.")
+
+
 def main(argv: list[str] | None = None) -> int:
     for flujo in (sys.stdout, sys.stderr):           # Windows: forzar UTF-8
         if hasattr(flujo, "reconfigure"):
@@ -165,6 +217,12 @@ def main(argv: list[str] | None = None) -> int:
     pr.add_argument("--fecha", help="AAAA-MM-DD")
     pr.add_argument("--salida", default=None)
     pr.set_defaults(f=cmd_propuesta)
+
+    b = sub.add_parser("base", help="Consulta la base comercial de clientes (privado/base/*.xlsx)")
+    b.add_argument("accion", choices=["resumen", "cliente"])
+    b.add_argument("texto", nargs="*", help="RUC o parte del nombre (para 'cliente')")
+    b.add_argument("--archivo", default=None)
+    b.set_defaults(f=cmd_base)
 
     a = p.parse_args(argv)
     a.f(a)

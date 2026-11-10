@@ -174,3 +174,21 @@ reestructuracion_societaria:
   anticipo_pct: 50
   forma_pago: 50 % a la aceptación y saldo contra la entrega del RUC.
   propuestas: "propuesta 2026"
+
+# ------------------------------------------------- oportunidades de la base comercial
+
+consultoria_laboral:
+  modelo: mensual
+  valor: null                            # PENDIENTE
+  forma_pago: PENDIENTE
+
+exoneracion_ir:
+  modelo: porcentaje
+  valor: null                            # PENDIENTE: contratos 2025 entre 3 % y 17 % (n=4)
+  rango_contratos: {min: 3.0, max: 17.0, n: 4}
+  forma_pago: PENDIENTE
+
+proteccion_patrimonial:
+  modelo: fijo
+  valor: null                            # PENDIENTE
+  forma_pago: PENDIENTE

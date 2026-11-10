@@ -368,6 +368,10 @@ def metricas(e: Empresa, anio_ref: int) -> dict:
     d["gran_contribuyente"] = _norm(e.datos.get("gran_contribuyente", "no")).startswith("si")
     d["tarifa_diferenciada"] = not _norm(e.tarifa_diferenciada or "sin registro").startswith("sin")
     d["objeto"] = e.datos.get("objeto", "")
+    d["sector"] = ""
+    # accionista persona natural: identificación de 10 dígitos (cédula); RUC de sociedad = 13
+    d["accionistas_pn"] = sum(1 for a in e.accionistas
+                              if len(re.sub(r"\D", "", str(a.get("IDENTIFICACIÓN", "")))) == 10)
     d["nombre"] = e.nombre
     d["ruc"] = e.ruc
     d["tipo"] = e.tipo

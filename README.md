@@ -17,7 +17,8 @@ NDA ──▶ Informe de investigación (Word) ──▶ métricas de viabilidad
 | Acuerdo de confidencialidad (NDA) | Listo | `conocimiento/documentos/` |
 | Cartera de servicios, base legal y contexto | 15 servicios; bases legales por validar | `conocimiento/servicios.yaml` |
 | Análisis del informe de investigación del cliente | Listo (formato Census, Word) | `core/informe_reader.py` |
-| Métricas para saber si un cliente puede adquirir un servicio | Listo, **valores provisionales** | `conocimiento/metricas.yaml` |
+| Base comercial de clientes (Excel) | Lectura, ficha y cruce por RUC | `core/base_clientes.py` |
+| Métricas para saber si un cliente puede adquirir un servicio | Criterios de la base Census + provisionales | `conocimiento/metricas.yaml` |
 | Cuantías y honorarios (tarifario) | Listo, **valores provisionales** | `conocimiento/tarifario.yaml` |
 | Contratos | 10 servicios con contrato tipo | `conocimiento/clausulas/` |
 | Propuestas (PPTX) | 13 servicios; requiere la plantilla privada | `conocimiento/propuestas/` |
@@ -67,6 +68,7 @@ público): guárdalos en `privado/`. Los ejemplos de `examples/` son ficticios.
 - [Instalación](docs/instalacion.md) · [Guía de uso](docs/guia-uso.md) · [FAQ](docs/faq.md)
 - [Revisión de los 276 contratos y discrepancias a decidir](docs/revision-contratos.md)
 - [Revisión de las propuestas](docs/revision-propuestas.md)
+- [Base comercial de clientes](docs/base-comercial.md)
 
 ## Pruebas
 ```bash

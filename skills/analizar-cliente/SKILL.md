@@ -23,6 +23,11 @@ python -m core.cli analizar-cliente <informe.docx> --json     # además, oportun
 4. Entrega: tabla de oportunidades por prioridad, honorario potencial (sin duplicar servicios
    alternativos) y Excel con hojas Oportunidades, Métricas y Discrepancias.
 
+## Cruce con la base comercial
+Si existe `privado/base/*.xlsx`, el análisis busca cada RUC en la base: indica qué empresas ya son
+clientes y excluye los servicios que ya tienen Activos o En gestión comercial. Ficha de un cliente:
+`python -m core.cli base cliente <RUC o nombre>`. Detalle en `docs/base-comercial.md`.
+
 ## Qué responder al usuario
 - La tabla del resumen, empezando por prioridad **Alta**.
 - Los **datos faltantes** que hay que pedir al cliente (columna "Falta").

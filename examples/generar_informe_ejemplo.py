@@ -11,12 +11,12 @@ SALIDA = Path(__file__).with_name("informe_ejemplo.docx")
 
 EMPRESAS = [
     dict(ruc="0990000001001", nombre="IMPORTADORA DEMO S.A.", tipo="MAIN", objeto="IMPORTACION Y VENTA DE EQUIPOS INDUSTRIALES",
-         trab=12, ventas=2_450_000.00, util=85_000.00, ir=42_500.00, imp=1_350_000.00, exp=0, cxc=820_000.00,
-         ct={2025: (15_000.00, 61_000.00), 2024: (8_000.00, 40_000.00)}, isd={2024: 70_000.00, 2025: 64_000.00, 2026: 41_000.00},
+         trab=12, ventas=2_450_000.00, util=85_000.00, ir=42_500.00, imp=1_350_000.00, exp=0, cxc=1_250_000.00,
+         ct={2025: (15_000.00, 61_000.00), 2024: (8_000.00, 40_000.00)}, isd={2024: 170_000.00, 2025: 164_000.00, 2026: 91_000.00},
          actor=[("09332202400001", "COBRO DE DINERO", "2024-03-10")], demandado=[], reg70={2025: 310_000.00}),
     dict(ruc="0990000002001", nombre="SERVICIOS DEMO S.A.S.", tipo="RELACIONADA", objeto="SERVICIOS DE TRANSPORTE Y LOGISTICA",
          trab=6, ventas=380_000.00, util=-12_000.00, ir=0.0, imp=0, exp=0, cxc=40_000.00,
-         ct={2025: (95_000.00, 9_000.00), 2024: (60_000.00, 5_000.00)}, isd={2024: 0.0, 2025: 0.0, 2026: 0.0},
+         ct={2025: (125_000.00, 9_000.00), 2024: (60_000.00, 5_000.00)}, isd={2024: 0.0, 2025: 0.0, 2026: 0.0},
          actor=[], demandado=[("09359202500001", "INDEMNIZACIÓN POR DESPIDO INTEMPESTIVO", "2025-02-01")], reg70={}),
 ]
 

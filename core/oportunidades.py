@@ -138,6 +138,23 @@ def _motivo(cond: dict, datos: dict) -> str:
     return f"{cond['campo']} {cond['op']} '{cond['valor']}'"
 
 
+ESTADOS_QUE_EXCLUYEN = {"activo", "en gestion comercial"}
+
+
+def _exclusion(servicios_excluyentes: list[str], historial: list[dict]) -> tuple[bool, str | None]:
+    """Regla de la base comercial: no sugerir si el servicio relacionado está Activo o En gestión
+    comercial. Devuelve (excluido, texto del historial para mostrar)."""
+    objetivo = {_sin_acentos(x).lower() for x in servicios_excluyentes}
+    relacionados = [h for h in historial if _sin_acentos(h.get("servicio", "")).lower() in objetivo]
+    for h in relacionados:
+        if _sin_acentos(h.get("estado", "")).lower() in ESTADOS_QUE_EXCLUYEN:
+            return True, None
+    if relacionados:
+        ultimo = max(relacionados, key=lambda h: str(h.get("fecha") or ""))
+        return False, f"{ultimo['servicio']} inactivo desde {ultimo.get('fecha') or 's/f'}"
+    return False, ("Nunca contratado" if objetivo else None)
+
+
 def evaluar_empresa(datos: dict) -> list[Oportunidad]:
     salida = []
     for sid, srv in kb.servicios().items():
@@ -149,6 +166,9 @@ def evaluar_empresa(datos: dict) -> list[Oportunidad]:
         aplica = (all(r for _, r in resultados) if regla.get("modo", "todas") == "todas"
                   else bool(ok))
         if not aplica:
+            continue
+        excluido, historial = _exclusion(regla.get("excluye_si_servicio") or [], datos.get("servicios") or [])
+        if excluido:
             continue
         try:
             base = evaluar_expresion(regla.get("base"), datos)
@@ -165,7 +185,7 @@ def evaluar_empresa(datos: dict) -> list[Oportunidad]:
             servicio_id=sid, grupo=srv.get("metricas", sid), servicio=srv["nombre"], materia=srv["materia"],
             empresa=datos["nombre"], ruc=datos["ruc"], tipo_empresa=datos.get("tipo", ""),
             base=base, honorario=estimar_honorario(sid, base), prioridad=prioridad,
-            motivos=[_motivo(c, datos) for c in ok],
+            motivos=[_motivo(c, datos) for c in ok] + ([historial] if historial and datos.get("servicios") is not None else []),
             requiere_dato=regla.get("requiere_dato"),
             tiene_contrato_tipo=bool(srv.get("clausulas")),
         ))
@@ -174,11 +194,18 @@ def evaluar_empresa(datos: dict) -> list[Oportunidad]:
     return salida
 
 
-def analizar_grupo(inf: InformeGrupo) -> dict:
-    """Devuelve {'metricas': {ruc: dict}, 'oportunidades': [Oportunidad]} de todo el grupo."""
+def analizar_grupo(inf: InformeGrupo, base=None) -> dict:
+    """Devuelve {'metricas': {ruc: dict}, 'oportunidades': [Oportunidad]} de todo el grupo.
+    Si se pasa la base comercial, se cruza por RUC: los servicios Activos o En gestión comercial
+    excluyen las oportunidades relacionadas (regla de la hoja Criterios)."""
     mets, ops = {}, []
     for e in inf.empresas:
         d = metricas_empresa(e, inf.anio_ref)
+        cliente = base.por_ruc(e.ruc) if base else None
+        if cliente:
+            d["servicios"] = cliente["servicios"]
+            d["estado_census"] = cliente["estado_census"]
+            d["sector"] = d.get("sector") or cliente["sector"]
         mets[e.ruc] = d
         ops.extend(evaluar_empresa(d))
     orden = {"Alta": 0, "Media": 1, "Por confirmar": 2}

@@ -1,7 +1,15 @@
 # MÉTRICAS DE VIABILIDAD — cuándo un cliente puede adquirir un servicio.
 #
-# TODOS LOS VALORES SON PROVISIONALES (marcados "# PROV"). Corregir los números; la lógica
-# no necesita cambios. Montos en USD.
+# Origen de cada umbral:
+#   # CENSUS  = hoja "Criterios" de la BASE GENERAL COMERCIAL CENSUS (criterio que ya usa el área)
+#   # PROV    = provisional propuesto por el agente; corregir
+# Montos en USD.
+#
+# excluye_si_servicio: la oportunidad NO se sugiere si el cliente ya tiene ese servicio
+#   "Activo" o "En gestión comercial" en la hoja "servicios" de la base (regla de la base).
+#   Nombres de servicio tal como están en la base: Devoluciones, Asesoría Tributaria, Legal
+#   Corporativo, Litigios, Outsourcing Contable, Penal, Cobranzas, Legal Tributario, Gestión
+#   Patrimonial, Legal Laboral, Aduanas.
 #
 # Cada servicio tiene:
 #   condiciones   lista de reglas sobre los campos del informe de investigación
@@ -16,32 +24,37 @@
 #   ct_iva_max_5a, isd_ref, isd_actual, isd_promedio, proyeccion_devolucion_ir,
 #   sercop_total, omc_total, reg70_total, reg21_total, juicios_laborales_demandado,
 #   juicios_cobro_actor, juicios_civiles_demandado, juicios_demandado, deudas_firmes, deudas_impugnadas,
-#   facilidades_pago, gran_contribuyente, cxc_sobre_ventas, objeto (texto)
+#   facilidades_pago, gran_contribuyente, cxc_sobre_ventas, objeto (texto),
+#   sector (texto, solo en la base), accionistas_pn (n.º de accionistas personas naturales)
 #
 # Operadores: >=, >, <=, <, ==, !=, contiene (texto, admite varias palabras separadas por |)
 
 devolucion_iva:
-  descripcion: Crédito tributario de IVA acumulado relevante
+  descripcion: Crédito tributario de IVA del último ejercicio relevante
   modo: todas
   condiciones:
-    - {campo: ct_iva_ultimo, op: ">=", valor: 20000}        # PROV
-  base: ct_iva_ultimo
-  prioridad_alta_desde: 100000                              # PROV
+    - {campo: ct_iva_ref, op: ">=", valor: 100000}          # CENSUS
+  base: ct_iva_ref
+  excluye_si_servicio: [Devoluciones]                       # CENSUS
+  prioridad_alta_desde: 300000                              # PROV
 
 devolucion_ir:
-  descripcion: Retenciones/crédito de IR superiores al impuesto causado
+  descripcion: Crédito tributario de IR del último ejercicio relevante
   modo: todas
   condiciones:
-    - {campo: proyeccion_devolucion_ir, op: ">=", valor: 5000}   # PROV
+    - {campo: ct_ir_ref, op: ">=", valor: 100000}                # CENSUS
+    - {campo: proyeccion_devolucion_ir, op: ">", valor: 0}       # PROV: el crédito supera al IR causado
   base: proyeccion_devolucion_ir
-  prioridad_alta_desde: 50000                                    # PROV
+  excluye_si_servicio: [Devoluciones]                            # CENSUS
+  prioridad_alta_desde: 300000                                   # PROV
 
 planificacion_isd:
-  descripcion: Pagos al exterior con ISD relevante
-  modo: todas
+  descripcion: Pagos al exterior con ISD relevante (año de referencia o año en curso)
+  modo: alguna
   condiciones:
-    - {campo: isd_ref, op: ">=", valor: 20000}               # PROV
-  base: isd_ref * 1.0      # PROV: fracción del ISD anual que se espera optimizar (1.0 = 100 %)
+    - {campo: isd_ref, op: ">", valor: 100000}               # CENSUS
+    - {campo: isd_actual, op: ">", valor: 100000}            # CENSUS
+  base: max(isd_ref, isd_actual) * 1.0   # PROV: fracción del ISD que se espera optimizar
   prioridad_alta_desde: 100000                              # PROV
 
 pago_indebido_isd:
@@ -80,15 +93,14 @@ deposito_aduanero:
   prioridad_alta_desde: 1000000                             # PROV
 
 cobranza:
-  descripcion: Cartera por cobrar alta respecto de las ventas
-  modo: alguna
+  descripcion: Deudores comerciales no relacionados altos
+  modo: todas
   condiciones:
-    - {campo: cxc_no_relacionadas, op: ">=", valor: 100000}  # PROV
-    - {campo: cxc_sobre_ventas, op: ">=", valor: 0.30}       # PROV (30 % de las ventas)
-    - {campo: juicios_cobro_actor, op: ">=", valor: 1}
+    - {campo: cxc_no_relacionadas, op: ">", valor: 1000000}  # CENSUS
   base: cxc_no_relacionadas
+  excluye_si_servicio: [Cobranzas]                          # CENSUS
   requiere_dato: Antigüedad de la cartera y deudores concretos a cobrar
-  prioridad_alta_desde: 300000                              # PROV
+  prioridad_alta_desde: 3000000                             # PROV
 
 outsourcing_contable:
   descripcion: Empresa pequeña sin estructura contable propia
@@ -169,4 +181,34 @@ planificacion_utilidades:
     - {campo: utilidad_neta, op: ">=", valor: 300000}       # PROV
   base: null
   requiere_dato: Utilidades acumuladas no distribuidas y anticipo de dividendos pagado (Superintendencia de Compañías)
+  prioridad_alta_desde: null
+
+# ------------------------------------------------- criterios de la base comercial (nuevos)
+
+consultoria_laboral:
+  descripcion: Empresa con más de 100 trabajadores
+  modo: todas
+  condiciones:
+    - {campo: trabajadores, op: ">", valor: 100}            # CENSUS
+  base: null
+  excluye_si_servicio: [Legal Laboral]                      # CENSUS
+  prioridad_alta_desde: null
+
+exoneracion_ir:
+  descripcion: Sector turístico con beneficio de exoneración de IR
+  modo: alguna
+  condiciones:
+    - {campo: sector, op: contiene, valor: "Hotelero|Turismo"}              # CENSUS (lista de sectores turísticos)
+    - {campo: objeto, op: contiene, valor: "HOTEL|TURIS|ALOJAMIENTO"}       # PROV: para informes, que no traen sector
+  base: null
+  requiere_dato: Inversión nueva y requisitos del beneficio de exoneración
+  prioridad_alta_desde: null
+
+proteccion_patrimonial:
+  descripcion: Al menos un accionista es persona natural
+  modo: todas
+  condiciones:
+    - {campo: accionistas_pn, op: ">=", valor: 1}           # CENSUS
+  base: null
+  excluye_si_servicio: [Gestión Patrimonial]                # CENSUS
   prioridad_alta_desde: null

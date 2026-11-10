@@ -357,3 +357,50 @@ reestructuracion_societaria:
   clausulas: null
   metricas: planificacion_utilidades
   tarifa: reestructuracion_societaria
+
+# ------------------------------------------------- oportunidades de la base comercial
+
+consultoria_laboral:
+  nombre: Consultoría laboral
+  materia: Legal corporativo
+  area: Legal Laboral
+  entidad: censusconsultores
+  contexto: >
+    Asesoría laboral preventiva para empresas con plantilla grande (más de 100 trabajadores):
+    contratos, reglamento interno, vistos buenos, cumplimiento y defensa en juicios laborales.
+  base_legal:
+    - norma: Código del Trabajo
+      estado: sugerida (validar)
+  clausulas: null
+  metricas: consultoria_laboral
+  tarifa: consultoria_laboral
+
+exoneracion_ir:
+  nombre: Exoneración del Impuesto a la Renta (sectores turísticos)
+  materia: Tributario
+  area: Devoluciones          # los contratos de exoneración están en la carpeta Devoluciones
+  entidad: censusconsultores
+  contexto: >
+    Gestión del beneficio de exoneración de Impuesto a la Renta para empresas de sectores
+    turísticos (hotelero, turismo) que cumplan los requisitos de inversión.
+  base_legal:
+    - norma: PENDIENTE — norma que otorga la exoneración a sectores turísticos
+      estado: pendiente
+  clausulas: null             # PENDIENTE: elegir contrato tipo (4 modelos 2025 en Devoluciones)
+  metricas: exoneracion_ir
+  tarifa: exoneracion_ir
+
+proteccion_patrimonial:
+  nombre: Protección y planificación patrimonial
+  materia: Legal corporativo
+  area: Gestión Patrimonial
+  entidad: censusconsultores
+  contexto: >
+    Estructuración patrimonial para accionistas personas naturales (holding, sucesión,
+    protección de activos), a partir de la composición accionaria de la empresa.
+  base_legal:
+    - norma: Ley de Compañías; Código Civil (sucesiones)
+      estado: sugerida (validar)
+  clausulas: null
+  metricas: proteccion_patrimonial
+  tarifa: proteccion_patrimonial

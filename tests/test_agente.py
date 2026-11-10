@@ -40,10 +40,11 @@ def test_lectura_informe(informe):
     assert informe.anio_ref == 2025
     assert len(informe.empresas) == 2
     m = metricas(informe.main, informe.anio_ref)
-    assert m["isd_ref"] == 64000.0
+    assert m["isd_ref"] == 164000.0
     assert m["reg70_total"] == 310000.0
     assert m["proyeccion_devolucion_ir"] == 18500.0
     assert m["juicios_cobro_actor"] == 1
+    assert m["accionistas_pn"] == 1        # identificación de 10 dígitos
 
 
 def test_discrepancia_detectada(informe):
@@ -158,3 +159,57 @@ def test_fuente_del_documento(tmp_path):
     assert {r.font.name for p in d.paragraphs for r in p.runs} == {"Georgia"}   # título incluido
     n = generar_documento("acuerdo_confidencialidad", CLIENTE, {}, date(2026, 11, 9), tmp_path)
     assert docx.Document(str(n.archivo)).styles["Normal"].font.name == "Arial"
+
+
+def test_exclusion_por_servicio_activo():
+    from core.oportunidades import evaluar_empresa
+    base = {"nombre": "X", "ruc": "1", "ct_iva_ref": 200000.0, "ct_ir_ref": 0.0, "proyeccion_devolucion_ir": 0.0}
+    sin = {o.servicio_id for o in evaluar_empresa({**base, "servicios": []})}
+    assert "devolucion_iva" in sin
+    activo = [{"servicio": "Devoluciones", "estado": "Activo", "fecha": "2026-01-01"}]
+    assert "devolucion_iva" not in {o.servicio_id for o in evaluar_empresa({**base, "servicios": activo})}
+    gestion = [{"servicio": "Devoluciones", "estado": "En gestión comercial", "fecha": "2026-01-01"}]
+    assert "devolucion_iva" not in {o.servicio_id for o in evaluar_empresa({**base, "servicios": gestion})}
+    inactivo = [{"servicio": "Devoluciones", "estado": "Inactivo", "fecha": "2024-05-01"}]
+    op = next(o for o in evaluar_empresa({**base, "servicios": inactivo}) if o.servicio_id == "devolucion_iva")
+    assert any("inactivo desde 2024-05-01" in m for m in op.motivos)
+
+
+def _base_ficticia(ruta):
+    from openpyxl import Workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Clientes"
+    ws.append(["Cliente", "RUC", "ESTADO RUC", "Grupo", "Nombres y Apellidos", "Cargo (administradores actuales)",
+               "Nombres y Apellidos (accionistas)", "Cargo (accionistas)", "Referidor", "Ciudad",
+               "ACTIVIDAD ECONOMICA PRINCIPAL", "Sector ", "Tipo de Actividad", "CRÉDITO TRIBUTARIO (IVA)\n2025",
+               "CRÉDITO TRIBUTARIO (IR)\n2025", "IMP CAUSADO \n2025", "PROYECCION IR\n2025", "ISD 2025", "ISD 2026",
+               "DEUDORES COMERCIALES Y OTRAS CUENTAS POR COBRAR NO RELACIONADOS", "GASTO DETERIORO",
+               "SUELDOS Y BENEFICIOS SOCIALES", "SUELDOS, SALARIOS Y DEMÁS REMUNERACIONES",
+               "ESTIMACION DE SUELDOS Y SALARIOS", "N° \nTrabajadores", "Estado  CENSUS", "Servicio", "Estado",
+               "Última fecha", "OPORTUNIDADES", "OBSERVACIÓN COMERCIAL", "FECHA OBSERVACIÓN"])
+    ws.append([None] * 32)
+    ws.append(["DEMO HOTEL S.A.", "0990000003001", "ACTIVO", "NO", "PEREZ JUAN", "GERENTE GENERAL (RL)",
+               "PEREZ JUAN\nINVERSIONES DEMO S.A.", "ACCIONISTA NACIONAL\nACCIONISTA NACIONAL", "", "Guayaquil",
+               "ACTIVIDADES DE ALOJAMIENTO", "Hotelero", "Servicios", 250000, 0, 0, 0, 150000, 0, 1500000, 0, 0,
+               0, 0, 150, "Activo", "", "", "", "", "", ""])
+    s = wb.create_sheet("servicios")
+    s.append(["Cliente", "RUC", "Servicio", "Estado", "Última fecha", "Fuentes", "Detalle"])
+    s.append(["DEMO HOTEL S.A.", "0990000003001", "Devoluciones", "Activo", "2026-05-01", "Facturación", ""])
+    s.append(["DEMO HOTEL S.A.", "0990000003001", "Cobranzas", "Inactivo", "2023-02-01", "Facturación", ""])
+    wb.save(ruta)
+
+
+def test_base_comercial_y_criterios(tmp_path):
+    from core.base_clientes import cargar_base
+    from core.oportunidades import evaluar_empresa
+    ruta = tmp_path / "base.xlsx"
+    _base_ficticia(ruta)
+    b = cargar_base(ruta)
+    c = b.por_ruc("0990000003001")
+    assert c["sector"] == "Hotelero" and c["accionistas_pn"] == 1 and len(c["servicios"]) == 2
+    ids = {o.servicio_id for o in evaluar_empresa(c)}
+    assert "devolucion_iva" not in ids           # Devoluciones activo → excluida
+    assert {"cobranza_extrajudicial", "planificacion_isd", "consultoria_laboral",
+            "exoneracion_ir", "proteccion_patrimonial"} <= ids
+    assert b.buscar("demo hotel")[0]["ruc"] == "0990000003001"
