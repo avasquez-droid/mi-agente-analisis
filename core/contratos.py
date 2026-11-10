@@ -264,8 +264,8 @@ _LITERAL = re.compile(r"^((?:[a-z]|\d{1,2}|[ivx]+)\)|\(\d+\))\s+")
 def escribir_docx(contrato: ContratoGenerado, cliente: dict, entidad: dict, salida: Path) -> Path:
     doc = docx.Document(str(PLANTILLA_BASE))
     fijar_fuente_base(doc, FUENTE, TAMANO)
-    # Título como en los contratos 2026: Tahoma 11, negrita, centrado
-    _parrafo(doc, contrato.titulo, negrita=True, centrado=True, fuente="Tahoma", tamano=11)
+    # Título en la misma fuente del contrato (Georgia), negrita, centrado y un punto más grande
+    _parrafo(doc, contrato.titulo, negrita=True, centrado=True, tamano=11)
     _parrafo(doc)
     _parrafo(doc, contrato.encabezado)
     _parrafo(doc)
