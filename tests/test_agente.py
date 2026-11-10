@@ -140,3 +140,10 @@ def test_pptx_de_propuesta(tmp_path):
     assert "EMPRESA DEMO S.A." in textos and "[COMPLETAR" not in textos
     tabla = next(sh.table for s in prs.slides for sh in s.shapes if sh.has_table)
     assert len(tabla.rows) == 5          # cabecera + 4 etapas
+    # PowerPoint ignora el texto que va después de <a:endParaRPr>: debe ser siempre el último
+    ns = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+    for s in prs.slides:
+        for par in s._element.iter(f"{ns}p"):
+            hijos = [c.tag for c in par]
+            if f"{ns}endParaRPr" in hijos:
+                assert hijos.index(f"{ns}endParaRPr") == len(hijos) - 1

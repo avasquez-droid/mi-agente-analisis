@@ -170,7 +170,11 @@ def _escribir(shape, parrafos: list[str], tamano: float | None = None):
             if run is None:
                 nuevo_run = tf.paragraphs[-1].add_run()
             else:
-                nuevo.append(run)
+                fin = nuevo.find(f"{NS_A}endParaRPr")       # PowerPoint exige runs ANTES de endParaRPr
+                if fin is not None:
+                    fin.addprevious(run)
+                else:
+                    nuevo.append(run)
                 nuevo_run = tf.paragraphs[-1].runs[-1]
             negrita = trozo.startswith("**")
             nuevo_run.text = trozo[2:-2] if negrita else trozo
