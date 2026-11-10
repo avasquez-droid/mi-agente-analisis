@@ -213,3 +213,13 @@ def test_base_comercial_y_criterios(tmp_path):
     assert {"cobranza_extrajudicial", "planificacion_isd", "consultoria_laboral",
             "exoneracion_ir", "proteccion_patrimonial"} <= ids
     assert b.buscar("demo hotel")[0]["ruc"] == "0990000003001"
+
+
+def test_cargo_gerente_siempre_gerente_general():
+    from core.contratos import normalizar_cargo
+    assert normalizar_cargo("Gerente") == "Gerente General"
+    assert normalizar_cargo("GERENTE (RL)") == "Gerente General"
+    assert normalizar_cargo("PRESIDENTE (ADM)") == "Presidente"
+    assert normalizar_cargo("Gerente General") == "Gerente General"
+    c = armar_contrato("devolucion_iva", {**CLIENTE, "cargo": "Gerente"}, {"periodo": "diciembre 2026"}, date(2026, 11, 9))
+    assert "por intermedio de su Gerente General," in c.clausulas[0].parrafos[0]

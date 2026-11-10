@@ -17,7 +17,7 @@ from docx.oxml import OxmlElement
 from docx.shared import Cm, Pt
 
 from . import conocimiento as kb
-from .contratos import MESES, PLANTILLA_BASE, _entorno, fijar_fuente_base, ordinal
+from .contratos import MESES, PLANTILLA_BASE, _entorno, fijar_fuente_base, normalizar_cargo, ordinal
 
 ROMANOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
 
@@ -51,6 +51,8 @@ def armar_documento(doc_id: str, cliente: dict, variables: dict | None = None,
     v = dict(d.get("valores_por_defecto") or {})
     v.update({k: x for k, x in (variables or {}).items() if x not in (None, "")})
     cliente = {"persona": "juridica", **{k: x for k, x in cliente.items() if x not in (None, "")}}
+    if cliente.get("cargo"):
+        cliente["cargo"] = normalizar_cargo(cliente["cargo"])
 
     env = _entorno()
     env.filters["mes"] = lambda f: MESES[f.month - 1]

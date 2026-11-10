@@ -17,6 +17,8 @@ description: Genera el contrato de prestación de servicios en Word (membrete Ce
 5. Entregar el .docx de `salidas/` y la lista de **pendientes** (marcados en amarillo en el Word).
 
 ## Reglas
+- El cargo "Gerente" del representante se escribe siempre **"Gerente General"** (intervinientes y firmas);
+  el agente lo corrige solo. Las marcas de la base como "(RL)" se quitan.
 - No cambiar el texto de las cláusulas al vuelo: si el usuario pide una variación, preguntar si es
   solo para este contrato (editar el Word generado) o un cambio del estándar (editar
   `conocimiento/clausulas/...` y avisar que afecta a todos los contratos futuros).

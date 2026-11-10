@@ -35,6 +35,19 @@ ORDINALES = ["PRIMERA", "SEGUNDA", "TERCERA", "CUARTA", "QUINTA", "SEXTA", "SÉP
 LITERALES = "abcdefghijklmnopqrstuvwxyz"
 
 
+def normalizar_cargo(cargo) -> str:
+    """Cargo del representante del cliente tal como debe ir en contratos y documentos.
+    Regla de Census: "Gerente" se escribe siempre "Gerente General". Quita marcas de la base
+    como "(RL)" o "(ADM)" y usa mayúscula inicial."""
+    if not cargo or isinstance(cargo, ChainableUndefined):
+        return cargo
+    texto = re.sub(r"\s*\((RL|ADM|R\.L\.)\)\s*", " ", str(cargo), flags=re.I).strip()
+    texto = " ".join(p.capitalize() if p.lower() not in {"de", "del", "y"} else p.lower() for p in texto.split())
+    if texto.lower() == "gerente":
+        texto = "Gerente General"
+    return texto
+
+
 def ordinal(n: int) -> str:
     if n <= 10:
         return ORDINALES[n - 1]
@@ -162,6 +175,8 @@ def armar_contrato(servicio_id: str, cliente: dict, variables: dict | None = Non
     v = _variables_por_defecto(servicio_id, scl)
     v.update({k: x for k, x in (variables or {}).items() if x not in (None, "")})
     cliente = {"persona": "juridica", "correos": [], **{k: x for k, x in cliente.items() if x not in (None, "")}}
+    if cliente.get("cargo"):
+        cliente["cargo"] = normalizar_cargo(cliente["cargo"])
     if isinstance(cliente.get("correos"), str):
         cliente["correos"] = [c.strip() for c in re.split(r"[;,]", cliente["correos"]) if c.strip()]
 
