@@ -1,0 +1,54 @@
+# Base: propuestas 2026 (Devoluciones), vía administrativa y vía administrativa + judicial.
+portada: DEVOLUCIÓN DEL IMPUESTO AL VALOR AGREGADO EN PROYECTOS INMOBILIARIOS
+variables:
+  via_judicial: {descripcion: "true = incluye demanda por el límite del 6,5 %", ejemplo: false}
+asunto: >-
+  el servicio de recuperación del saldo a favor que mantendría la compañía por devolución de IVA
+  de los proyectos inmobiliarios que realice, de acuerdo con la Ley de Eficiencia Económica y
+  Generación de Empleo
+antecedentes:
+  - "{{ cliente.razon_social }} se dedica a la construcción de proyectos inmobiliarios."
+  - >-
+    En virtud de la Ley de Eficiencia Económica y Generación de Empleo, publicada en el Registro
+    Oficial No. 461 de 20 de diciembre de 2023, se reconoce el derecho a la devolución del Impuesto
+    al Valor Agregado (IVA) pagado en la adquisición local de bienes y servicios destinados a la
+    construcción de proyectos inmobiliarios (Art. 72).
+  - >-
+    Por lo que, {{ cliente.razon_social }} puede solicitar al Servicio de Rentas Internas la
+    devolución de IVA por compra de bienes y servicios para la construcción de los proyectos
+    inmobiliarios que realice.
+  - >-
+    {% if v.via_judicial %}No obstante, el SRI, a través de la Resolución No. NAC-DGERCGC24-00000019,
+    ha limitado la devolución al 6,5 % del costo total referencial del proyecto, lo cual generaría
+    un saldo no reconocido a favor de la compañía; por ello se plantea, además, la demanda
+    contencioso tributaria respecto de los valores negados.{% endif %}
+secciones:
+  - titulo: Aplicación legal
+    parrafos:
+      - "Dentro del trámite de devolución de IVA de proyectos inmobiliarios se deben considerar los siguientes aspectos:"
+      - "- No haber utilizado el IVA como crédito tributario ni haberlo compensado o reembolsado de otra manera."
+      - "- Contar con un título habilitante municipal y estar registrado ante el Ministerio de Desarrollo Urbano y Vivienda; puede obtenerse con fecha posterior al inicio de las adquisiciones, pero antes de la solicitud."
+      - "- Excepción para proyectos inmobiliarios destinados a vivienda propia que no superen dos proyectos por año."
+      - "- El plazo máximo para la devolución es de 90 días, mediante nota de crédito."
+objetivo: >-
+  Realizar el trámite administrativo de solicitud de devolución de IVA de proyectos
+  inmobiliarios{% if v.via_judicial %}, así como ejecutar la defensa judicial de la compañía
+  mediante una demanda contencioso tributaria respecto de los valores cuya devolución sea negada
+  total o parcialmente por superar el límite del 6,5 % del costo total del proyecto{% endif %}.
+alcance:
+  - titulo: "{{ 'Sede administrativa' if v.via_judicial }}"
+    items:
+      - Revisión de contratos y títulos habilitantes por cada proyecto para determinar si califican para la devolución.
+      - Planificación de la presentación de los trámites y del flujo de efectivo que ingresará a la compañía por la devolución.
+      - Recopilación y ordenamiento de la información por proyecto inmobiliario que sustente la devolución.
+      - Conciliación de mayores contables vs. información declarada en los formularios 104.
+      - Presentación ante el Servicio de Rentas Internas de las solicitudes de devolución.
+      - Atención a los requerimientos que realice el Servicio de Rentas Internas.
+      - Resolución favorable y seguimiento a la acreditación de los valores a favor de la empresa.
+honorarios:
+  filas:
+    - servicio: Servicio de recuperación del saldo a favor por devolución de IVA en proyectos inmobiliarios.
+      honorario: "{% if v.via_judicial %}{{ v.pct_administrativo | default(2) | pct }} + IVA en etapa administrativa; {{ v.pct_judicial | default(20) | pct }} + IVA en etapa judicial, calculados sobre los valores recuperados.{% else %}Calculado sobre el IVA recuperado según la fecha de la resolución favorable, contada desde la presentación: hasta 80 días hábiles, 2,5 % + IVA; de 81 a 120 días hábiles, 2 % + IVA; desde 121 días hábiles, 1,5 % + IVA.{% endif %}"
+      forma_pago: Los honorarios se pagarán contra acreditación de la nota de crédito a favor de la compañía.
+  notas:
+    - Los gastos notariales, tasas, peritajes y cualquier otro gasto no están incluidos y serán cancelados de forma directa por el cliente.

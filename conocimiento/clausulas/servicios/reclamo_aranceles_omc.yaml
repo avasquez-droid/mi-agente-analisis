@@ -1,0 +1,118 @@
+# Reclamo y demanda por aranceles sobre techo OMC — base: contratos modelo 2026 (pago a resultado y por etapas).
+variables:
+  importaciones_desde: {descripcion: "Inicio del periodo de importaciones a reclamar", ejemplo: "agosto del 2023", requerido: true}
+  importaciones_hasta: {descripcion: "Fin del periodo de importaciones a reclamar", ejemplo: "diciembre del 2025", requerido: true}
+  monto: {descripcion: "Valor aproximado a recuperar (USD), opcional", ejemplo: 17000}
+  pago_por_etapas: {descripcion: "true = honorario judicial por etapas (modelo de pago por etapas)", ejemplo: true}
+tipo_servicio: asesoría legal tributaria y patrocinio judicial
+tramite: ejecutivo        # los contratos OMC usan trámite ejecutivo (el resto, sumario)
+extras: [anticorrupcion]
+
+antecedentes:
+  - >-
+    Es el caso, que “El Contratante” requiere de los servicios de asesoría legal tributaria y
+    patrocinio judicial de “El Contratado” para la asesoría y acompañamiento en la presentación de
+    reclamos administrativos de pago indebido ante el Servicio Nacional de Aduana del Ecuador, y
+    posterior demandas de impugnación ante el Tribunal Distrital de lo Contencioso Tributario de
+    Guayaquil en caso de ser necesaria, contra las Declaraciones Aduaneras emitidas por el Servicio
+    Nacional de Aduana del Ecuador (SENAE), a través de las cuales se pagó un arancel mixto (Arancel Ad
+    Valorem y Arancel Específico), que sobrepasó el techo arancelario consolidado, al cual Ecuador se
+    encuentra sujeto en virtud de la ratificación al Protocolo de Adhesión al Acuerdo que establece la
+    Organización Mundial de Comercio (OMC).
+cierre_antecedentes: true
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS LEGALES
+  parrafos:
+    - >-
+      Con los antecedentes antes expuestos, la compañía {{ cliente.razon_social }}, contrata los
+      servicios profesionales de {{ census.razon_social }}, para la asesoría legal tributaria y
+      patrocinio judicial en la presentación de reclamos administrativos de pago indebido de impuestos
+      arancelarios pagados en las importaciones realizadas por “El Contratante”, que se presentarán ante
+      el Servicio Nacional de Aduana del Ecuador (SENAE) respecto a las importaciones realizadas desde
+      {{ v.importaciones_desde }} que no hayan sido incluidas en reclamos anteriores, hasta los valores a
+      recuperar que se generen por importaciones efectuadas hasta {{ v.importaciones_hasta }}; y posterior
+      de una o varias demandas de impugnación que se presentarán ante el Tribunal Distrital de lo
+      Contencioso Tributario de Guayaquil, en caso de ser necesaria por resolución negativa de los
+      reclamos de pago indebido.
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - >-
+      El plazo de duración del presente contrato es desde la suscripción del mismo, hasta que se emita
+      la resolución por parte del Servicio Nacional de Aduana del Ecuador como respuesta a los reclamos
+      administrativos de pago indebido de impuestos arancelarios a presentarse, y por el cual
+      “El Contratante” contrata los servicios de “El Contratado”, conforme la cláusula
+      {{ ordinal_de('prestacion') }} del presente contrato; o, en caso de requerirse la impugnación
+      judicial por resolución negativa del reclamo, el plazo se extenderá hasta que exista
+      pronunciamiento en firme por parte de autoridad competente que resuelva las impugnaciones
+      judiciales de los reclamos a presentar hasta las importaciones efectuadas hasta {{ v.importaciones_hasta }}.
+
+honorarios:
+  titulo: HONORARIOS
+  parrafos:
+    - >-
+      Las partes fijan de común acuerdo por pago de los servicios legales y tributarios, de conformidad
+      con el presente contrato, un honorario del {{ t.administrativo | pct }} más IVA calculado sobre los
+      valores recuperados a través de los reclamos por pago indebido{% if v.monto %} que hasta ahora
+      asciende aproximadamente a la cantidad de {{ v.monto | usd }} ({{ v.monto | letras }} Dólares de los
+      Estados Unidos de América) más intereses{% endif %}{% if not v.pago_por_etapas %} o demandas de
+      impugnación judicial{% endif %}, los cuales serán pagados en su totalidad cuando se encuentre
+      acreditada la nota de crédito desmaterializada en el sistema Ecuapass del valor pagado
+      indebidamente más sus respectivos intereses.
+    - >-
+      {% if v.pago_por_etapas %}En caso de negativa de uno o varios de los reclamos por pago indebido,
+      se realizarán la o las demandas de impugnación judicial que correspondan, para lo cual las partes
+      fijan un honorario profesional del {{ t.judicial | pct }} más IVA calculado sobre los valores
+      recuperados en vía judicial, el cual será pagado de la siguiente forma:{% for e in t.etapas_judicial %}
+      {{ loop.index }}) El {{ e.valor | pct }} + IVA contra {{ e.hito }}{{ ';' if not loop.last else '.' }}{% endfor %}{% endif %}
+    - >-
+      En el caso que los valores efectivamente devueltos sean mayores o menores a los señalados en el
+      primer párrafo, se deberán reliquidar los honorarios a pagar de conformidad al porcentaje pactado,
+      esto es, el {{ t.administrativo | pct }}{% if v.pago_por_etapas %} en sede administrativa; y
+      {{ t.judicial | pct }} en vía judicial, en ambos casos{% else %} más IVA,{% endif %} incluyendo los
+      intereses que se devuelvan.
+    - >-
+      Los gastos por peritajes, gastos notariales, y cualquier gasto adicional que se efectúe en la
+      prestación del servicio, deberá ser cubierto por “El Contratante”, debiendo ser cancelados de
+      forma directa.
+    - >-
+      Los honorarios incluyen la defensa de “El Contratante” en caso de presentarse recurso de casación
+      y/o acción extraordinaria de protección por cualquiera de las partes dentro del o los procesos
+      judiciales que sustancie las demandas de impugnación judicial que se presenten en caso de ser
+      necesarias por resolución negativa de los reclamos de pago indebido inicial.
+
+obligaciones:
+  titulo: OBLIGACIONES DE LAS PARTES
+  parrafos:
+    - "Las partes de común acuerdo convienen establecer como obligaciones de cada una de ellas las siguientes:"
+    - "Obligaciones de “El Contratado”:"
+    - >-
+      a) Brindar asesoría técnica y legal en base al ordenamiento jurídico-tributario dentro de los
+      Reclamos Administrativos de pago indebido y Demandas de Impugnación Judicial, contra las
+      Declaraciones Aduaneras emitidas por el Servicio Nacional de Aduana del Ecuador (SENAE).
+    - >-
+      b) Revisar y calificar la información entregada por “El Contratante”. Esta documentación servirá
+      única y exclusivamente para la elaboración de los documentos necesarios dentro del Reclamo
+      Administrativo y Demanda de Impugnación.
+    - >-
+      c) Efectuar todas las gestiones legales necesarias para precautelar los intereses legales y
+      económicos de “El Contratante” en los reclamos administrativos a presentar y demandas de
+      impugnación, y por lo cual se contrata el presente servicio.
+    - >-
+      d) Representar a “El Contratante” en las diferentes audiencias que se lleven a cabo en caso de la
+      presentación de las demandas de impugnación.
+    - "Obligaciones de “El Contratante”:"
+    - >-
+      a) Entregar a “El Contratado” toda la documentación necesaria y requerida para la presentación de
+      los Reclamos Administrativos de pago indebido, y posteriores demandas de impugnación judicial,
+      contra las Declaraciones Aduaneras emitidas por el Servicio Nacional de Aduana del Ecuador
+      (SENAE), a través de las cuales se pagó un arancel mixto (Arancel Ad Valorem y Arancel
+      Específico), que sobrepasó el techo arancelario consolidado, al cual Ecuador se encuentra sujeto
+      en virtud de la ratificación al Protocolo de Adhesión al Acuerdo que establece la Organización
+      Mundial de Comercio (OMC).
+    - >-
+      b) Cumplir con el plazo y la forma de pago correspondiente a los servicios profesionales que
+      prestará “El Contratado”, según lo estipulado en el presente contrato.
+    - c) Respetar todos los términos establecidos en el contrato.

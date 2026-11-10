@@ -1,0 +1,51 @@
+# Base: propuesta 2026 (Aduana).
+portada: IMPLEMENTACIÓN DE DEPÓSITO ADUANERO
+variables:
+  honorario: {descripcion: "Honorario fijo USD (por defecto: tarifario)", ejemplo: 15000}
+asunto: los servicios profesionales relacionados con la implementación de un depósito aduanero
+antecedentes:
+  - >-
+    Bajo el régimen tradicional de importación (Régimen 10), los tributos deben pagarse de forma
+    inmediata al nacionalizar la mercancía, lo que presiona la liquidez de las empresas.
+  - >-
+    Los Depósitos Aduaneros permiten almacenar mercancías en depósitos autorizados y diferir el pago
+    de tributos hasta su nacionalización, optimizando el flujo de caja y la administración de
+    inventarios, especialmente en empresas con baja rotación.
+secciones:
+  - titulo: Régimen 10 frente a Depósito Aduanero
+    parrafos:
+      - "- Régimen 10: exige pagar de inmediato todos los tributos, inmoviliza capital, encarece los inventarios de baja rotación y expone al abandono tácito o definitivo (Arts. 142 y 143 del COPCI)."
+      - "- Depósito Aduanero: difiere los tributos hasta la nacionalización (hasta un año, prorrogable seis meses), permite nacionalizaciones parciales y mejora la eficiencia del capital de trabajo."
+  - titulo: Base legal
+    parrafos:
+      - "- Art. 152 del COPCI: régimen de Depósito Aduanero, sin pago inmediato de tributos hasta que se otorgue un destino aduanero."
+      - "- Art. 144 del Reglamento al COPCI: modalidad pública o privada con suspensión del pago de tributos."
+      - "- Art. 145 del Reglamento al COPCI: instalaciones autorizadas por el SENAE, garantía y autorización por hasta cinco años renovables."
+      - "- Art. 146 del Reglamento al COPCI: permanencia de hasta un año, con prórroga de seis meses."
+  - titulo: Requisitos
+    parrafos:
+      - "- Formulario de solicitud del SENAE; compañía con objeto social que contemple la actividad y representante inscrito."
+      - "- Escritura o contrato de arrendamiento legalizado del inmueble; pólizas de robo, incendio y responsabilidad civil."
+      - "- Sistema informático de control de inventarios con captura de datos e interconexión con el sistema aduanero."
+      - "- Certificado de cumplimiento con el SRI, sin deuda firme con el SENAE, y cumplimiento de la Política Antisoborno del SENAE."
+      - "- Infraestructura mínima según ubicación (depósito privado: mínimo 150 m²) e inspección técnica del SENAE."
+objetivo: >-
+  Obtener la resolución de autorización del régimen de Depósito Aduanero emitida por el SENAE, para
+  optimizar el flujo de caja de la empresa difiriendo el pago de tributos según la rotación de sus
+  inventarios.
+alcance:
+  - items:
+      - Diagnóstico de cumplimiento de los requisitos legales, operativos, documentales y de infraestructura exigidos por el SENAE.
+      - Elaboración, revisión y gestión integral del expediente técnico y legal.
+      - Gestión documental y coordinación del trámite en ECUAPASS (formulario, seguimiento, código OCE y pago de la tasa de inspección).
+      - Coordinación y acompañamiento en la revisión y en la atención de requerimientos del SENAE hasta obtener la resolución.
+honorarios:
+  filas:
+    - servicio: Implementación de un depósito aduanero
+      honorario: "{{ v.honorario | usd }} + IVA"
+      forma_pago: "{{ t.anticipo_pct | pct }} + IVA a la aceptación de la propuesta; y saldo contra la emisión de la resolución favorable."
+  notas:
+    - >-
+      Los honorarios no incluyen análisis tributario ni gastos (notariales, peritajes, traducciones,
+      apostillas, legalizaciones, certificaciones), ni movilización, hospedaje o alimentación fuera
+      de Guayaquil; estos valores serán asumidos directamente por el cliente.

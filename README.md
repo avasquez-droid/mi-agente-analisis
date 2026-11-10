@@ -1,116 +1,76 @@
-# 🤖 Mi Agente de Análisis Inteligente
+# Agente Comercial — Census Consultores
 
-Una herramienta única, reutilizable y compatible con **Claude** (Claude Code, VS Code) y **GPT**
-(Codex, ChatGPT). Procesa archivos Excel, aplica una metodología definida en *skills* y genera
-informes en **PDF**, análisis en **Excel** y planes de acción en **Word**.
+Herramienta del área comercial, compatible con **Claude** (Claude Code, VS Code) y **GPT**
+(Codex, ChatGPT). Lee los informes de investigación de prospectos, propone los servicios de la
+cartera que el cliente puede contratar, calcula honorarios y genera los contratos en Word con el
+membrete de Census.
 
 ```
-Usuario (Excel) ──▶ Agente (Claude o GPT) ──▶ core/ aplica la skill ──▶ PDF · XLSX · DOCX · MD
+NDA ──▶ Informe de investigación (Word) ──▶ métricas de viabilidad ──▶ servicios + honorarios ──▶ contrato .docx
+                                        conocimiento/                     propuesta .pptx   (correo: pendiente)
 ```
+
+## Procesos que cubre
+
+| Proceso | Estado | Dónde |
+|---|---|---|
+| Acuerdo de confidencialidad (NDA) | Listo | `conocimiento/documentos/` |
+| Cartera de servicios, base legal y contexto | 15 servicios; bases legales por validar | `conocimiento/servicios.yaml` |
+| Análisis del informe de investigación del cliente | Listo (formato Census, Word) | `core/informe_reader.py` |
+| Métricas para saber si un cliente puede adquirir un servicio | Listo, **valores provisionales** | `conocimiento/metricas.yaml` |
+| Cuantías y honorarios (tarifario) | Listo, **valores provisionales** | `conocimiento/tarifario.yaml` |
+| Contratos | 10 servicios con contrato tipo | `conocimiento/clausulas/` |
+| Propuestas (PPTX) | 13 servicios; requiere la plantilla privada | `conocimiento/propuestas/` |
+| Correos | Pendiente de plantillas | `plantillas/correos/` |
 
 ## Inicio rápido
 
 ```bash
-git clone <url-del-repositorio> mi-agente-analisis
+git clone https://github.com/avasquez-droid/mi-agente-analisis.git
 cd mi-agente-analisis
 pip install -r requirements.txt
-python -m core.cli analizar examples/datos_equipo.xlsx
+python examples/generar_informe_ejemplo.py                       # informe ficticio de prueba
+python -m core.cli analizar-cliente examples/informe_ejemplo.docx
+python -m core.cli contrato devolucion_iva --cliente examples/cliente_ejemplo.yaml --var periodo="diciembre 2026"
 ```
 
-Los resultados quedan en `salidas/`. Luego abre el proyecto con tu agente favorito:
+Los resultados quedan en `salidas/` (resumen `.md`, Excel de oportunidades y contratos `.docx`).
 
-| Entorno | Qué hacer |
-|---|---|
-| **Claude Code** | `claude` en la carpeta del proyecto. Lee `CLAUDE.md` y las skills en `.claude/skills/`. |
-| **Codex (GPT)** | `codex` en la carpeta del proyecto. Lee `AGENTS.md`. |
-| **ChatGPT / Claude web** | Pega las instrucciones del adaptador y sube las skills (ver `adapters/`). |
+Con el agente: abre la carpeta con `claude` (lee `CLAUDE.md`) o `codex` (lee `AGENTS.md`) y pide,
+por ejemplo, *"Analiza este informe y dime qué servicios le ofrecemos"* o *"Haz el contrato de
+devolución de IVA para IMPORTADORA DEMO"*.
 
-Y pide, por ejemplo:
-
-> "Carga un archivo Excel con los datos de mi equipo y genera un informe de desempeño,
-> extrae insights y un plan de acción."
-
-## Arquitectura
+## Estructura
 
 ```
-mi-agente-analisis/
-├── core/              # Lógica central (Python)
-│   ├── excel_reader.py    # lee y perfila Excel/CSV
-│   ├── metodologia.py     # carga skills/<id>/metodologia.yaml
-│   ├── analyzer.py        # puntajes ponderados, bandas, agregados
-│   ├── insights.py        # hallazgos y plan de acción
-│   ├── report_pdf.py / report_excel.py / report_word.py
-│   ├── agent.py           # orquestador: ejecutar(...)
-│   └── cli.py             # python -m core.cli ...
-├── skills/            # Metodologías reutilizables (SKILL.md + metodologia.yaml)
-├── adapters/
-│   ├── claude/        # CLAUDE.md + guía de instalación
-│   └── codex/         # AGENTS.md + guía de instalación
-├── examples/          # Excel de muestra y prompts
-├── templates/         # Plantillas Jinja2 de los resúmenes
-├── docs/              # Instalación, guía de uso, crear skills, FAQ
-├── tests/             # Pruebas automáticas (pytest)
-├── CLAUDE.md          # copia de adapters/claude/CLAUDE.md
-├── AGENTS.md          # copia de adapters/codex/AGENTS.md
-└── requirements.txt
+conocimiento/            # lo que el agente "sabe" — se edita sin tocar código
+  servicios.yaml         # cartera: materia, entidad que firma, contexto, base legal
+  metricas.yaml          # cuándo un cliente califica para cada servicio (umbrales)
+  tarifario.yaml         # honorarios por servicio (modelo, %, montos, forma de pago)
+  entidades.yaml         # CENSUSCONSULTORES S.A.S. y CENSUS COBRANZAS S.A.
+  clausulas/comunes.yaml # cláusulas estándar 2026
+  clausulas/servicios/   # cláusulas propias de cada servicio
+plantillas/contratos/base_census.docx   # membrete
+core/                    # informe_reader, oportunidades, contratos, reporte, cli
+skills/                  # instrucciones para el agente (también en .claude/skills/)
+docs/                    # instalación, guía de uso, revisión de contratos, FAQ
+examples/                # informe y cliente FICTICIOS
+tests/                   # pytest
+privado/                 # material real de clientes (ignorado por Git)
 ```
 
-## Comandos
-
-```bash
-python -m core.cli skills                        # skills disponibles
-python -m core.cli hojas  archivo.xlsx           # hojas del Excel
-python -m core.cli explorar archivo.xlsx         # perfil de los datos (JSON)
-python -m core.cli analizar archivo.xlsx \
-    --skill evaluacion-desempeno \
-    --formatos pdf,xlsx,docx,md \
-    --hoja "Evaluación" --titulo "Informe Q4" --salida ./resultados
-```
-
-Desde Python:
-
-```python
-from core.agent import ejecutar
-r = ejecutar("examples/datos_equipo.xlsx", skill="evaluacion-desempeno", formatos=["pdf", "docx"])
-print(r.resumen_texto())
-print(r.archivos)
-```
-
-## Skills incluidas
-
-| Skill | Uso |
-|---|---|
-| `evaluacion-desempeno` | Puntajes por persona y criterio → ranking, bandas, insights y plan. |
-| `analisis-datos` | Exploración de cualquier archivo: columnas, nulos, estadísticas. |
-| `generacion-reportes` | Reglas de formato y estilo de los entregables. |
-| `plan-accion` | Cómo convertir hallazgos en acciones con responsable, plazo e indicador. |
-
-Para añadir una metodología propia: [`docs/crear-skills.md`](docs/crear-skills.md).
-
-## Formato del Excel esperado (skill de desempeño)
-
-| Nombre | Área | Productividad | Calidad | Puntualidad | Trabajo en equipo | Comunicación |
-|---|---|---|---|---|---|---|
-| Ana Torres | Ventas | 4 | 5 | 3 | 4 | 4 |
-
-- Escala 1-5 por defecto (si los datos van hasta 10 o 100 se detecta automáticamente).
-- Los nombres de columna se reconocen sin importar mayúsculas ni acentos; se pueden añadir
-  sinónimos en `metodologia.yaml`.
-- Columnas extra (Cargo, Comentarios…) se ignoran.
+## Confidencialidad
+Los informes y contratos reales tienen datos personales. **No se suben al repositorio** (que es
+público): guárdalos en `privado/`. Los ejemplos de `examples/` son ficticios.
 
 ## Documentación
-
-- [Instalación paso a paso](docs/instalacion.md)
-- [Guía de uso](docs/guia-uso.md)
-- [Crear una nueva skill](docs/crear-skills.md)
-- [Preguntas frecuentes](docs/faq.md)
+- [Instalación](docs/instalacion.md) · [Guía de uso](docs/guia-uso.md) · [FAQ](docs/faq.md)
+- [Revisión de los 276 contratos y discrepancias a decidir](docs/revision-contratos.md)
+- [Revisión de las propuestas](docs/revision-propuestas.md)
 
 ## Pruebas
-
 ```bash
 python -m pytest tests -q
 ```
 
-## Licencia
-
-MIT. Los datos de `examples/` son ficticios.
+Licencia MIT.

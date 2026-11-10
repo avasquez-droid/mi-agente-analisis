@@ -1,0 +1,60 @@
+# Devolución de retenciones de IVA — base: contratos modelo 2025-2026.
+variables:
+  periodo: {descripcion: "Periodo del saldo acumulado", ejemplo: "diciembre 2026", requerido: true}
+  monto: {descripcion: "Saldo estimado a devolver (USD). Opcional: si se indica, se menciona en la prestación", ejemplo: 450000}
+  porcentaje: {descripcion: "Honorario % (por defecto: tarifario)", ejemplo: 5}
+
+antecedentes:
+  - >-
+    Debido a que la compañía {{ cliente.razon_social }}, ejerce su actividad económica en la ciudad
+    de {{ cliente.ciudad }}, provincia de {{ cliente.provincia }}, es sujeto pasivo de obligaciones en
+    calidad de contribuyente; de conformidad con lo establecido en las regulaciones del Servicio de
+    Rentas Internas, Superintendencia de Compañías, Superintendencia de Bancos y en fin varias
+    instituciones públicas del país, a través de sus leyes, reglamentos y diferentes resoluciones de
+    carácter general;
+  - >-
+    Es el caso, de que “El Contratante” requiere de los servicios de asesoría legal y tributaria de
+    “El Contratado” para la presentación y posterior defensa de las solicitudes de devolución de
+    retenciones de Impuesto al Valor Agregado correspondiente al saldo acumulado hasta {{ v.periodo }}; y,
+  - >-
+    Por tal consecuencia, contrata los servicios legales tributarios de {{ census.razon_social }}, a fin
+    de asesorar y gestionar de manera directa los servicios detallados en el literal c) de la presente cláusula.
+cierre_antecedentes: false
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS
+  parrafos:
+    - >-
+      Con los antecedentes antes expuestos, la compañía {{ cliente.razon_social }}, contrata los
+      servicios profesionales de {{ census.razon_social }}, para la presentación y posterior defensa de
+      la solicitud de devoluciones de retenciones de Impuesto al Valor Agregado correspondiente al
+      saldo acumulado hasta {{ v.periodo }}{% if v.monto %}, que asciende a {{ v.monto | usd }}
+      ({{ v.monto | letras }} Dólares de los Estados Unidos de Norteamérica){% endif %}, ante el
+      Servicio de Rentas Internas, mencionado en la cláusula segunda del presente contrato.
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - >-
+      El plazo de duración del presente contrato es desde la suscripción del mismo hasta la
+      acreditación de las notas de crédito respectivas.
+
+honorarios:
+  titulo: HONORARIOS
+  parrafos:
+    - >-
+      Las partes fijan de común acuerdo por pago de los servicios legales y tributarios, de
+      conformidad con el presente contrato, el {{ v.porcentaje | pct }} (más IVA) calculado en función de
+      los valores que el Servicio de Rentas Internas acredite a “El Contratante” por concepto de
+      devolución de retenciones en la Fuente de IVA.
+    - "Los honorarios profesionales pactados serán pagaderos de la siguiente forma:"
+    - >-
+      - El 100% de los honorarios, se lo cancelará contra resultados favorables, esto es, al momento
+      de que el Servicio de Rentas Internas, resuelva a favor y los valores sean acreditados mediante
+      nota de crédito desmaterializada, por la solicitud de devolución de retenciones del Impuesto al
+      Valor Agregado correspondiente al saldo acumulado hasta {{ v.periodo }}.
+    - >-
+      En caso de que el valor resuelto para su devolución, sea menor o mayor al valor en litigio, se
+      realizará la respectiva reliquidación de honorarios profesionales, sobre la totalidad del
+      porcentaje pactado, en función de los porcentajes anteriormente establecidos, inclusive
+      intereses devueltos por el Servicio de Rentas Internas.

@@ -1,65 +1,173 @@
-"""Interfaz de línea de comandos.
+"""Interfaz de línea de comandos del Agente Comercial.
 
 Ejemplos:
-    python -m core.cli analizar examples/datos_equipo.xlsx
-    python -m core.cli analizar datos.xlsx --skill evaluacion-desempeno --formatos pdf,docx
-    python -m core.cli explorar datos.xlsx
-    python -m core.cli skills
+    python -m core.cli servicios
+    python -m core.cli analizar-cliente informe.docx
+    python -m core.cli contrato devolucion_iva --cliente cliente.yaml --var periodo="diciembre 2026"
+    python -m core.cli variables devolucion_iva
 """
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
+from datetime import date, datetime
+from pathlib import Path
 
-from .agent import ejecutar, explorar, listar_skills
-from .excel_reader import listar_hojas
+import yaml
+
+from . import conocimiento as kb
+from .contratos import generar_contrato
+from .documentos import generar_documento
+from .propuestas import generar_propuesta
+from .informe_reader import leer_informe
+from .oportunidades import analizar_grupo
+from .reporte_oportunidades import excel_oportunidades, resumen_markdown
+
+
+def _valor(texto: str):
+    try:
+        return yaml.safe_load(texto)
+    except yaml.YAMLError:
+        return texto
+
+
+def cmd_servicios(_):
+    for sid, s in kb.servicios().items():
+        estado = ("propuesta" if s.get("propuesta") else "-") + " / " + ("contrato" if s.get("clausulas") else "-")
+        print(f"{sid:28} {s.get('area', s['materia']):20} {estado:21} {s['nombre']}")
+
+
+def cmd_variables(a):
+    from .propuestas import plantilla_servicio
+    srv = kb.servicio(a.servicio)
+    if srv.get("propuesta"):
+        print(f"Propuesta de '{a.servicio}':")
+        for k, m in (plantilla_servicio(a.servicio).get("variables") or {}).items():
+            req = " (obligatoria)" if m.get("requerido") else ""
+            print(f"  {k}{req}: {m.get('descripcion')}  — ej.: {m.get('ejemplo')}")
+    if not srv.get("clausulas"):
+        print("(sin contrato tipo)")
+        return
+    scl = kb.clausulas_servicio(a.servicio)
+    print(f"Contrato de '{a.servicio}' (además de los datos del cliente):")
+    for k, m in (scl.get("variables") or {}).items():
+        req = " (obligatoria)" if m.get("requerido") else ""
+        print(f"  {k}{req}: {m.get('descripcion')}  — ej.: {m.get('ejemplo')}")
+
+
+def cmd_analizar(a):
+    inf = leer_informe(a.informe)
+    r = analizar_grupo(inf)
+    carpeta = Path(a.salida) if a.salida else kb.RAIZ / "salidas"
+    base = re.sub(r"\W+", "_", inf.main.nombre if inf.main else inf.ruc_main).strip("_")
+    archivos = {"xlsx": excel_oportunidades(
+        inf, r["oportunidades"], r["metricas"],
+        carpeta / f"{base}_oportunidades_{datetime.now():%Y%m%d_%H%M}.xlsx")}
+    md = resumen_markdown(inf, r["oportunidades"], archivos)
+    ruta_md = archivos["xlsx"].with_suffix(".md")
+    ruta_md.write_text(md, encoding="utf-8")
+    print(md)
+    if a.json:
+        print(json.dumps([o.__dict__ for o in r["oportunidades"]], ensure_ascii=False, indent=1, default=str))
+
+
+def cmd_contrato(a):
+    cliente = yaml.safe_load(Path(a.cliente).read_text(encoding="utf-8")) if a.cliente else {}
+    variables = {}
+    if a.variables:
+        variables.update(yaml.safe_load(Path(a.variables).read_text(encoding="utf-8")) or {})
+    for par in a.var or []:
+        k, _, v = par.partition("=")
+        variables[k.strip()] = _valor(v)
+    fecha = date.fromisoformat(a.fecha) if a.fecha else date.today()
+    c = generar_contrato(a.servicio, cliente, variables, fecha, a.salida)
+    print(f"Contrato generado: {c.archivo}")
+    if c.pendientes:
+        print("Pendientes por completar/revisar (resaltados en amarillo en el Word):")
+        for p in c.pendientes:
+            print(f"  - {p}")
+
+
+def cmd_confidencialidad(a):
+    cliente = yaml.safe_load(Path(a.cliente).read_text(encoding="utf-8")) if a.cliente else {}
+    variables = {}
+    for par in a.var or []:
+        k, _, v = par.partition("=")
+        variables[k.strip()] = _valor(v)
+    fecha = date.fromisoformat(a.fecha) if a.fecha else date.today()
+    d = generar_documento("acuerdo_confidencialidad", cliente, variables, fecha, a.salida)
+    print(f"Acuerdo generado: {d.archivo}")
+    if d.pendientes:
+        print("Pendientes (resaltados en amarillo):")
+        for p in d.pendientes:
+            print(f"  - {p}")
+
+
+def cmd_propuesta(a):
+    cliente = yaml.safe_load(Path(a.cliente).read_text(encoding="utf-8")) if a.cliente else {}
+    variables = {}
+    if a.variables:
+        variables.update(yaml.safe_load(Path(a.variables).read_text(encoding="utf-8")) or {})
+    for par in a.var or []:
+        k, _, v = par.partition("=")
+        variables[k.strip()] = _valor(v)
+    fecha = date.fromisoformat(a.fecha) if a.fecha else date.today()
+    p = generar_propuesta(a.servicio, cliente, variables, fecha, a.salida)
+    print(f"Propuesta generada: {p.archivo}")
+    if p.pendientes:
+        print("Pendientes por completar:")
+        for x in p.pendientes:
+            print(f"  - {x}")
 
 
 def main(argv: list[str] | None = None) -> int:
-    # En Windows la salida por tubería usa cp1252 y falla con caracteres como "→".
-    for flujo in (sys.stdout, sys.stderr):
+    for flujo in (sys.stdout, sys.stderr):           # Windows: forzar UTF-8
         if hasattr(flujo, "reconfigure"):
             flujo.reconfigure(encoding="utf-8")
-    parser = argparse.ArgumentParser(prog="agente", description="Agente de Análisis Inteligente")
-    sub = parser.add_subparsers(dest="comando", required=True)
+    p = argparse.ArgumentParser(prog="agente-comercial", description="Agente Comercial Census")
+    sub = p.add_subparsers(dest="comando", required=True)
 
-    p = sub.add_parser("analizar", help="Aplica una skill a un Excel y genera entregables")
-    p.add_argument("archivo", help="Ruta al .xlsx/.xls/.csv")
-    p.add_argument("--skill", default="evaluacion-desempeno", help="Id de la skill (ver 'skills')")
-    p.add_argument("--formatos", default="pdf,xlsx,docx,md", help="Lista separada por comas")
-    p.add_argument("--salida", default=None, help="Carpeta de salida (por defecto salidas/)")
-    p.add_argument("--hoja", default=None, help="Nombre o índice de hoja")
-    p.add_argument("--titulo", default=None, help="Título del informe")
+    sub.add_parser("servicios", help="Lista la cartera de servicios").set_defaults(f=cmd_servicios)
 
-    e = sub.add_parser("explorar", help="Perfila el archivo sin aplicar metodología")
-    e.add_argument("archivo")
-    e.add_argument("--hoja", default=None)
+    v = sub.add_parser("variables", help="Variables que necesita el contrato de un servicio")
+    v.add_argument("servicio")
+    v.set_defaults(f=cmd_variables)
 
-    sub.add_parser("skills", help="Lista las skills disponibles")
+    an = sub.add_parser("analizar-cliente", help="Lee un informe de investigación (Word) y propone servicios")
+    an.add_argument("informe")
+    an.add_argument("--salida", default=None)
+    an.add_argument("--json", action="store_true", help="Imprime también las oportunidades en JSON")
+    an.set_defaults(f=cmd_analizar)
 
-    h = sub.add_parser("hojas", help="Lista las hojas de un Excel")
-    h.add_argument("archivo")
+    c = sub.add_parser("contrato", help="Genera el contrato .docx de un servicio")
+    c.add_argument("servicio")
+    c.add_argument("--cliente", help="YAML con razon_social, ruc, representante, cargo, ciudad, provincia, correos...")
+    c.add_argument("--variables", help="YAML con las variables del servicio")
+    c.add_argument("--var", action="append", help="variable=valor (se puede repetir)")
+    c.add_argument("--fecha", help="AAAA-MM-DD (por defecto hoy)")
+    c.add_argument("--salida", default=None)
+    c.set_defaults(f=cmd_contrato)
 
-    args = parser.parse_args(argv)
-    hoja = getattr(args, "hoja", None)
-    if hoja is not None and str(hoja).isdigit():
-        hoja = int(hoja)
+    n = sub.add_parser("confidencialidad", help="Genera el acuerdo de confidencialidad (NDA) con el cliente")
+    n.add_argument("--cliente", help="YAML del cliente (puede incluir representada_por y cedula)")
+    n.add_argument("--var", action="append", help="objeto, sector, duracion_anios, ciudad_firma... (variable=valor)")
+    n.add_argument("--fecha", help="AAAA-MM-DD (por defecto hoy)")
+    n.add_argument("--salida", default=None)
+    n.set_defaults(f=cmd_confidencialidad)
 
-    if args.comando == "skills":
-        for s in listar_skills():
-            print(s)
-        return 0
-    if args.comando == "hojas":
-        print("\n".join(listar_hojas(args.archivo)))
-        return 0
-    if args.comando == "explorar":
-        print(json.dumps(explorar(args.archivo, hoja), ensure_ascii=False, indent=2))
-        return 0
+    pr = sub.add_parser("propuesta", help="Genera la propuesta de servicios (.pptx) con la plantilla Census")
+    pr.add_argument("servicio")
+    pr.add_argument("--cliente", help="YAML con razon_social y ciudad")
+    pr.add_argument("--variables", help="YAML con las variables de la propuesta")
+    pr.add_argument("--var", action="append", help="variable=valor (se puede repetir)")
+    pr.add_argument("--fecha", help="AAAA-MM-DD")
+    pr.add_argument("--salida", default=None)
+    pr.set_defaults(f=cmd_propuesta)
 
-    salida = ejecutar(args.archivo, skill=args.skill, formatos=args.formatos.split(","),
-                      carpeta_salida=args.salida, hoja=hoja, titulo=args.titulo)
-    print(salida.resumen_texto())
+    a = p.parse_args(argv)
+    a.f(a)
     return 0
 
 

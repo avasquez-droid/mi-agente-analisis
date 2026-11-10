@@ -1,0 +1,359 @@
+# CARTERA DE SERVICIOS — catálogo que usa el agente.
+#
+# Armado a partir de los 276 contratos 2024-2026 y de 14 propuestas 2025-2026 (Aduana, Asesoría
+# Tributaria, Devoluciones, Cobranzas). Lo que dice "PENDIENTE" o "validar" debe completarse con la
+# cartera oficial. Estados de base legal: "citada en propuestas/contratos" = así aparece en
+# documentos de Census; "sugerida (validar)" = propuesta del agente.
+#
+# Campos:
+#   materia        Tributario | Aduanero | Cobranzas | Legal corporativo | Contable
+#   entidad        clave de conocimiento/entidades.yaml que firma el contrato
+#   contexto       cuándo aplica y qué se hace (para propuestas y correos)
+#   base_legal     normas de soporte; estado: sugerida (validar) | validada
+#   clausulas      archivo en conocimiento/clausulas/servicios/ con las cláusulas propias
+#   metricas       clave en conocimiento/metricas.yaml (señales para detectarlo en el informe)
+#   tarifa         clave en conocimiento/tarifario.yaml (cómo se cobran los honorarios)
+#   propuesta      archivo en conocimiento/propuestas/ con los textos de la propuesta (PPTX)
+#   area           área de Census que lo presenta (como se organizan las propuestas)
+
+devolucion_iva:
+  nombre: Devolución de retenciones de IVA (saldo acumulado)
+  materia: Tributario
+  entidad: censusconsultores
+  contexto: >
+    Presentación y defensa ante el SRI de las solicitudes de devolución de retenciones de IVA
+    por el saldo de crédito tributario acumulado hasta un periodo determinado, hasta la
+    acreditación de las notas de crédito desmaterializadas.
+  base_legal:
+    - norma: Ley de Régimen Tributario Interno (recuperación de saldos a favor por crédito tributario de retenciones de IVA)
+      estado: citada en propuestas
+    - norma: Código Tributario (pago en exceso)
+      estado: sugerida (validar)
+  area: Devoluciones
+  propuesta: devolucion_iva.yaml
+  clausulas: devolucion_iva.yaml
+  metricas: devolucion_iva
+  tarifa: devolucion_iva
+
+devolucion_ir:
+  nombre: Devolución de pago en exceso de Impuesto a la Renta
+  materia: Tributario
+  entidad: censusconsultores
+  contexto: >
+    Solicitud y defensa ante el SRI del pago en exceso de Impuesto a la Renta de un ejercicio
+    fiscal (retenciones y anticipos que superan el impuesto causado).
+  base_legal:
+    - norma: Código Tributario (pago en exceso)
+      estado: sugerida (validar)
+    - norma: Ley de Régimen Tributario Interno (retenciones en la fuente de IR)
+      estado: sugerida (validar)
+  variantes: >
+    Pago en exceso derivado de una resolución (p. ej. recurso de revisión que reduce un valor ya
+    pagado): se cotiza aparte, con honorario mayor (propuesta 2025: 20 % sobre lo recuperado).
+  area: Devoluciones
+  propuesta: devolucion_ir.yaml
+  clausulas: devolucion_ir.yaml
+  metricas: devolucion_ir
+  tarifa: devolucion_ir
+
+planificacion_isd:
+  nombre: Planificación tributaria del Impuesto a la Salida de Divisas (ISD)
+  materia: Tributario
+  entidad: censusconsultores
+  contexto: >
+    Análisis y estructuración de los pagos a proveedores del exterior para optimizar el ISD,
+    incluida la calificación del proveedor como institución financiera no especializada ante la
+    Superintendencia de Bancos y el registro de las operaciones de financiamiento en el BCE.
+    Acompañamiento de 12 meses desde el primer desembolso optimizado.
+  base_legal:
+    - norma: Art. 159 num. 3 de la Ley Reformatoria para la Equidad Tributaria (exención por pagos de capital e intereses de financiamiento externo ≥ 180 días)
+      estado: citada en propuestas
+    - norma: Art. 14 del Reglamento para la Aplicación del ISD (calificación de entidades no financieras especializadas; registro en el BCE)
+      estado: citada en propuestas
+    - norma: Art. 64 del Código Orgánico Monetario y Financiero y Resolución JPRM-2021-004-M (definición de crédito externo)
+      estado: citada en propuestas
+    - norma: Art. 156, tercer inciso, de la Ley Reformatoria para la Equidad Tributaria (presunción de ISD) y absolución SRI Oficio 917012021OCON001756 (financiamiento bancario indirecto NO aplica)
+      estado: citada en propuestas
+  area: Asesoría Tributaria
+  propuesta: planificacion_isd.yaml
+  clausulas: planificacion_isd.yaml
+  metricas: planificacion_isd
+  tarifa: planificacion_isd
+
+pago_indebido_isd:
+  nombre: Reclamo de pago indebido de ISD
+  materia: Tributario
+  entidad: censusconsultores
+  contexto: >
+    Reclamos administrativos ante el SRI y, de ser necesario, demandas ante el Tribunal Distrital
+    de lo Contencioso Tributario por ISD pagado indebidamente (casos vistos: aseguradoras que
+    transfieren divisas en ejecución de pólizas con entidades del Estado y pagos de reaseguro).
+  base_legal:
+    - norma: Código Tributario (pago indebido)
+      estado: sugerida (validar)
+  clausulas: pago_indebido_isd.yaml
+  metricas: pago_indebido_isd
+  tarifa: pago_indebido_isd
+
+reclamo_aranceles_omc:
+  nombre: Reclamo y demanda por aranceles sobre el techo OMC
+  materia: Aduanero
+  entidad: censusconsultores
+  contexto: >
+    Reclamos administrativos de pago indebido ante el SENAE y demandas de impugnación ante el
+    Tribunal Distrital de lo Contencioso Tributario por declaraciones aduaneras con arancel mixto
+    que superó el techo arancelario consolidado por Ecuador ante la OMC.
+  base_legal:
+    - norma: Protocolo de Adhesión del Ecuador al Acuerdo por el que se establece la OMC (techo arancelario consolidado)
+      estado: citada en contratos
+    - norma: Acuerdo General sobre Aranceles Aduaneros y Comercio (techo arancelario consolidado de Ecuador ante la OMC)
+      estado: citada en propuestas
+    - norma: Código Orgánico de la Producción, Comercio e Inversiones (COPCI) y Código Tributario (pago indebido)
+      estado: sugerida (validar)
+  area: Aduana
+  propuesta: reclamo_aranceles_omc.yaml
+  clausulas: reclamo_aranceles_omc.yaml
+  metricas: reclamo_aranceles_omc
+  tarifa: reclamo_aranceles_omc
+
+tasa_seguridad:
+  nombre: Reclamo de pago indebido de la tasa de seguridad (importaciones desde Colombia)
+  materia: Aduanero
+  entidad: censusconsultores
+  contexto: >
+    Reclamos de pago indebido ante el SENAE y demandas de impugnación por la tasa de seguridad
+    pagada en importaciones cuyo origen o procedencia es Colombia.
+  base_legal:
+    - norma: Art. 122 del Código Tributario (pago indebido)
+      estado: citada en propuestas
+    - norma: Normativa comunitaria andina (incompatibilidad de gravámenes al comercio intracomunitario)
+      estado: citada en propuestas
+    - norma: "Precedente: Corte Nacional de Justicia, juicio 09501-2021-00625 (Tasa de Servicio de Control Aduanero — TSCA declarada pago indebido)"
+      estado: citada en propuestas
+    - norma: PENDIENTE — norma interna que crea la tasa de seguridad (aplicada desde febrero de 2026)
+      estado: pendiente
+  area: Aduana
+  propuesta: tasa_seguridad.yaml
+  clausulas: tasa_seguridad.yaml
+  metricas: tasa_seguridad
+  tarifa: tasa_seguridad
+
+deposito_aduanero:
+  nombre: Autorización de régimen de Depósito Aduanero propio
+  materia: Aduanero
+  entidad: censusconsultores
+  contexto: >
+    Asesoría y gestión integral hasta obtener del SENAE la resolución de autorización del régimen
+    de Depósito Aduanero. Se ofrece a importadores que hoy usan depósitos aduaneros públicos
+    (Régimen 70) por montos relevantes.
+  base_legal:
+    - norma: Art. 152 del COPCI (régimen de Depósito Aduanero)
+      estado: citada en propuestas
+    - norma: Arts. 144, 145 y 146 del Reglamento al COPCI (modalidades, instalaciones, plazo de permanencia de 1 año + 6 meses)
+      estado: citada en propuestas
+    - norma: Arts. 142 y 143 del COPCI (abandono tácito y definitivo — riesgo del régimen 10)
+      estado: citada en propuestas
+  area: Aduana
+  propuesta: deposito_aduanero.yaml
+  clausulas: deposito_aduanero.yaml
+  metricas: deposito_aduanero
+  tarifa: deposito_aduanero
+
+cobranza_extrajudicial:
+  nombre: Cobranza extrajudicial
+  materia: Cobranzas
+  entidad: census_cobranzas
+  contexto: >
+    Gestión de cobro de cartera vencida por vía extrajudicial: cartas, correos, llamadas y
+    actas de transacción.
+  base_legal:
+    - norma: Código Civil (obligaciones y transacción)
+      estado: sugerida (validar)
+  area: Cobranzas
+  propuesta: cobranza.yaml
+  clausulas: cobranza_extrajudicial.yaml
+  metricas: cobranza
+  tarifa: cobranza_extrajudicial
+
+cobranza_judicial:
+  nombre: Cobranza judicial
+  materia: Cobranzas
+  entidad: censusconsultores   # los contratos 2026 de cobranza judicial los firma CENSUSCONSULTORES
+  contexto: >
+    Acciones judiciales para el cobro de cartera: demanda, patrocinio en audiencias, impulsos
+    procesales y ejecución.
+  base_legal:
+    - norma: Código Orgánico General de Procesos (procedimientos de cobro)
+      estado: sugerida (validar)
+  area: Cobranzas
+  propuesta: cobranza.yaml
+  clausulas: cobranza_judicial.yaml
+  metricas: cobranza
+  tarifa: cobranza_judicial
+
+outsourcing_contable:
+  nombre: Outsourcing contable y tributario
+  materia: Contable
+  entidad: censusconsultores
+  contexto: >
+    Contabilidad mensual, declaraciones y anexos ante el SRI, y estados financieros anuales ante
+    la Superintendencia de Compañías, con límite de transacciones mensuales.
+  base_legal:
+    - norma: NIIF; obligaciones de declaración del SRI y de la Superintendencia de Compañías
+      estado: sugerida (validar)
+  clausulas: outsourcing_contable.yaml
+  metricas: outsourcing_contable
+  tarifa: outsourcing_contable
+
+defensa_laboral:
+  nombre: Patrocinio y asesoría laboral
+  materia: Legal corporativo
+  entidad: censusconsultores
+  contexto: >
+    Defensa en juicios laborales (p. ej. despido intempestivo) y, como servicio recurrente,
+    outsourcing laboral para prevenir contingencias.
+  base_legal:
+    - norma: Código del Trabajo; Código Orgánico General de Procesos
+      estado: sugerida (validar)
+  clausulas: null          # PENDIENTE: no hay contrato tipo de patrocinio laboral en el material
+  metricas: defensa_laboral
+  tarifa: defensa_laboral
+
+planificacion_tributaria:
+  nombre: Planificación tributaria integral
+  materia: Tributario
+  entidad: censusconsultores
+  contexto: >
+    Revisión de la carga tributaria del ejercicio y diseño de alternativas legales de
+    optimización (IR, IVA, ISD), con honorario fijo por etapas.
+  base_legal:
+    - norma: Ley de Régimen Tributario Interno; Código Tributario
+      estado: sugerida (validar)
+  area: Asesoría Tributaria
+  propuesta: planificacion_tributaria.yaml
+  clausulas: null          # PENDIENTE: elegir contrato tipo (hay modelos 2026 en Planificación Tributaria)
+  metricas: planificacion_tributaria
+  tarifa: planificacion_tributaria
+
+disminucion_autorretencion:
+  nombre: Disminución del porcentaje de autorretención
+  materia: Tributario
+  entidad: censusconsultores
+  contexto: >
+    Solicitud al SRI para reducir el porcentaje de autorretención de IR cuando las retenciones
+    generan crédito tributario recurrente (visto en exportadores).
+  base_legal:
+    - norma: Resolución NAC-DGERCGC24-00000003 (16 de enero de 2024) del SRI
+      estado: citada en contratos
+  clausulas: null          # PENDIENTE: elegir contrato tipo (hay modelos en Disminución autorretención)
+  metricas: disminucion_autorretencion
+  tarifa: disminucion_autorretencion
+
+devolucion_iva_inmobiliario:
+  nombre: Devolución de IVA inmobiliario / vivienda de interés social y registro MIDUVI
+  materia: Tributario
+  entidad: censusconsultores
+  contexto: >
+    Registro de proyectos ante el MIDUVI y devolución del IVA pagado en la construcción de
+    vivienda de interés social (fideicomisos y constructoras).
+  base_legal:
+    - norma: Art. 72 de la Ley de Eficiencia Económica y Generación de Empleo (R.O. 461, 20-dic-2023)
+      estado: citada en propuestas
+    - norma: Resolución NAC-DGERCGC24-00000019 del SRI (límite del 6,5 % del costo total referencial del proyecto; base de la vía judicial)
+      estado: citada en propuestas
+  requisitos: >
+    No haber usado el IVA como crédito tributario ni compensado o reembolsado; título habilitante
+    municipal y registro en el MIDUVI; excepción para vivienda propia (hasta dos proyectos por año);
+    plazo máximo de devolución 90 días mediante nota de crédito.
+  area: Devoluciones
+  propuesta: devolucion_iva_inmobiliario.yaml
+  clausulas: null          # PENDIENTE: elegir contrato tipo (hay modelos en Devoluciones)
+  metricas: devolucion_iva_inmobiliario
+  tarifa: devolucion_iva_inmobiliario
+
+revision_obligaciones:
+  nombre: Revisión contable-tributaria y defensa de deudas con el SRI
+  materia: Tributario
+  entidad: censusconsultores
+  contexto: >
+    Revisión de obligaciones y contingencias; defensa frente a deudas firmes o impugnadas y
+    facilidades de pago vigentes con el SRI.
+  base_legal:
+    - norma: Código Tributario (reclamos, recursos y facilidades de pago)
+      estado: sugerida (validar)
+  clausulas: null          # PENDIENTE: elegir contrato tipo (hay un modelo 2026 de revisión contable y tributaria)
+  metricas: revision_obligaciones
+  tarifa: revision_obligaciones
+
+# ---------------------------------------------------------------- servicios vistos en propuestas
+
+control_posterior_aduanero:
+  nombre: Defensa en control posterior del SENAE (rectificación de tributos)
+  materia: Aduanero
+  area: Aduana
+  entidad: censusconsultores
+  contexto: >
+    Descargos al Informe Preliminar de Resultados de Control Posterior (p. ej. reclasificación
+    arancelaria de mercancías), reclamo administrativo contra la rectificación de tributos y
+    acción contencioso-tributaria. Para suspender la coactiva en vía judicial el cliente debe
+    rendir caución del 10 % de la obligación.
+  base_legal:
+    - norma: COPCI y Reglamento (control posterior, rectificación de tributos); Código Tributario (reclamos, caución)
+      estado: sugerida (validar)
+  propuesta: control_posterior_aduanero.yaml
+  clausulas: null
+  metricas: control_posterior_aduanero
+  tarifa: control_posterior_aduanero
+
+patrocinio_civil:
+  nombre: Patrocinio y asesoría legal en litigios civiles (ejecución de actas)
+  materia: Legal corporativo
+  area: Aduana            # así llegó la propuesta; confirmar el área
+  entidad: censusconsultores
+  contexto: >
+    Defensa en procesos civiles en contra del cliente (ejecución de actas de mediación o de
+    transacción): estrategia, escritos, prueba, audiencias, recursos y negociación.
+  base_legal:
+    - norma: Código Orgánico General de Procesos (ejecución); Ley de Arbitraje y Mediación (actas de mediación)
+      estado: sugerida (validar)
+  propuesta: patrocinio_civil.yaml
+  clausulas: null
+  metricas: patrocinio_civil
+  tarifa: patrocinio_civil
+
+planificacion_utilidades:
+  nombre: Planificación del impuesto sobre utilidades no distribuidas (anticipo de dividendos)
+  materia: Tributario
+  area: Asesoría Tributaria
+  entidad: censusconsultores
+  contexto: >
+    Las compañías que no distribuyen dividendos pagan un impuesto sobre utilidades no distribuidas
+    (anticipo de dividendos). Se analiza cada compañía y se diseña la estrategia (aumento de
+    capital, holding, distribución de dividendos) para que lo pagado sea crédito tributario y
+    optimizar el ejercicio siguiente.
+  base_legal:
+    - norma: Ley Orgánica de Transparencia Social y su reglamento (impuesto sobre utilidades no distribuidas)
+      estado: citada en propuestas
+  propuesta: planificacion_utilidades.yaml
+  clausulas: null
+  metricas: planificacion_utilidades
+  tarifa: planificacion_utilidades
+
+reestructuracion_societaria:
+  nombre: Aumento de capital o constitución de compañía holding
+  materia: Legal corporativo
+  area: Asesoría Tributaria
+  entidad: censusconsultores
+  contexto: >
+    Implementación societaria de la planificación de utilidades: acta de junta, documento de
+    aumento de capital y marginación, o constitución de S.A.S. holding (reserva de nombre,
+    estatutos, nombramientos, RUC). Incluye revisión tributaria de la figura conveniente.
+  base_legal:
+    - norma: Ley de Compañías (aumento de capital; S.A.S.)
+      estado: sugerida (validar)
+  propuesta: planificacion_utilidades.yaml     # se presenta junto con la planificación de utilidades
+  propuesta_tarifa: planificacion_utilidades
+  propuesta_vars: {incluir_reestructuracion: true}
+  clausulas: null
+  metricas: planificacion_utilidades
+  tarifa: reestructuracion_societaria

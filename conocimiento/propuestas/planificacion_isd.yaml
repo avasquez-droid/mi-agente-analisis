@@ -1,0 +1,66 @@
+# Base: propuesta 2026 (Asesoría Tributaria) — exoneración de ISD por financiamiento externo.
+portada: PLANIFICACIÓN TRIBUTARIA - ISD
+variables:
+  actividad: {descripcion: "Actividad del cliente (para antecedentes)", ejemplo: "la importación y comercialización de equipos industriales"}
+  isd_por_anio: {descripcion: "ISD pagado por año {2024: x, 2025: y}", ejemplo: {2024: 92804.40, 2025: 45824.04}}
+  porcentaje: {descripcion: "Honorario % sobre el ahorro (por defecto: tarifario)", ejemplo: 10}
+asunto: >-
+  la planificación tributaria respecto de la exoneración del Impuesto a la Salida de Divisas por
+  intereses de crédito externo e importaciones de bienes
+antecedentes:
+  - "{% if v.actividad %}{{ cliente.razon_social }} es una empresa dedicada principalmente a {{ v.actividad }}.{% endif %}"
+  - >-
+    {% if v.isd_por_anio %}La compañía ha pagado por concepto de ISD: {% for a, x in v.isd_por_anio.items() %}{{ a }}: {{ x | usd }}{{ '; ' if not loop.last else '.' }}{% endfor %}{% endif %}
+  - >-
+    En el marco de sus operaciones de importación, la compañía asume un costo significativo por
+    concepto de Impuesto a la Salida de Divisas (ISD) generado al efectuar pagos a sus proveedores
+    internacionales.
+  - >-
+    En atención a ello, se plantea un análisis integral de su estructura operativa y financiera,
+    con el fin de identificar alternativas viables que permitan optimizar la carga fiscal derivada
+    del ISD, mitigando su impacto y mejorando la eficiencia tributaria de la compañía.
+secciones:
+  - titulo: Base legal
+    parrafos:
+      - >-
+        La estrategia se sustenta en el Art. 159 numeral 3 de la Ley Reformatoria para la Equidad
+        Tributaria y en el Art. 14 del Reglamento para la Aplicación del ISD, que prevén la
+        exoneración de los pagos al exterior por amortización de capital e intereses de créditos
+        otorgados por instituciones financieras internacionales o entidades no financieras
+        especializadas calificadas en Ecuador, con plazo de 180 días o más, destinados a
+        inversiones productivas.
+      - >-
+        Para acceder al beneficio se considera la definición de crédito externo del Art. 64 del
+        Código Orgánico Monetario y Financiero y de la Resolución JPRM-2021-004-M; la calificación de
+        la entidad no financiera especializada ante la Superintendencia de Bancos; y el registro del
+        crédito en el Banco Central del Ecuador.
+      - >-
+        No aplica el financiamiento bancario indirecto (sucursal en el exterior de un banco local que
+        paga directamente al proveedor): el SRI, en el Oficio No. 917012021OCON001756, determinó que
+        ese pago causa ISD por la presunción del tercer inciso del Art. 156 de la Ley Reformatoria
+        para la Equidad Tributaria.
+objetivo: >-
+  Analizar la normativa vigente e identificar las mejores opciones respecto al tratamiento del
+  Impuesto a la Salida de Divisas.
+alcance:
+  - items:
+      - Análisis de la legislación tributaria vigente en Ecuador aplicable al Impuesto a la Salida de Divisas y su impacto en la compañía.
+      - Evaluación de la naturaleza de cada una de las operaciones de importación.
+      - Revisión y optimización de la estructura de la compañía respecto al pago a sus proveedores en el exterior.
+      - Conclusiones sobre el tratamiento del ISD en el sentido más beneficioso para el contribuyente.
+      - Informe con el resumen del análisis y las alternativas para la optimización.
+      - Calificación de la entidad no financiera especializada ante la Superintendencia de Bancos y registro del crédito externo en el BCE.
+      - Defensa en sede administrativa ante el SRI si existen observaciones sobre el ISD de los periodos acompañados por Census.
+honorarios:
+  filas:
+    - servicio: Planificación tributaria respecto al ISD
+      honorario: "Un honorario del {{ v.porcentaje | pct }} + IVA sobre el ahorro de ISD."
+      forma_pago: "{% if t.retainer_usd %}Retainer inicial de {{ t.retainer_usd | usd }}, atribuible al honorario total y descontable del primer ahorro efectivo. {% endif %}El honorario será pagadero contra cada pago que la compañía realice a su proveedor en el exterior, durante un año calendario."
+  notas:
+    - >-
+      Incluye la defensa en sede administrativa ante el SRI respecto de los periodos en los que
+      Census haya brindado efectivamente el acompañamiento; no incluye periodos realizados por el
+      cliente sin participación de Census.
+    - >-
+      Duración: doce (12) meses contados desde el primer desembolso al exterior que incluya la
+      optimización del ISD.

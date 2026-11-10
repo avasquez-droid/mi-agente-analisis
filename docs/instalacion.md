@@ -27,7 +27,8 @@ pip install -r requirements.txt
 
 ## 4. Verificar
 ```bash
-python -m core.cli analizar examples/datos_equipo.xlsx --formatos md
+python examples/generar_informe_ejemplo.py
+python -m core.cli analizar-cliente examples/informe_ejemplo.docx
 python -m pytest tests -q
 ```
 Si ves el resumen en Markdown y las pruebas pasan, todo está listo.
@@ -36,7 +37,7 @@ Si ves el resumen en Markdown y las pruebas pasan, todo está listo.
 
 ### Claude Code
 ```bash
-pip install claude-code  # o siga https://docs.anthropic.com/claude-code
+# Instalación: ver https://docs.claude.com/en/docs/claude-code
 claude                   # dentro de la carpeta del proyecto
 ```
 Claude leerá `CLAUDE.md` y encontrará las skills en `.claude/skills/`.
@@ -59,5 +60,5 @@ Consulte `adapters/codex/README.md` o `adapters/claude/README.md`.
 |---|---|
 | `ModuleNotFoundError: yaml` | `pip install PyYAML` |
 | `No module named core` | Ejecute los comandos desde la raíz del proyecto. |
-| Error al leer `.xls` antiguo | `pip install xlrd` o guarde el archivo como `.xlsx`. |
+| El informe es `.doc` antiguo | Ábralo en Word y guárdelo como `.docx`. |
 | Acentos mal mostrados en Windows | `set PYTHONUTF8=1` antes de ejecutar. |

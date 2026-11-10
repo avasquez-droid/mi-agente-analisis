@@ -1,0 +1,85 @@
+# Reclamo de pago indebido de ISD — base: contratos modelo 2026 (aseguradoras).
+variables:
+  descripcion_operaciones:
+    descripcion: "Descripción de las operaciones que generaron el ISD indebido"
+    ejemplo: "las transferencias al exterior efectuadas en ejecución de pólizas contratadas por entidades del Estado y en los pagos de reaseguro vinculados"
+    requerido: true
+  hasta: {descripcion: "Hasta qué periodo se incluyen pagos futuros", ejemplo: "diciembre 2026", requerido: true}
+  antecedente_cliente: {descripcion: "Literal de contexto del cliente (opcional)", ejemplo: "“El Contratante”, en su calidad de compañía aseguradora..."}
+  porcentaje: {descripcion: "Honorario % (por defecto: tarifario)", ejemplo: 20}
+extras: [cambio_abogado]
+
+antecedentes:
+  - "{{ v.antecedente_cliente }}"
+  - >-
+    Es el caso, que “El Contratante” requiere de los servicios de asesoría legal tributaria y
+    patrocinio judicial de “El Contratado” para la asesoría y acompañamiento en la presentación de
+    reclamos administrativos de pago indebido ante el Servicio de Rentas Internas, y posterior
+    demandas de impugnación ante el Tribunal Distrital de lo Contencioso Tributario de Guayaquil en
+    caso de ser necesaria, relacionadas con el Impuesto a la Salida de Divisas (ISD) pagado en
+    {{ v.descripcion_operaciones }}, de todos los períodos que a la fecha se encuentren vigentes para su
+    reclamo e inclusive los que se llegaren a pagar hasta {{ v.hasta }}, al constituir pagos indebidos
+    conforme a la normativa tributaria aplicable.
+cierre_antecedentes: true
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS
+  parrafos:
+    - >-
+      Con los antecedentes antes expuestos, la compañía {{ cliente.razon_social }}, contrata los
+      servicios profesionales de {{ census.razon_social }}, para la asesoría legal tributaria y
+      patrocinio judicial en la presentación de reclamos administrativos de pago indebido ante el
+      Servicio de Rentas Internas (SRI), relacionados con el Impuesto a la Salida de Divisas (ISD) pagado
+      en {{ v.descripcion_operaciones }}, de todos los períodos que a la fecha se encuentren vigentes para
+      su reclamo e inclusive los que se llegaren a pagar hasta {{ v.hasta }}; y de ser necesario, la
+      presentación de una o varias demandas de impugnación ante el Tribunal Distrital de lo
+      Contencioso Tributario de Guayaquil, en caso de ser necesaria por resolución negativa de los
+      reclamos de pago indebido.
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - >-
+      El plazo de duración del presente contrato es desde la suscripción del mismo, hasta que exista un
+      pronunciamiento en firme, sea en vía administrativa o judicial, incluyendo de ser procedente la
+      sustanciación y resolución del Recurso de Casación ante la Corte Nacional de Justicia, respecto de
+      cada uno de los reclamos y/o acciones que se presenten en cumplimiento de la cláusula
+      {{ ordinal_de('prestacion') }} del presente instrumento, y hasta que, como consecuencia de dicho
+      pronunciamiento, el Servicio de Rentas Internas emita la correspondiente nota de crédito,
+      compensación o cualquier otro mecanismo de reconocimiento y devolución de los valores reclamados
+      a favor de “El Contratante”.
+
+honorarios:
+  titulo: HONORARIOS POR SERVICIOS
+  parrafos:
+    - >-
+      Las partes fijan de común acuerdo, por concepto de los servicios legales y tributarios objeto del
+      presente contrato, un honorario equivalente al {{ v.porcentaje | pct }} más IVA sobre los valores
+      recuperados a través de los reclamos por pago indebido o demandas de impugnación judicial con sus
+      intereses. Los cuales serán pagados en su totalidad cuando se encuentre acreditada la nota de
+      crédito desmaterializada en el sistema del Servicio de Rentas Internas (SRI) del valor pagado
+      indebidamente más sus respectivos intereses.
+    - >-
+      Los gastos por peritajes, gastos notariales, y cualquier gasto adicional que se efectúe en la
+      prestación del servicio, deberá ser cubierto por “El Contratante”, debiendo ser cancelados de
+      forma directa.
+    - >-
+      Los honorarios incluyen la defensa de “El Contratante” en caso de presentarse recurso de casación
+      y/o acción extraordinaria de protección por cualquiera de las partes dentro del o los procesos
+      judiciales que sustancie las demandas de impugnación judicial que se presenten en caso de ser
+      necesarias por resolución negativa de los reclamos de pago indebido inicial.
+
+obligaciones:
+  titulo: OBLIGACIONES DE LAS PARTES
+  parrafos:
+    - "Las partes de común acuerdo convienen establecer como obligaciones de cada una de ellas las siguientes:"
+    - "Obligaciones de “El Contratado”:"
+    - a) Brindar asesoría técnica y legal en base al ordenamiento jurídico-tributario para la identificación, cuantificación y recuperación del ISD pagado indebidamente por “El Contratante”, conforme a la cláusula {{ ordinal_de('prestacion') }}.
+    - b) Revisar y calificar la información y documentación entregada por “El Contratante”. Esta documentación servirá única y exclusivamente para la elaboración de los documentos necesarios dentro del servicio contratado.
+    - c) Efectuar todas las gestiones legales necesarias para precautelar los intereses legales y económicos de “El Contratante” en los reclamos administrativos y, de ser el caso, en las acciones judiciales derivadas.
+    - d) Representar a “El Contratante” en las diligencias, audiencias o recursos que se lleven a cabo tanto en vía administrativa ante el Servicio de Rentas Internas, como en vía judicial ante el Tribunal Distrital de lo Contencioso Tributario y la Corte Nacional de Justicia.
+    - "Obligaciones de “El Contratante”:"
+    - a) Entregar a “El Contratado” toda la documentación necesaria y requerida para la identificación, cuantificación y sustento de los reclamos.
+    - b) Las partes de común acuerdo señalan que “El Contratado” no será responsable de los efectos producto de la falta de entrega de información o de la entrega tardía de la información previamente solicitada.
+    - c) Cumplir con el plazo y la forma de pago correspondiente a los servicios profesionales que prestará “El Contratado”, según lo estipulado en el presente contrato.
+    - d) Respetar todos los términos establecidos en el contrato.

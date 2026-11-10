@@ -1,0 +1,215 @@
+# ACUERDO DE CONFIDENCIALIDAD (NDA) — base: formato oct-2026 entregado por el área comercial.
+# Se firma ANTES de compartir el informe, la propuesta o la estrategia con el prospecto.
+#
+# Correcciones respecto del formato original (ver docs/revision-contratos.md, sección 4):
+#   - la denominación de Census es una sola en todo el texto (`v.alias_census`);
+#   - se completó la frase del representante del cliente ("la cual a su vez es, quien...");
+#   - el sector del cliente es variable (el original decía "farmacéutico");
+#   - se quitó "esté o no incluida en la solicitud de oferta presentada" (resto de otra plantilla).
+
+fuente: Arial
+tamano: 11
+entidad: censusconsultores
+
+variables:
+  objeto: {descripcion: "Materia del servicio que motiva el intercambio de información", ejemplo: "asesoría tributaria"}
+  sector: {descripcion: "Tipo de información industrial del cliente (adjetivo)", ejemplo: "farmacéutico"}
+  duracion_anios: {descripcion: "Años de vigencia del deber de confidencialidad", ejemplo: 5}
+  ciudad_firma: {descripcion: "Ciudad de suscripción", ejemplo: "Samborondón"}
+  alias_census: {descripcion: "Cómo se denomina a Census en el acuerdo", ejemplo: "CENSUS CONSULTORES"}
+  centro_arbitraje: {descripcion: "Centro de arbitraje", ejemplo: "la Cámara de Comercio de Guayaquil"}
+  sede_arbitraje: {descripcion: "Sede del tribunal arbitral", ejemplo: "Guayaquil"}
+
+valores_por_defecto:
+  objeto: asesoría tributaria
+  sector: industrial
+  duracion_anios: 5
+  ciudad_firma: Samborondón
+  alias_census: CENSUS CONSULTORES
+  centro_arbitraje: la Cámara de Comercio de Guayaquil
+  sede_arbitraje: Guayaquil
+
+titulo: ACUERDO DE CONFIDENCIALIDAD
+
+introduccion:
+  - >-
+    Con el fin de garantizar la confidencialidad de la información compartida entre las partes, la
+    compañía {{ census.razon_social }} y {{ 'la compañía ' if cliente.persona != 'natural' }}{{ cliente.razon_social }},
+    han convenido la suscripción del presente Acuerdo, a través del cual se establecerán los niveles
+    de confianza y protección requeridos. El documento será suscrito una vez manifestada la
+    aceptación por ambas partes.
+  - "El contenido del acuerdo se detalla a continuación:"
+  - >-
+    Por una parte, {{ census.razon_social }} con RUC No. {{ census.ruc }}, dedicada a actividades de
+    asesoría en procedimientos jurídicos y tributarios, representada por el
+    {{ census.representante.tratamiento }} {{ census.representante.nombre }}, en calidad de
+    {{ census.representante.cargo }} y Representante Legal, quien en adelante será denominada
+    “{{ v.alias_census }}”.
+  - >-
+    Por otra parte, {{ cliente.razon_social }}{% if cliente.ruc %} con RUC No. {{ cliente.ruc }}{% endif %},
+    {% if cliente.persona == 'natural' %}por sus propios derechos{% else %}representada por
+    {% if cliente.representada_por %}la compañía {{ cliente.representada_por }}, quien a su vez es
+    representada por {% endif %}{{ cliente.representante }}{% if cliente.cedula %} con cédula de
+    ciudadanía No. {{ cliente.cedula }}{% endif %}, en calidad de {{ cliente.cargo }}{% endif %},
+    quien en adelante será denominada “EL CLIENTE”.
+
+exponen:
+  titulo: EXPONEN
+  items:
+    - >-
+      Que las partes, anteriormente citadas, están interesadas en el desarrollo de una relación
+      profesional de {{ v.objeto }}, para lo cual aceptaron celebrar el presente Acuerdo de
+      Confidencialidad con el fin de establecer el procedimiento que regirá la custodia y no
+      transmisión a terceros de la información distribuida entre las partes, así como los derechos,
+      responsabilidades y obligaciones inherentes en calidad de remitente, Propietario y
+      «Destinatario» de la referida información. Así como también la responsabilidad de “EL CLIENTE”
+      por la información estratégica, financiera, comercial y tributaria, así como documentos,
+      informes jurídicos y análisis técnicos respecto a cualquier estrategia de {{ v.objeto }}, que
+      “{{ v.alias_census }}” en el marco de sus actividades profesionales compartirá con “EL CLIENTE” y
+      cuyo contenido reviste carácter confidencial y está protegido por las normas de propiedad
+      intelectual y de reserva profesional.
+    - >-
+      Que ambas partes reconocen que el presente Acuerdo tiene como objeto establecer las
+      obligaciones, limitaciones y responsabilidades respecto al uso, custodia y divulgación de la
+      información compartida entre las partes, garantizando que el Destinatario la utilice
+      exclusivamente para los fines que se le hayan autorizado expresamente.
+    - >-
+      Que las partes, en virtud de lo anteriormente expuesto, convinieron que el presente Acuerdo de
+      Confidencialidad se rija por la normativa aplicable al efecto y, en especial, por las
+      siguientes:
+
+clausulas_titulo: CLÁUSULAS
+clausulas:
+  - titulo: Definiciones
+    parrafos:
+      - "A los efectos del presente Acuerdo, los siguientes términos serán interpretados de acuerdo con las definiciones anexas a los mismos. Entendiéndose por:"
+      - >-
+        - **«Información propia»:** Tendrá tal consideración y a título meramente enunciativo y no
+        limitativo, lo siguiente: descubrimientos, conceptos, ideas, conocimientos, técnicas,
+        diseños, informes, dibujos, borradores, diagramas, textos, modelos, muestras, bases de datos
+        de cualquier tipo, aplicaciones, programas, marcas, logotipos, así como cualquier información
+        de tipo industrial, {{ v.sector }}, comercial o de carácter personal de cualquiera de las
+        partes, independientemente de su formato de presentación o distribución, y aceptada por los
+        «Destinatarios»; así como informes jurídicos, memorandos, borradores, conclusiones legales,
+        modelos de estructuras contractuales o societarias, presentaciones, correspondencia, bases de
+        datos, gráficos, documentos financieros, declaraciones o registros tributarios, y cualquier
+        otro material o soporte —físico o digital— que revele la metodología, razonamiento jurídico,
+        criterios interpretativos o estrategias diseñadas por “{{ v.alias_census }}” o sus asesores,
+        así como cualquier información que derive del ejercicio del secreto profesional y del
+        know-how de la firma.
+      - >-
+        También se considerará información propia toda aquella entregada por “{{ v.alias_census }}” a
+        “EL CLIENTE”, sea de forma oral, escrita, electrónica o de cualquier otra naturaleza,
+        incluyendo, pero no limitada a toda información, documentación, análisis, estudio, concepto,
+        conocimiento técnico, jurídico o estratégico que “{{ v.alias_census }}” entregue o haya
+        entregado a “EL CLIENTE” en el marco del presente Acuerdo, relacionada directa o
+        indirectamente con la estrategia de {{ v.objeto }}.
+      - >-
+        La Información Propia conservará su carácter confidencial independientemente del formato,
+        medio de comunicación o grado de desarrollo en el que se encuentre, y aun cuando no esté
+        expresamente identificada como tal al momento de su entrega.
+      - >-
+        - **«Fuente»:** Tendrá la consideración de tal cualquiera de las partes cuando, dentro de los
+        términos del presente Acuerdo, sea ella la que suministre la Información Propia y/o
+        cualquiera de sus representantes, socios, directores, empleados o asesores.
+      - >-
+        - **«Destinatarios»:** Tendrán la consideración de tales cualquiera de las partes cuando,
+        dentro de los términos del presente Acuerdo, sean ellas quienes reciban la Información Propia
+        de la otra parte.
+
+  - titulo: Información Propia
+    parrafos:
+      - >-
+        Las partes acuerdan que cualquier información relativa a sus aspectos tributarios,
+        financieros, contables y comerciales, suministrada a la otra parte como consecuencia de la
+        prestación de servicios profesionales, así como aquella compartida previamente para fines de
+        análisis, negociación, evaluación, propuesta o preparación del servicio, o en su caso, de los
+        acuerdos a los que se lleguen (con independencia de que tal transmisión sea oral, escrita, en
+        soporte magnético o en cualquier otro mecanismo informático, gráfico, o de la naturaleza que
+        sea) tendrá consideración de información confidencial y será tratada de acuerdo con lo
+        establecido en el presente documento. Esa información, y sus copias y/o reproducciones
+        tendrán la consideración de «Información propia» a los efectos del presente acuerdo.
+
+  - titulo: Obligación de Confidencialidad
+    parrafos:
+      - >-
+        El Destinatario se compromete a guardar estricta confidencialidad respecto de toda la
+        información proporcionada por la Fuente no pudiendo divulgarla, transferirla o reproducirla a
+        terceros, salvo autorización expresa y por escrito de la Fuente. La información solo podrá
+        utilizarse con el propósito específico que haya motivado su entrega.
+
+  - titulo: Responsabilidad en la custodia
+    parrafos:
+      - >-
+        El Destinatario será responsable por la custodia de toda la información recibida, adoptando
+        medidas técnicas, físicas y administrativas suficientes para prevenir su pérdida, alteración o
+        acceso no autorizado. En caso de incumplimiento, responderá por los daños y perjuicios
+        ocasionados, incluidos los de carácter reputacional o económico. El Destinatario deberá
+        informar de inmediato a la Fuente cualquier acceso no autorizado, pérdida o filtración de la
+        información recibida.
+
+  - titulo: Excepciones
+    parrafos:
+      - "No será considerada confidencial aquella información que:"
+      - a) Sea de dominio público sin que medie incumplimiento del presente Acuerdo.
+      - b) Hubiese sido legítimamente obtenida por el Destinatario antes de su entrega por la Fuente.
+      - c) Deba ser revelada por mandato legal o decisión judicial, previa notificación a la Fuente.
+
+  - titulo: Soporte de la «Información propia»
+    parrafos:
+      - >-
+        Toda o parte de la «Información propia», papeles, libros, cuentas, grabaciones,
+        procedimientos, documentos de todo tipo o tecnología en el que el suministro fuese hecho bajo
+        la condición de «Información propia», con independencia del soporte que la contuviera, tendrá
+        la clasificación de secreta, confidencial o restringida.
+
+  - titulo: Devolución o destrucción de la información
+    parrafos:
+      - >-
+        Una vez concluida la relación profesional o a requerimiento de la Fuente, el Destinatario
+        deberá devolver o eliminar toda la información recibida, así como sus copias físicas o
+        electrónicas.
+
+  - titulo: Duración
+    parrafos:
+      - >-
+        El deber de confidencialidad permanecerá vigente durante un período de
+        {{ v.duracion_anios | letras_int }} ({{ v.duracion_anios }}) años contados desde su entrega,
+        salvo que la naturaleza de la información requiera una protección más prolongada.
+
+  - titulo: Legislación Aplicable
+    parrafos:
+      - >-
+        Cualquier controversia relacionada con o derivada de este Acuerdo y su ejecución y que no
+        pueda ser resuelta mediante mutuo acuerdo entre las partes, será sometida de manera
+        definitiva a Arbitraje de derecho, de acuerdo con el Reglamento de Arbitraje de
+        {{ v.centro_arbitraje }}. El tribunal arbitral estará integrado por tres (3) árbitros, dos (2)
+        de ellos designados uno por cada una de las partes y el tercero, de común acuerdo por los dos
+        (2) primeros árbitros. La sede del tribunal arbitral será la ciudad de {{ v.sede_arbitraje }} y
+        el idioma bajo el cual se adelantará el arbitraje será el español. La decisión se tomará bajo
+        la ley sustancial de la República del Ecuador, sin atención a las reglas de conflicto de la
+        República del Ecuador o de cualesquiera otras.
+
+cierre: >-
+  En fe de conformidad, las partes suscriben el presente Acuerdo en dos ejemplares de un mismo
+  tenor, en la ciudad de {{ v.ciudad_firma }}, a los {{ fecha.day }} días del mes de
+  {{ fecha | mes }} de {{ fecha.year }}.
+
+firmas:
+  - - "p. {{ census.razon_social }}"
+    - "RUC: {{ census.ruc }}"
+    - ""
+    - ""
+    - ""
+    - "{{ census.representante.tratamiento }} {{ census.representante.nombre }}"
+    - "C.C. {{ census.representante.cedula }}"
+    - "{{ census.representante.cargo }}"
+  - - "p. {{ cliente.razon_social }}"
+    - "{{ 'RUC: ' ~ cliente.ruc if cliente.ruc }}"
+    - ""
+    - ""
+    - ""
+    - "{{ cliente.representante }}"
+    - "{{ 'C.C. ' ~ cliente.cedula if cliente.cedula else '[COMPLETAR: cédula del representante]' }}"
+    - "{{ cliente.cargo if cliente.persona != 'natural' }}"
+    - "{{ cliente.representada_por if cliente.representada_por }}"

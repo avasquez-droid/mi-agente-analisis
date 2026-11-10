@@ -1,0 +1,28 @@
+# Entidades del grupo Census que firman los contratos (tomado de los contratos 2025-2026).
+# Si cambia el representante o el correo de notificaciones, corregir aquí: se usa en todos los contratos.
+
+censusconsultores:
+  razon_social: CENSUSCONSULTORES S.A.S.
+  nombre_corto: CENSUSCONSULTORES
+  ruc: "0992981806001"
+  domicilio: Samborondón
+  actividad: se dedica al asesoramiento legal tributario
+  representante:
+    nombre: John Arias Izquierdo
+    tratamiento: Ab.
+    cargo: Gerente General
+  correo_notificaciones: j.arias@censusconsultores.com.ec
+  ciudad_jueces: Guayaquil
+
+census_cobranzas:
+  razon_social: CENSUS COBRANZAS S.A.
+  nombre_corto: CENSUS COBRANZAS
+  ruc: "0993382483001"
+  domicilio: Guayaquil
+  actividad: se dedica a brindar servicios de cobranza extrajudicial y judicial para la recuperación de valores
+  representante:
+    nombre: José Antonio Loayza Mendoza
+    tratamiento: Ab.
+    cargo: Gerente General
+  correo_notificaciones: j.arias@censusconsultores.com.ec   # POR CONFIRMAR: correo propio de Census Cobranzas
+  ciudad_jueces: Guayaquil

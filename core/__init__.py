@@ -1,12 +1,11 @@
-"""Núcleo del Agente de Análisis Inteligente.
+"""Núcleo del Agente Comercial de Census Consultores.
 
-Módulos:
-- excel_reader: carga y perfilado de archivos Excel/CSV.
-- metodologia: carga de skills (metodologías en YAML).
-- analyzer: aplicación de la metodología a los datos.
-- insights: generación de hallazgos y plan de acción.
-- report_pdf / report_excel / report_word: generación de entregables.
-- agent: orquestador principal.
+- informe_reader: lee el informe de investigación de prospecto (Word).
+- conocimiento: carga cartera, métricas, tarifario, entidades y cláusulas (carpeta conocimiento/).
+- oportunidades: cruza el informe con la cartera → servicios, viabilidad y honorarios.
+- contratos: arma contratos .docx desde la biblioteca de cláusulas.
+- reporte_oportunidades: resumen Markdown y Excel de oportunidades.
+- cli: python -m core.cli ...
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"

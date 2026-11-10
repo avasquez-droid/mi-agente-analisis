@@ -1,0 +1,64 @@
+# Base: propuesta 2026 de cobranza extrajudicial y judicial + presentación corporativa de Census Cobranzas.
+portada: COBRANZA EXTRAJUDICIAL Y JUDICIAL
+variables:
+  cartera:
+    descripcion: "Lista de deudores [{deudor, dias_vencido, valor, via (Extrajudicial/Judicial), demanda_iniciada}]"
+    ejemplo: [{deudor: "DEUDOR S.A.", dias_vencido: 1400, valor: 36519.53, via: Judicial, demanda_iniciada: false}]
+    requerido: true
+  umbral_extrajudicial: {descripcion: "Cuantía bajo la cual se prioriza la vía extrajudicial", ejemplo: 3000}
+asunto: el servicio de cobranza extrajudicial y judicial
+antecedentes:
+  - >-
+    {{ cliente.razon_social }} mantiene cuentas por cobrar vencidas por un total de
+    {{ v.cartera | sum(attribute='valor') | usd }} ({{ v.cartera | length }} deudores).
+  - >-
+    En este contexto, requiere acompañamiento para la recuperación de su cartera vencida mediante
+    acciones de cobranza extrajudicial o judicial, según cada caso, con el propósito de recuperar
+    los valores adeudados y resguardar sus derechos como acreedor.
+secciones:
+  - titulo: Census Cobranzas
+    parrafos:
+      - >-
+        Census Cobranzas forma parte del grupo Census y está calificada por la Superintendencia de
+        Bancos (Resolución SB-IRG-DRTL-2025-0440) y por la Superintendencia de Economía Popular y
+        Solidaria (Resolución SEPS-INSEPS-2024-0227) para prestar servicios auxiliares de cobranza.
+      - "- Gestión telefónica (call center y marcación predictiva), campañas masivas de SMS, WhatsApp, mailing e IVR, e interacción con inteligencia artificial."
+      - "- Visitas de campo a los deudores de mayor mora; actualización de datos; CRM con grabación de llamadas y reportes en línea."
+      - "- Reportes semanales y comités quincenales de medición de la recuperación."
+objetivo: >-
+  Gestionar la recuperación de los valores adeudados mediante cobranza extrajudicial y judicial
+  y, según la estrategia de cada caso, iniciar las acciones legales ante la justicia ordinaria.
+alcance:
+  - titulo: Fase extrajudicial
+    items:
+      - Revisión de la documentación de la cartera para definir la estrategia de cada caso.
+      - Gestión de cobranza por teléfono, correo, mensajería y demás medios.
+      - Campañas de seguimiento para recordatorio, negociación y regularización.
+      - Negociación de acuerdos y compromisos de pago, y seguimiento de su cumplimiento.
+      - Evaluación de resultados y recomendación de acciones judiciales cuando corresponda.
+  - titulo: Fase judicial
+    items:
+      - Revisión de los documentos que servirán como prueba.
+      - Elaboración de la demanda; preparación y certificación de pruebas.
+      - Escritos, recursos, diligencias, citaciones y revisión de informes periciales.
+      - Asistencia a audiencias e impulso del proceso hasta la recuperación.
+honorarios:
+  filas:
+    - servicio: Cobranza extrajudicial
+      honorario: "{{ v.pct_extrajudicial | default(20) | pct }} + IVA"
+      forma_pago: Contra recuperación de valores.
+    - servicio: Cobranza judicial
+      honorario: "Fijo por etapas + {{ v.pct_judicial | default(15) | pct }} de éxito (18 % si la demanda ya está iniciada)"
+      forma_pago: "Demanda nueva: USD 600 a la aceptación, USD 900 a la presentación de la demanda y USD 300 a la citación. Demanda iniciada: USD 450 a la aceptación (incluye sustitución de patrocinio y diagnóstico). Éxito: contra recuperación."
+  notas:
+    - >-
+      La vía extrajudicial se aplica, en principio, a obligaciones menores a
+      {{ v.umbral_extrajudicial | default(3000) | usd }}, porque las acciones judiciales podrían costar más
+      que lo recuperable; cada caso se evalúa en particular.
+    - >-
+      Se considera recuperado todo monto que ingrese al patrimonio del cliente (capital, intereses,
+      costas y accesorios) por cualquier vía durante el contrato. Los honorarios no incluyen
+      casación ni gastos (notariales, registro, copias, peritos, depositarios).
+    - >-
+      Si el cliente revoca el patrocinio sin causa imputable a Census o llega a acuerdos directos con
+      el deudor, el fee de éxito se considera devengado; el fijo no es reembolsable.

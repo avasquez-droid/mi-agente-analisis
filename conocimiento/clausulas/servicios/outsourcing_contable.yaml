@@ -1,0 +1,78 @@
+# Outsourcing contable y tributario — base: contrato modelo jul-2026.
+variables:
+  inicio: {descripcion: "Fecha de inicio del servicio", ejemplo: "primero de agosto de 2026", requerido: true}
+  honorario: {descripcion: "Fee mensual USD (por defecto: tarifario)", ejemplo: 500}
+  limite_transacciones: {descripcion: "Transacciones mensuales incluidas (por defecto: tarifario)", ejemplo: 90}
+  ejercicio_cerrado: {descripcion: "Ejercicio que el cliente debe entregar cerrado y conciliado", ejemplo: 2025, requerido: true}
+  toma_inventario: {descripcion: "Valor de la toma física de inventario anual (0 = no aplica)", ejemplo: 400}
+titulo_tipo: OUTSOURCING CONTABLE Y TRIBUTARIO
+
+antecedentes:
+  - >-
+    Debido a que la compañía {{ cliente.razon_social }} es sujeto pasivo de obligaciones en calidad de
+    contribuyente; de conformidad con lo establecido en las regulaciones del Servicio de Rentas
+    Internas, Superintendencia de Compañías, Superintendencia de Bancos y en fin varias instituciones
+    públicas del país, a través de sus leyes, reglamentos y diferentes resoluciones de carácter general;
+  - >-
+    Es el caso de que “El Contratante” requiere los servicios de “El Contratado”, para que se lleve la
+    contabilidad de la compañía, la elaboración mensual de las declaraciones y anexos que se deben
+    presentar en el Servicio de Rentas Internas, y, la elaboración y presentación anual de los estados
+    financieros a la Superintendencia de Compañías.
+  - >-
+    Por tal consecuencia, contrata los servicios de {{ census.razon_social }}, a fin de asesorar y
+    gestionar de manera directa los servicios detallados en el literal c) de la presente cláusula.
+cierre_antecedentes: false
+
+prestacion:
+  titulo: PRESTACIÓN DE SERVICIOS
+  parrafos:
+    - "Con los antecedentes antes expuestos, “El Contratante”, contrata los servicios de {{ census.razon_social }}. El alcance del servicio de “El Contratado” comprenderá lo siguiente:"
+    - "1) Servicio contable:"
+    - "- Emisión de facturas de ventas y registro de medios de cobro."
+    - "- Registro contable de facturas de compras y medios de pago."
+    - "- Elaboración de otros asientos contables bajo las Normas Internacionales de Información Financiera."
+    - "- Elaboración mensual de la conciliación bancaria."
+    - "- Elaboración mensual del reporte de cuentas por cobrar y pagar."
+    - "- Elaboración mensual del Estado de Situación Financiera y Estado de Resultados, mayores contables (en caso de requerir)."
+    - "- Elaboración anual del Estado de Situación Financiera, Estado de Resultados, Estado de Cambios en el Patrimonio, Estado de Flujo de Efectivo y Notas a los Estados Financieros."
+    - "2) Servicio de cumplimiento tributario:"
+    - "- Elaboración mensual de las declaraciones de IVA y Retenciones en la Fuente."
+    - "- Elaboración y presentación anual de la Declaración de Impuesto a la Renta."
+    - "- Elaboración y presentación mensual del Anexo Transaccional Simplificado (ATS)."
+    - "- Elaboración y presentación anual del Anexo de Retenciones en Relación de Dependencia (RDEP), el Reporte de Beneficiarios Finales y de Composición Societaria (REBEFICS) y el Anexo de Dividendos (ADI)."
+    - "- Revisión diaria del buzón del contribuyente."
+    - "3) Servicio ante la Superintendencia de Compañías:"
+    - "- Presentación anual de Estados Financieros y demás obligaciones anuales ante la Superintendencia de Compañías."
+    - "4) Consultas:"
+    - >-
+      Se brindará apoyo en aclarar inquietudes e interpretaciones sobre temas diversos en el área
+      contable y tributaria. Este servicio está disponible para consultas que requieran una inversión
+      mínima de tiempo y que no necesiten ser formalizadas por escrito.
+    - >-
+      El servicio prestado por “El Contratado” no incluye planificación tributaria, asesorías
+      tributarias y legales, recuperación de impuestos, acompañamiento en procesos de control de
+      entidades de control, ni patrocinios legales.
+
+plazo:
+  titulo: PLAZO
+  parrafos:
+    - El plazo de duración del presente contrato es de un año, contado a partir del {{ v.inicio }}.
+
+honorarios:
+  titulo: HONORARIOS POR SERVICIOS
+  parrafos:
+    - "Las partes fijan de común acuerdo el pago de los siguientes servicios:"
+    - >-
+      a) Outsourcing contable y tributario: honorario fijo mensual de {{ v.honorario | usd }}
+      ({{ v.honorario | letras }} dólares de los Estados Unidos de América) más IVA, el cual deberá ser
+      facturado los primeros 6 días de cada mes y pagado durante el mes en que se realice la facturación.
+    - >-
+      Los honorarios antes indicados se mantendrán siempre que el cliente proporcione los estados
+      financieros cerrados y conciliados al {{ v.ejercicio_cerrado }}. Caso contrario, se pactará por
+      separado un honorario complementario según el alcance de los trabajos requeridos.
+    - >-
+      El honorario tiene una limitación de hasta {{ v.limite_transacciones }} transacciones de ventas,
+      compras y movimientos bancarios mensuales. En el caso de que las transacciones se incrementen, o
+      si llegasen a requerir de servicios adicionales no descritos en el presente contrato, se
+      planteará una reunión con la Administración para un ajuste al honorario mensual.
+    - "{% if v.toma_inventario %}b) Adicionalmente, al final del año se deberá realizar una toma física de inventario para la compañía, cuyo valor asciende a {{ v.toma_inventario | usd }} + IVA.{% endif %}"

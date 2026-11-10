@@ -1,0 +1,54 @@
+# Base: propuesta 2026 (Aduana).
+portada: SERVICIO LEGAL Y TRIBUTARIO PARA LA RECUPERACIÓN DE PAGOS INDEBIDOS POR TASA DE SEGURIDAD EN IMPORTACIONES DESDE COLOMBIA
+variables: {}
+asunto: >-
+  la asesoría legal tributaria y patrocinio en la recuperación de valores pagados por concepto de
+  la tasa de seguridad aplicada a importaciones provenientes de Colombia
+antecedentes:
+  - >-
+    Las empresas ecuatorianas que importan desde países de la Comunidad Andina (CAN), como Colombia,
+    han pagado una "tasa de seguridad" aplicada a las operaciones de comercio exterior desde
+    febrero de 2026.
+  - >-
+    La aplicación de esta tasa a importaciones desde Colombia es incompatible con la normativa
+    comunitaria andina, al imponer un gravamen adicional que afecta el comercio intracomunitario.
+  - >-
+    Al tratarse de un cobro contrario al ordenamiento jurídico, los valores pagados podrían
+    calificarse como pagos indebidos y recuperarse, junto con sus intereses, mediante acciones
+    administrativas y/o judiciales.
+secciones:
+  - titulo: "Precedente clave: TSCA y pagos indebidos"
+    parrafos:
+      - >-
+        La Corte Nacional de Justicia, dentro del juicio No. 09501-2021-00625, confirmó la invalidez
+        del cobro de la Tasa de Servicio de Control Aduanero (TSCA) y ordenó la devolución de lo
+        pagado, por configurarse un pago indebido conforme al artículo 122 del Código Tributario.
+      - >-
+        La Corte determinó que el cobro no nació válidamente al contravenir el Derecho Comunitario
+        Andino y que, cuando un gravamen es contrario a normativa supranacional, su ilegalidad
+        prevalece sobre su vigencia formal en el derecho interno.
+objetivo: >-
+  Asesorar y representar a la compañía en la identificación, cuantificación y recuperación de los
+  valores pagados por la tasa de seguridad en importaciones provenientes de Colombia.
+alcance:
+  - titulo: Análisis y reclamo administrativo
+    items:
+      - Revisión del marco jurídico tributario, aduanero y de integración andina, y de la norma que establece la tasa.
+      - Revisión de las importaciones desde Colombia e identificación y cuantificación de los valores reclamables.
+      - Recopilación de la información y presentación del reclamo administrativo por pago indebido.
+  - titulo: Sede judicial
+    items:
+      - Si el reclamo es negado o no atendido, preparación y presentación de la demanda contencioso tributaria.
+      - Patrocinio y defensa durante el proceso judicial.
+      - De ser necesario, apoyo en las consultas o actuaciones ante la Corte Constitucional.
+honorarios:
+  intro_extra: "Existen dos esquemas de honorarios, que el cliente puede elegir según su conveniencia:"
+  filas:
+    - servicio: "Esquema 1 — honorarios a éxito"
+      honorario: "{{ t.esquema_exito | pct }} + IVA"
+      forma_pago: Se pagan contra acreditación de la nota de crédito a favor de la compañía.
+    - servicio: "Esquema 2 — con pago parcial en sentencia"
+      honorario: "{{ t.valor | pct }} + IVA"
+      forma_pago: "{% for e in t.etapas %}{{ e.valor | pct }} {{ e.hito.split(',')[0] }}{{ '; ' if not loop.last else '.' }}{% endfor %} Si la sentencia de primera instancia no es favorable, todo se paga contra la nota de crédito."
+  notas:
+    - Los honorarios no incluyen gastos notariales, peritajes ni otros costos del trámite.

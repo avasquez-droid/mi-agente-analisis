@@ -1,0 +1,56 @@
+# Base: propuesta 2025 (Aduana).
+portada: ASESORÍA LEGAL TRIBUTARIA Y PATROCINIO JUDICIAL EN PROCESO DE CONTROL POSTERIOR DEL SERVICIO NACIONAL DE ADUANA
+variables:
+  mercancia: {descripcion: "Mercancía observada", ejemplo: "neumáticos", requerido: true}
+  periodo: {descripcion: "Periodo de importaciones controlado", ejemplo: "enero 2023 a diciembre 2024", requerido: true}
+  dai_revisadas: {descripcion: "Número de DAI revisadas", ejemplo: 134}
+  dai_observadas: {descripcion: "Número de DAI observadas", ejemplo: 56}
+  informe: {descripcion: "Número del Informe Preliminar de Resultados de Control", ejemplo: "JCP1-2024-0023-P1"}
+  monto: {descripcion: "Total de la obligación determinada preliminarmente (USD)", ejemplo: 105830.52, requerido: true}
+  plazo_descargos: {descripcion: "Plazo para descargos", ejemplo: "diez (10) días desde la notificación"}
+asunto: >-
+  la asesoría legal especializada en el análisis y defensa en sede administrativa y judicial del
+  control posterior sobre las declaraciones de importación de {{ v.mercancia }} realizadas de
+  {{ v.periodo }}
+antecedentes:
+  - >-
+    {{ cliente.razon_social }} fue objeto de un control posterior efectuado por el Servicio Nacional
+    de Aduana del Ecuador (SENAE) respecto de las declaraciones aduaneras de importación de
+    {{ v.mercancia }} del periodo {{ v.periodo }}{% if v.dai_revisadas %}: se revisaron {{ v.dai_revisadas }} DAI y en
+    {{ v.dai_observadas }} se determinó que la mercancía habría sido clasificada en una subpartida distinta{% endif %}.
+  - >-
+    Mediante el Informe Preliminar de Resultados de Control{% if v.informe %} No. {{ v.informe }}{% endif %}, el SENAE
+    notificó supuestas diferencias en tributos al comercio exterior por un total de {{ v.monto | usd }}.
+  - "{% if v.plazo_descargos %}La Administración concedió un término de {{ v.plazo_descargos }} para presentar los descargos y pruebas.{% endif %}"
+objetivo: >-
+  Acompañar y defender a la compañía en el proceso iniciado por el SENAE, ejerciendo los recursos
+  administrativos y judiciales para reducir o eliminar las obligaciones notificadas.
+alcance:
+  - titulo: Sede administrativa
+    items:
+      - "Control posterior: escrito de descargos a las conclusiones preliminares del SENAE."
+      - "Reclamo administrativo contra la rectificación de tributos: elaboración del reclamo, revisión de pruebas, patrocinio en audiencia y atención de requerimientos."
+  - titulo: Sede judicial
+    items:
+      - "Acción contencioso-tributaria: elaboración de la demanda, revisión de pruebas e informe pericial, patrocinio en audiencias preliminar y de juicio, y atención de requerimientos judiciales."
+      - Recurso de casación, de ser el caso.
+honorarios:
+  filas:
+    - servicio: Control posterior (descargos)
+      honorario: "{{ t.etapas[0].valor | pct }} de los valores observados ({{ (v.monto * t.etapas[0].valor / 100) | usd }}) + IVA"
+      forma_pago: "{{ t.etapas[0].anticipo_pct | pct }} como anticipo contra aceptación; saldo contra resultados (cuando se dejen sin efecto o se reduzcan los valores)."
+    - servicio: Reclamo administrativo
+      honorario: "{{ t.etapas[1].valor | pct }} de los valores de la rectificación ({{ (v.monto * t.etapas[1].valor / 100) | usd }}) + IVA"
+      forma_pago: "{{ t.etapas[1].anticipo_pct | pct }} como anticipo contra presentación del reclamo; saldo contra resultados."
+    - servicio: Acción contencioso-tributaria (por instancia)
+      honorario: "{{ t.etapas[2].valor | pct }} de los valores observados ({{ (v.monto * t.etapas[2].valor / 100) | usd }}) + IVA"
+      forma_pago: 10 % contra presentación de la demanda; 10 % contra audiencia preliminar; 10 % contra audiencia de juicio; saldo contra sentencia favorable.
+    - servicio: Recurso de casación
+      honorario: "{{ t.etapas[3].valor | pct }} sobre los valores ratificados ({{ (v.monto * t.etapas[3].valor / 100) | usd }}) + IVA"
+      forma_pago: "{{ t.etapas[3].fijo_inicial_usd | usd }} contra la respuesta al recurso; saldo contra inadmisión o sentencia de la Corte Nacional que ratifique la de instancia."
+  notas:
+    - Los honorarios no incluyen gastos notariales ni peritajes.
+    - >-
+      Importante: para suspender la coactiva en vía judicial se debe rendir una caución del 10 % de
+      la obligación (efectivo, póliza o garantía bancaria), que se aplicará a la obligación en caso
+      de resultado adverso.

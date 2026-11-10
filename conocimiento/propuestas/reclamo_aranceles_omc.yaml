@@ -1,0 +1,55 @@
+# Base: propuesta 2026 (Aduana).
+portada: SERVICIO LEGAL Y TRIBUTARIO EN LA SOLICITUD DE PAGO INDEBIDO DE IMPUESTOS ARANCELARIOS ANTE EL SERVICIO NACIONAL DE ADUANA DEL ECUADOR
+variables:
+  monto: {descripcion: "Valor aproximado a solicitar (USD)", ejemplo: 315953.54}
+  desde: {descripcion: "Inicio del periodo", ejemplo: "01-2024", requerido: true}
+  hasta: {descripcion: "Fin del periodo identificado", ejemplo: "04-2026", requerido: true}
+  importaciones_hasta: {descripcion: "Hasta cuándo se incluyen importaciones futuras", ejemplo: "diciembre 2026"}
+  porcentaje: {descripcion: "Honorario % (por defecto: tarifario)", ejemplo: 11}
+asunto: >-
+  la asesoría legal tributaria y patrocinio judicial en la presentación de reclamos
+  administrativos por pago indebido de impuestos aduaneros ante el Servicio Nacional de Aduana del
+  Ecuador (SENAE)
+antecedentes:
+  - >-
+    {{ cliente.razon_social }}, debido a su actividad económica, ha realizado importaciones bajo
+    partidas arancelarias sujetas a un límite arancelario en virtud del Acuerdo General sobre
+    Aranceles Aduaneros y Comercio, asumido por Ecuador ante la OMC.
+  - >-
+    Al pagar impuestos aduaneros superiores al techo arancelario consolidado, se genera un pago
+    indebido por los valores que superan dicho techo.
+  - >-
+    Se ha identificado que, de {{ v.desde }} a {{ v.hasta }}, el valor aproximado a solicitar es de
+    {{ v.monto | usd }}.
+secciones:
+  - titulo: Plazo estimado
+    parrafos:
+      - >-
+        El servicio se extiende hasta que el SENAE resuelva los reclamos o, si se requieren
+        impugnaciones judiciales, hasta que exista pronunciamiento en firme. Al depender de la
+        administración y de los tribunales no hay un plazo exacto; estimamos:
+      - "- Reclamo administrativo: aproximadamente 4 meses y medio."
+      - "- Demanda de impugnación: aproximadamente 6 a 8 meses."
+      - "- Recurso de casación: aproximadamente 4 a 12 meses."
+objetivo: >-
+  Asesorar a la compañía en la presentación de reclamos administrativos por pago indebido de
+  impuestos aduaneros que superan el techo arancelario consolidado y, de ser necesario, en las
+  demandas de impugnación, para que se ordene el reintegro de los valores con sus intereses, por
+  las importaciones realizadas hasta {{ v.importaciones_hasta | default(v.hasta) }}.
+alcance:
+  - items:
+      - "Revisión de la normativa aplicable."
+      - Análisis de las importaciones de la compañía para identificar los valores pagados indebidamente al SENAE.
+      - Recopilación y ordenamiento de la información para el reclamo administrativo y la demanda.
+      - Elaboración y presentación del reclamo administrativo ante el SENAE.
+      - Patrocinio legal tributario en el proceso judicial que se inicie por la impugnación del pronunciamiento de la autoridad aduanera.
+      - Defensa en caso de recurso de casación.
+honorarios:
+  filas:
+    - servicio: Recuperación de valores por pago indebido de impuestos aduaneros ante el SENAE.
+      honorario: "{{ v.porcentaje | default(t.administrativo) | pct }} + IVA"
+      forma_pago: Los honorarios serán a resultados, es decir, se pagarán contra acreditación de la nota de crédito a favor de la compañía.
+  notas:
+    - >-
+      El informe pericial requerido para el juicio será cubierto por el cliente (aproximadamente
+      USD 800), así como peritajes, gastos notariales y cualquier gasto adicional.

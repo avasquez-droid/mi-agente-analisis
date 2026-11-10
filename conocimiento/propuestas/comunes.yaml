@@ -1,0 +1,31 @@
+# TEXTOS COMUNES DE LAS PROPUESTAS (PPTX) — tomados de las propuestas 2025-2026 de Census.
+# Sintaxis Jinja2. Variables: cliente.* (razon_social, ciudad), v.* (del servicio), t.* (tarifario).
+# Filtros: |usd |letras |pct |fecha_larga
+
+introduccion:
+  - >-
+    Con sumo agrado presentamos nuestra propuesta de servicios profesionales relacionada con
+    {{ asunto }}.
+  - >-
+    Nuestra experiencia en trabajos similares en diversos sectores económicos y nuestro
+    conocimiento acumulado no sólo en temas que resultan aplicables a su sector, nos permiten
+    ofrecer nuestros servicios en óptimas condiciones, por lo que confiamos que la presente
+    demuestre el alto grado de compromiso y profesionalismo que estamos en condiciones de aportar,
+    sin perjuicio de lo cual, nos ponemos a disposición de ustedes para las aclaraciones o
+    información adicional que pudieran requerir.
+  - >-
+    Agradecemos vuestro interés sobre nuestros servicios profesionales, así como por la
+    oportunidad que nos brinda para colaborar en el desarrollo de sus políticas y planes
+    corporativos.
+
+honorarios_intro: >-
+  En base a lo descrito, nuestra propuesta de honorarios muestra nuestro interés en servirles como
+  sus asesores preferentes. Los mismos se basan en el tiempo que estimamos incurrir en el
+  desarrollo de nuestro trabajo y en el nivel de experiencia de los profesionales que participarán
+  en el mismo:
+
+honorarios_cierre: >-
+  Creemos que el alcance de nuestros servicios cumple con sus expectativas y que nuestros
+  honorarios expresan nuestro interés en servirles.
+
+alcance_intro: "Nuestro servicio comprenderá las siguientes actividades:"
