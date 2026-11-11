@@ -1,6 +1,6 @@
 """Presentación institucional de Census Cobranzas (PDF) personalizada para un cliente.
 
-Plantilla: privado/plantillas/presentacion_cobranzas.pdf — la presentación corporativa de Census
+Plantilla: plantillas/census/presentacion_cobranzas.pdf (o privado/plantillas/ para una versión local) — la presentación corporativa de Census
 Cobranzas (27 láminas: historia, logros, clientes, certificaciones, metodología, distribución de
 cartera, transparencia, servicios adicionales, socios). No va al repositorio público.
 
@@ -15,7 +15,7 @@ from pathlib import Path
 
 from . import conocimiento as kb
 
-PLANTILLA = kb.RAIZ / "privado" / "plantillas" / "presentacion_cobranzas.pdf"
+PLANTILLA = kb.plantilla("presentacion_cobranzas.pdf")
 FUENTE = "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"   # respaldo con métrica de Arial
 
 ENTIDAD = {
@@ -84,7 +84,7 @@ def generar_presentacion(cliente: str, tipo_entidad: str = "empresa",
     if tipo_entidad not in ENTIDAD:
         raise ValueError(f"tipo_entidad debe ser uno de {list(ENTIDAD)}")
     if not PLANTILLA.exists():
-        raise FileNotFoundError(f"Falta la plantilla privada {PLANTILLA} (presentación de Census Cobranzas en PDF).")
+        raise FileNotFoundError(f"Falta la plantilla {PLANTILLA} (presentación de Census Cobranzas en PDF).")
     doc = pymupdf.open(str(PLANTILLA))
     reemplazos = _reemplazos(cliente, tipo_entidad)
     buf, fuente = _fuente_arial(doc, [r["texto"] for r in reemplazos])

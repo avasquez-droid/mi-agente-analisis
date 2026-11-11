@@ -1,6 +1,6 @@
 """Generación de propuestas de servicios (PPTX) con la plantilla de Census.
 
-La plantilla (privado/plantillas/propuesta_base.pptx) es una propuesta real de Census: portada,
+La plantilla (plantillas/census/propuesta_base.pptx (o privado/plantillas/ para una versión local)) es una propuesta real de Census: portada,
 introducción, socios, antecedentes, objetivo, alcance, honorarios, gerentes, coordinadores,
 clientes, certificaciones y cierre. Se queda fuera del repositorio público porque contiene fotos
 del equipo y logos de clientes.
@@ -24,7 +24,7 @@ from pptx.util import Pt
 from . import conocimiento as kb
 from .contratos import _entorno
 
-PLANTILLA = kb.RAIZ / "privado" / "plantillas" / "propuesta_base.pptx"
+PLANTILLA = kb.plantilla("propuesta_base.pptx")
 CARPETA = kb.CARPETA / "propuestas"
 
 # Índices (0-based) y nombres de formas en la plantilla
@@ -242,7 +242,7 @@ def _partir(items: list[str], max_chars=1100, max_items=7) -> list[list[str]]:
 def escribir_pptx(arm: PropuestaArmada, salida: Path) -> Path:
     if not PLANTILLA.exists():
         raise FileNotFoundError(
-            f"Falta la plantilla privada {PLANTILLA}. Copie una propuesta de Census (.pptx) con la "
+            f"Falta la plantilla {PLANTILLA}. Copie una propuesta de Census (.pptx) con la "
             "estructura estándar en esa ruta.")
     prs = Presentation(str(PLANTILLA))
     s = prs.slides

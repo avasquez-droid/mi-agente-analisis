@@ -16,7 +16,7 @@ Asesoría Tributaria (4), Devoluciones (4), Cobranzas (2). Los originales no se 
 
 El agente genera las diapositivas 1, 2, 4–7 con `conocimiento/propuestas/<servicio>.yaml`; las
 diapositivas de equipo, clientes, certificaciones y cierre se toman tal cual de la plantilla
-privada (`privado/plantillas/propuesta_base.pptx`).
+(`plantillas/census/propuesta_base.pptx`).
 
 ## 2. Inconsistencias encontradas (para decidir el estándar)
 

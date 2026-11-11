@@ -10,6 +10,13 @@ RAIZ = Path(__file__).resolve().parent.parent
 CARPETA = RAIZ / "conocimiento"
 
 
+def plantilla(nombre: str) -> Path:
+    """Plantilla visual: la de privado/plantillas/ si existe (versión local), si no la del repositorio
+    (plantillas/census/), que no contiene datos de clientes."""
+    local = RAIZ / "privado" / "plantillas" / nombre
+    return local if local.exists() else RAIZ / "plantillas" / "census" / nombre
+
+
 def _yaml(ruta: Path) -> dict:
     return yaml.safe_load(ruta.read_text(encoding="utf-8")) or {}
 

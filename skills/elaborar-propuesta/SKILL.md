@@ -18,8 +18,8 @@ description: Elabora la propuesta de servicios profesionales en PowerPoint con l
 5. Entregar el .pptx de `salidas/` y los pendientes.
 
 ## Reglas
-- Requiere la plantilla privada `privado/plantillas/propuesta_base.pptx` (una propuesta real de
-  Census). Si no está, pedirla: no se sube al repo porque tiene fotos del equipo y logos de clientes.
+- Plantilla: `plantillas/census/propuesta_base.pptx` (incluida en el repositorio, sin datos de clientes).
+  Si existe `privado/plantillas/propuesta_base.pptx`, se usa esa versión local.
 - Honorarios: salen del tarifario (provisional). Si el usuario pide otro valor, pasarlo con --var.
 - Textos por servicio en `conocimiento/propuestas/`; inconsistencias conocidas en `docs/revision-propuestas.md`.
 - Después de la propuesta vienen el acuerdo de confidencialidad (si aún no se firmó) y, al aceptarse, el contrato.
@@ -29,5 +29,5 @@ Para bancos, cooperativas o empresas que piden "la presentación de cobranzas":
 ```bash
 python -m core.cli presentacion-cobranza "BANCO X S.A." --tipo financiera
 ```
-Toma la presentación corporativa (privado/plantillas/presentacion_cobranzas.pdf, 27 láminas) y solo
+Toma la presentación corporativa (plantillas/census/presentacion_cobranzas.pdf, 27 láminas) y solo
 cambia el nombre del cliente y las menciones al tipo de entidad. Sale en PDF.
