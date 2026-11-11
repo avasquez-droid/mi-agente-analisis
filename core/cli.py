@@ -5,6 +5,8 @@ Ejemplos:
     python -m core.cli analizar-cliente informe.docx
     python -m core.cli contrato devolucion_iva --cliente cliente.yaml --var periodo="diciembre 2026"
     python -m core.cli variables devolucion_iva
+    python -m core.cli supercias 0990000001001 --guardar
+    python -m core.cli contrato devolucion_iva --ruc 0990000001001 --var periodo="diciembre 2026"
 """
 from __future__ import annotations
 
@@ -61,6 +63,77 @@ def cmd_variables(a):
         print(f"  {k}{req}: {m.get('descripcion')}  — ej.: {m.get('ejemplo')}")
 
 
+def _avisos_supercias(avisos):
+    for x in avisos:
+        print(f"  ! {x}")
+
+
+def _cliente(a) -> dict:
+    """Datos del cliente: consulta en tiempo real a la Superintendencia de Compañías (--ruc) y, encima,
+    lo que diga el YAML de --cliente (lo escrito por el usuario prevalece sobre el registro)."""
+    archivo = yaml.safe_load(Path(a.cliente).read_text(encoding="utf-8")) if a.cliente else {}
+    archivo = archivo or {}
+    consulta = getattr(a, "ruc", None)
+    if not consulta:
+        return archivo
+    from .supercias import SuperciasError, VariasCoincidencias, cliente_desde_supercias
+    try:
+        registro, avisos = cliente_desde_supercias(consulta)
+    except VariasCoincidencias as e:
+        print(e)
+        for c in e.candidatos:
+            print(f"  {c.ruc}  {c.nombre}")
+        raise SystemExit(2)
+    except SuperciasError as e:
+        if not archivo:
+            raise SystemExit(f"Supercías: {e}")
+        print(f"Supercías: {e}\nSe continúa solo con los datos de {a.cliente}.")
+        return archivo
+    print(f"Supercías (tiempo real): {registro.get('razon_social')} · RUC {registro.get('ruc')} · "
+          f"{registro.get('situacion_legal', 's/d')} · {registro.get('ciudad', 's/d')}, {registro.get('provincia', 's/d')} · "
+          f"representante: {registro.get('representante', '[pendiente]')} ({registro.get('cargo', 's/d')})")
+    _avisos_supercias(avisos)
+    return {**registro, **{k: v for k, v in archivo.items() if v not in (None, "", [])}}
+
+
+def cmd_supercias(a):
+    from .supercias import SuperciasError, VariasCoincidencias, a_cliente, consultar
+    texto = " ".join(a.texto)
+    try:
+        ficha = consultar(texto)
+    except VariasCoincidencias as e:
+        print(e)
+        for c in e.candidatos:
+            print(f"  {c.ruc}  exp. {c.expediente}  {c.nombre}")
+        raise SystemExit(2)
+    except SuperciasError as e:
+        raise SystemExit(f"Supercías: {e}")
+    cliente, avisos = a_cliente(ficha)
+    if a.json:
+        print(json.dumps({"cliente": cliente, "ficha": ficha.a_dict(), "avisos": avisos}, ensure_ascii=False, indent=1))
+    else:
+        g = ficha.general
+        print(f"{cliente.get('razon_social')} · RUC {cliente.get('ruc')} · expediente {cliente.get('expediente')}")
+        print(f"  {cliente.get('tipo_compania', '')} · {cliente.get('situacion_legal', '')} · constituida {cliente.get('fecha_constitucion', 's/d')}"
+              f" · capital suscrito {g.get('Capital suscrito') or 's/d'}")
+        print(f"  Domicilio: {cliente.get('direccion', 's/d')} — {cliente.get('ciudad', 's/d')}, {cliente.get('provincia', 's/d')}")
+        print(f"  Correos: {', '.join(cliente.get('correos', [])) or 's/d'} · Teléfonos: {', '.join(cliente.get('telefonos', [])) or 's/d'}")
+        print(f"  Actividad: {cliente.get('ciiu', '')} {g.get('Descripción', '')[:110]}")
+        print("  Administradores actuales:")
+        for ad in ficha.administradores:
+            print(f"    - {ad.nombre} · {ad.identificacion} · {ad.cargo} ({ad.tipo}) · nombrado {ad.fecha_nombramiento}, "
+                  f"{ad.periodo} años · RM {ad.registro_mercantil} del {ad.fecha_registro_mercantil}")
+        if not ficha.administradores:
+            print("    (sin datos)")
+        _avisos_supercias(avisos)
+    if a.guardar is not None:
+        ruta = Path(a.guardar) if a.guardar else kb.RAIZ / "privado" / "clientes" / f"{cliente.get('ruc') or 'cliente'}.yaml"
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        ruta.write_text("# Datos de la Superintendencia de Compañías. Revise tratamiento, tildes y correos antes de usar.\n"
+                        + yaml.safe_dump(cliente, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        print(f"Cliente guardado: {ruta}")
+
+
 def _base_opcional():
     try:
         from .base_clientes import cargar_base
@@ -91,7 +164,7 @@ def cmd_analizar(a):
 
 
 def cmd_contrato(a):
-    cliente = yaml.safe_load(Path(a.cliente).read_text(encoding="utf-8")) if a.cliente else {}
+    cliente = _cliente(a)
     variables = {}
     if a.variables:
         variables.update(yaml.safe_load(Path(a.variables).read_text(encoding="utf-8")) or {})
@@ -108,7 +181,7 @@ def cmd_contrato(a):
 
 
 def cmd_confidencialidad(a):
-    cliente = yaml.safe_load(Path(a.cliente).read_text(encoding="utf-8")) if a.cliente else {}
+    cliente = _cliente(a)
     variables = {}
     for par in a.var or []:
         k, _, v = par.partition("=")
@@ -123,7 +196,7 @@ def cmd_confidencialidad(a):
 
 
 def cmd_propuesta(a):
-    cliente = yaml.safe_load(Path(a.cliente).read_text(encoding="utf-8")) if a.cliente else {}
+    cliente = _cliente(a)
     variables = {}
     if a.variables:
         variables.update(yaml.safe_load(Path(a.variables).read_text(encoding="utf-8")) or {})
@@ -212,6 +285,8 @@ def main(argv: list[str] | None = None) -> int:
     c = sub.add_parser("contrato", help="Genera el contrato .docx de un servicio")
     c.add_argument("servicio")
     c.add_argument("--cliente", help="YAML con razon_social, ruc, representante, cargo, ciudad, provincia, correos...")
+    c.add_argument("--ruc", help="RUC o nombre: trae en tiempo real de la Superintendencia de Compañías el RUC, "
+                   "domicilio, correos y representante legal (lo que diga --cliente prevalece)")
     c.add_argument("--variables", help="YAML con las variables del servicio")
     c.add_argument("--var", action="append", help="variable=valor (se puede repetir)")
     c.add_argument("--fecha", help="AAAA-MM-DD (por defecto hoy)")
@@ -220,6 +295,8 @@ def main(argv: list[str] | None = None) -> int:
 
     n = sub.add_parser("confidencialidad", help="Genera el acuerdo de confidencialidad (NDA) con el cliente")
     n.add_argument("--cliente", help="YAML del cliente (puede incluir representada_por y cedula)")
+    n.add_argument("--ruc", help="RUC o nombre: trae en tiempo real de la Superintendencia de Compañías el RUC, "
+                   "domicilio, correos y representante legal (lo que diga --cliente prevalece)")
     n.add_argument("--var", action="append", help="objeto, sector, duracion_anios, ciudad_firma... (variable=valor)")
     n.add_argument("--fecha", help="AAAA-MM-DD (por defecto hoy)")
     n.add_argument("--salida", default=None)
@@ -228,6 +305,8 @@ def main(argv: list[str] | None = None) -> int:
     pr = sub.add_parser("propuesta", help="Genera la propuesta de servicios (.pptx) con la plantilla Census")
     pr.add_argument("servicio")
     pr.add_argument("--cliente", help="YAML con razon_social y ciudad")
+    pr.add_argument("--ruc", help="RUC o nombre: trae en tiempo real de la Superintendencia de Compañías el RUC, "
+                   "domicilio, correos y representante legal (lo que diga --cliente prevalece)")
     pr.add_argument("--variables", help="YAML con las variables de la propuesta")
     pr.add_argument("--var", action="append", help="variable=valor (se puede repetir)")
     pr.add_argument("--adicional", action="append", help="Otro servicio ofrecido en la misma propuesta (se puede repetir)")
@@ -241,6 +320,14 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("texto", nargs="*", help="RUC o parte del nombre (para 'cliente')")
     b.add_argument("--archivo", default=None)
     b.set_defaults(f=cmd_base)
+
+    sc = sub.add_parser("supercias", help="Consulta en tiempo real la Superintendencia de Compañías: "
+                                          "ficha de la compañía y administradores actuales")
+    sc.add_argument("texto", nargs="+", help="RUC, expediente o nombre")
+    sc.add_argument("--guardar", nargs="?", const="", default=None,
+                    help="Guarda el YAML del cliente (por defecto privado/clientes/<ruc>.yaml)")
+    sc.add_argument("--json", action="store_true")
+    sc.set_defaults(f=cmd_supercias)
 
     pc = sub.add_parser("presentacion-cobranza", help="Presentación institucional de Census Cobranzas (PDF) para un cliente")
     pc.add_argument("cliente", nargs="+", help="Razón social como debe aparecer")
