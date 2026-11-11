@@ -29,7 +29,12 @@ devolucion_ir:
     - {desde_meses: 5, valor: 5.0}
   rango_contratos: {min: 2.5, max: 12.0, mediana: 6.5, n: 36}
   forma_pago: 100 % contra resolución favorable y nota de crédito.
-  propuestas: "20 % sobre lo recuperado incl. intereses — pago en exceso derivado de recurso de revisión (2025)"
+  propuestas: "7 % + IVA sobre lo recuperado (LUFRANSA)"
+
+pago_exceso_ir:
+  modelo: porcentaje
+  valor: 20.0                          # PROV: única propuesta (CUSTOSECURITY 2025), incluye intereses
+  forma_pago: 100 % contra resolución que reconozca el pago en exceso y nota de crédito.
 
 planificacion_isd:
   modelo: porcentaje

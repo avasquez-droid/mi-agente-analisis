@@ -1,6 +1,6 @@
 """Generación de propuestas de servicios (PPTX) con la plantilla de Census.
 
-La plantilla (plantillas/census/propuesta_base.pptx (o privado/plantillas/ para una versión local)) es una propuesta real de Census: portada,
+La plantilla (plantillas/census/propuesta_base.pptx, o privado/plantillas/ si existe una versión local) es una propuesta real de Census: portada,
 introducción, socios, antecedentes, objetivo, alcance, honorarios, gerentes, coordinadores,
 clientes, certificaciones y cierre. Se queda fuera del repositorio público porque contiene fotos
 del equipo y logos de clientes.
@@ -337,6 +337,7 @@ def generar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = 
     arm = armar_propuesta(servicio_id, cliente, variables, fecha)
     nombre = re.sub(r"[^\w\s.-]", "", cliente.get("razon_social", "CLIENTE")).strip()
     carpeta = Path(carpeta_salida) if carpeta_salida else kb.RAIZ / "salidas"
-    titulo = kb.servicio(servicio_id)["nombre"][:60].replace("/", "-")
+    srv = kb.servicio(servicio_id)
+    titulo = (srv.get("nombre_corto") or srv["nombre"])[:60].replace("/", "-")
     arm.archivo = escribir_pptx(arm, carpeta / f"Propuesta {titulo} - {nombre}.pptx")
     return arm

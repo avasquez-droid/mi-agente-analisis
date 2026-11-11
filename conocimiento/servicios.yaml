@@ -36,25 +36,45 @@ devolucion_iva:
   tarifa: devolucion_iva
 
 devolucion_ir:
-  nombre: Devolución de pago en exceso de Impuesto a la Renta
+  nombre: Devolución de Impuesto a la Renta (crédito tributario por retenciones)
+  nombre_corto: Devolución de Impuesto a la Renta
   materia: Tributario
   entidad: censusconsultores
   contexto: >
-    Solicitud y defensa ante el SRI del pago en exceso de Impuesto a la Renta de un ejercicio
-    fiscal (retenciones y anticipos que superan el impuesto causado).
+    Recuperación de las retenciones en la fuente de IR (y anticipos) que superan el impuesto causado
+    del ejercicio, mediante la solicitud de pago en exceso ante el SRI por cada ejercicio fiscal.
+    Incluye conciliación de retenciones (listado de CPT) y formularios 101.
   base_legal:
+    - norma: Ley de Régimen Tributario Interno y Ley de Equidad Tributaria (citadas en la propuesta)
+      estado: citada en propuestas
     - norma: Código Tributario (pago en exceso)
       estado: sugerida (validar)
-    - norma: Ley de Régimen Tributario Interno (retenciones en la fuente de IR)
-      estado: sugerida (validar)
   variantes: >
-    Pago en exceso derivado de una resolución (p. ej. recurso de revisión que reduce un valor ya
-    pagado): se cotiza aparte, con honorario mayor (propuesta 2025: 20 % sobre lo recuperado).
+    Si el pago en exceso nace de una resolución del SRI (no de retenciones), usar pago_exceso_ir.
   area: Devoluciones
   propuesta: devolucion_ir.yaml
+  propuesta_vars: {porcentaje: 7.0}        # PROV: propuesta LUFRANSA; el contrato usa el escalonado del tarifario
   clausulas: devolucion_ir.yaml
   metricas: devolucion_ir
   tarifa: devolucion_ir
+
+pago_exceso_ir:
+  nombre: Pago en exceso de Impuesto a la Renta derivado de una resolución del SRI
+  nombre_corto: Pago en exceso de Impuesto a la Renta
+  materia: Tributario
+  entidad: censusconsultores
+  contexto: >
+    Solicitud de devolución de valores de IR pagados que dejaron de ser debidos por una resolución del
+    SRI (p. ej. un recurso de revisión que reduce un valor ya pagado). Caso puntual: no se detecta con
+    las métricas de la base.
+  base_legal:
+    - norma: Código Tributario (pago en exceso)
+      estado: sugerida (validar)
+  area: Devoluciones
+  propuesta: pago_exceso_ir.yaml
+  clausulas: null                          # PENDIENTE: falta un contrato modelo de este servicio
+  metricas: null
+  tarifa: pago_exceso_ir
 
 planificacion_isd:
   nombre: Planificación tributaria del Impuesto a la Salida de Divisas (ISD)

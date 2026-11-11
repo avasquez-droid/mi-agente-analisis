@@ -1,33 +1,44 @@
-# Base: propuesta 2025 (Devoluciones) — pago en exceso de IR derivado de una resolución del SRI.
-portada: ASESORÍA LEGAL Y TRIBUTARIA EN LA SOLICITUD DE PAGO EN EXCESO DEL IMPUESTO A LA RENTA
+# Base: propuesta de Devoluciones (LUFRANSA) — devolución de IR por retenciones en la fuente que superan
+# el impuesto causado (crédito tributario), solicitada ante el SRI como pago en exceso por ejercicio.
+# El pago en exceso derivado de una resolución del SRI es otro servicio: pago_exceso_ir.
+portada: DEVOLUCIÓN DEL IMPUESTO A LA RENTA
 variables:
-  ejercicio: {descripcion: "Ejercicio fiscal", ejemplo: 2025, requerido: true}
-  antecedentes_caso: {descripcion: "Hechos del caso (liquidaciones, reclamos, resoluciones). Lista de párrafos", ejemplo: ["..."]}
-  monto: {descripcion: "Valor estimado pagado en exceso (USD)", ejemplo: 8427.18}
+  ejercicios:
+    descripcion: "Ejercicios y montos estimados [{anio, monto}]; basta con el año si no hay monto"
+    ejemplo: [{anio: 2024, monto: 24665.48}, {anio: 2025, monto: 20301.60}]
+    requerido: true
+  porcentaje: {descripcion: "Honorario (%) sobre lo recuperado; por defecto el del tarifario", ejemplo: 7}
 asunto: >-
-  la asesoría legal y tributaria en la presentación de una solicitud de pago en exceso del
-  Impuesto a la Renta del ejercicio fiscal {{ v.ejercicio }}
+  el servicio profesional de recuperación de valores pagados en exceso por concepto de impuesto a
+  la renta que mantiene hasta la presente fecha
 antecedentes:
   - >-
-    {% if v.antecedentes_caso %}{{ v.antecedentes_caso | join('\n') }}{% else %}{{ cliente.razon_social }}
-    mantiene valores pagados por Impuesto a la Renta del ejercicio fiscal {{ v.ejercicio }} que
-    superan el impuesto causado{% if v.monto %}, por aproximadamente {{ v.monto | usd }}{% endif %}, los cuales
-    pueden ser recuperados mediante una solicitud de pago en exceso ante el Servicio de Rentas
-    Internas.{% endif %}
+    De conformidad con la Ley de Régimen Tributario Interno y la Ley de Equidad Tributaria, los
+    contribuyentes pueden solicitar ante el Servicio de Rentas Internas la recuperación de los
+    valores pagados en exceso y/o indebidamente por concepto de Impuesto a la Renta
+    {%- set anios = v.ejercicios | map(attribute='anio') | list %}
+    {{ 'del ejercicio fiscal ' ~ anios[0] if anios | length == 1 else 'de los ejercicios fiscales ' ~ (anios[:-1] | join(', ')) ~ ' y ' ~ anios[-1] }}.
+  - >-
+    A la presente fecha, la compañía {{ cliente.razon_social }}, en virtud de sus operaciones, habría
+    pagado en exceso Impuesto a la Renta
+    {%- set con_monto = v.ejercicios | selectattr('monto') | list %}
+    {%- if con_monto %} por un valor aproximado de
+    {%- for e in con_monto %} {{ e.monto | usd }} en {{ e.anio }}{{ ',' if loop.revindex > 2 else (' y' if loop.revindex == 2 else '') }}{% endfor %}{% endif %},
+    por lo que se encuentra interesada en realizar el trámite administrativo correspondiente para
+    recuperar los valores pagados a la Administración Tributaria.
 objetivo: >-
-  Obtener, a través de la resolución administrativa correspondiente, el reconocimiento de los
-  valores pagados en exceso por el contribuyente y que se ordene su devolución.
+  El objetivo del presente servicio es realizar el trámite administrativo de solicitud de
+  devolución del Impuesto a la Renta.
 alcance:
   - items:
-      - Análisis de la información y de las resoluciones emitidas por el Servicio de Rentas Internas.
-      - Determinación del monto sujeto a devolución.
-      - Redacción y presentación de la solicitud formal.
-      - Elaboración y presentación de los escritos y solicitudes que sean necesarios dentro del proceso administrativo.
-      - Obtención de la resolución que reconozca los valores pagados en exceso y ordene su devolución.
+      - Planificación de la presentación de los trámites, así como también del flujo de efectivo que ingresará a la compañía por la devolución contratada.
+      - Recopilación de las retenciones en la fuente de impuesto a la renta realizadas por los clientes que constan con derecho a crédito en el listado de CPT emitido por el SRI.
+      - Revisión y conciliación de mayores contables vs. información declarada en los formularios 101.
+      - Presentación de la solicitud de pago en exceso de Impuesto a la Renta ante el SRI, acorde a la planificación presentada y aprobada por la Gerencia.
+      - Atención a los requerimientos que realice el Servicio de Rentas Internas como parte del proceso de devolución del Impuesto a la Renta.
+      - Obtención de la resolución favorable y seguimiento a la acreditación de los valores a favor de la empresa.
 honorarios:
   filas:
-    - servicio: "Asesoría y presentación de la solicitud de pago en exceso por el ejercicio fiscal {{ v.ejercicio }}."
-      honorario: "{% if t.modelo == 'escalonado' and not v.porcentaje_fijo %}{% for x in t.tramos %}{{ x.valor | pct }} + IVA si la acreditación se produce {{ 'dentro de los ' ~ x.hasta_meses ~ ' meses' if x.hasta_meses else 'después de ' ~ x.desde_meses ~ ' meses' }} desde la presentación{{ '; ' if not loop.last }}{% endfor %}{% else %}Un honorario variable del {{ v.porcentaje_fijo | pct }} más IVA calculado sobre los valores que efectivamente se obtengan a favor de la compañía, incluidos intereses.{% endif %}"
-      forma_pago: El 100 % del honorario se pagará cuando el Servicio de Rentas Internas emita la resolución que reconozca los valores pagados en exceso y la nota de crédito desmaterializada.
-  notas:
-    - Los honorarios no incluyen gastos en que se pueda incurrir dentro del trámite.
+    - servicio: Servicio de recuperación del saldo a favor por devolución de Impuesto a la Renta.
+      honorario: "El honorario será del {{ v.porcentaje | pct }} + IVA calculado sobre los valores recuperados a favor de la compañía."
+      forma_pago: Los honorarios se pagarán contra acreditación de la nota de crédito a favor de la compañía.
