@@ -33,7 +33,7 @@ from .contratos import _entorno
 PLANTILLA = kb.plantilla("propuesta_base.pptx")
 CARPETA = kb.CARPETA / "propuestas"
 
-S_PORTADA, S_INTRO, S_SOCIOS, S_ANTEC, S_OBJ, S_ALC, S_HON = 0, 1, 2, 3, 4, 5, 6
+S_PORTADA, S_INTRO, S_SOCIOS, S_ANTEC, S_OBJ, S_OBJ_LARGO, S_ALC, S_HON, S_HON_VARIOS = 0, 1, 2, 3, 4, 5, 6, 7, 8
 F = {
     "portada": "Google Shape;91;p1",
     "destinatario": "Google Shape;102;p2",
@@ -41,9 +41,11 @@ F = {
     "antec_titulo": "Google Shape;158;p3",
     "antec_cuerpo": "CuadroTexto 2",
     "objetivo": "Google Shape;149;p5",
+    "objetivo_largo": "CuadroTexto 2",
     "alc_titulo": "Google Shape;158;p6",
     "alc_cuerpo": "Google Shape;159;p6",
     "hon_notas": "Google Shape;183;p7",
+    "hon_exclusiones": "Google Shape;193;p27",
 }
 VINETAS_ALC = {f"Google Shape;{n};p6" for n in (160, 162, 164, 166, 167, 168)}
 ORO = "BDA02D"                                   # color de las viñetas cuadradas de la plantilla
@@ -63,6 +65,8 @@ class PropuestaArmada:
     antecedentes: list[str]
     secciones: list[tuple[str, list[str]]]
     objetivo: str
+    objetivos: list[str]
+    objetivo_intro: str
     alcance: list[tuple[str, list[str]]]
     honorarios: list[dict]
     notas: list[str]
@@ -75,7 +79,7 @@ class PropuestaArmada:
              *self.antecedentes]
         for t, ps in self.secciones:
             l += [t.upper(), *ps]
-        l += ["OBJETIVO", self.objetivo, "ALCANCE"]
+        l += ["OBJETIVO", self.objetivo_intro, *self.objetivos, "ALCANCE"]
         for t, items in self.alcance:
             l += ([t] if t else []) + [f"- {x}" for x in items]
         l += ["HONORARIOS"] + [f"{h['servicio']} | {h['honorario']} | {h['forma_pago']}" for h in self.honorarios]
@@ -110,7 +114,8 @@ def armar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = No
                     fecha: date | None = None, adicionales: list[str] | None = None) -> PropuestaArmada:
     """Arma el contenido. Variables generales que el agente puede pasar para adaptar la propuesta al
     contexto que da el usuario (sin tocar la plantilla del servicio):
-      antecedentes (lista: reemplaza), antecedentes_extra (lista: agrega), objetivo (texto),
+      antecedentes (lista: reemplaza), antecedentes_extra (lista: agrega), objetivo (texto o lista
+      de objetivos), objetivo_intro (frase antes de la lista),
       alcance (lista: reemplaza), alcance_extra (lista: agrega), referencia (texto de la carta),
       tratamiento (Señor/Señora/Señores), confirmadas (claves de notas opcionales a incluir)."""
     env = _entorno()
@@ -200,6 +205,9 @@ def armar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = No
                 notas.append(n)
         referencias.append(ra(pa.get("referencia") or pa.get("asunto")))
 
+    objetivos = ([str(x) for x in _lista(v0["objetivo"])] if v0.get("objetivo") else
+                 [r(x) for x in _lista(p.get("objetivo"))])
+    objetivos = [x for x in objetivos if x.strip()]
     vistos = set()
     por_confirmar = [(c, t) for c, t in por_confirmar if not (t in vistos or vistos.add(t))]
     arm = PropuestaArmada(
@@ -211,7 +219,10 @@ def armar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = No
         referencia=str(v0["referencia"]) if v0.get("referencia") else _unir(referencias),
         antecedentes=antecedentes,
         secciones=[(r(s["titulo"]), [r(x) for x in s["parrafos"]]) for s in p.get("secciones", []) if activo(s, v)],
-        objetivo=str(v0["objetivo"]) if v0.get("objetivo") else r(p.get("objetivo")),
+        objetivo=" ".join(objetivos),
+        objetivos=objetivos,
+        objetivo_intro=str(v0.get("objetivo_intro") or (r(p.get("objetivo_intro")) if p.get("objetivo_intro") else "")
+                           or ("Los objetivos del presente servicio son los siguientes:" if len(objetivos) > 1 else "")),
         alcance=alcance,
         honorarios=honorarios,
         notas=notas,
@@ -399,6 +410,139 @@ def _poner_titulo(forma, texto: str):
             par.runs[0].font.size = Pt(int(tam * ancho / necesario))
 
 
+def _eliminar(prs, slide):
+    lista = prs.slides._sldIdLst
+    for item in list(lista):
+        if prs.part.related_part(item.rId) is slide.part:
+            prs.part.drop_rel(item.rId)
+            lista.remove(item)
+            return
+
+
+def _objetivo_corto(slide, arm) -> float | None:
+    """Tamaño de letra con el que un único objetivo cabe en el recuadro oscuro (de 18 hasta 14 pt);
+    None si hay varios objetivos o el texto es largo (se usa la lámina de lista)."""
+    if len(arm.objetivos) != 1:
+        return None
+    forma, caja = _forma(slide, F["objetivo"]), _forma(slide, "Google Shape;146;p5")
+    ancho = forma.width / EMU_PT - 14
+    alto = (caja.top + caja.height - forma.top) / EMU_PT - 20
+    for tam in (18, 17, 16, 15, 14):
+        if _lineas(arm.objetivos[0], ancho, tam) * tam * 1.2 <= alto:
+            return tam
+    return None
+
+
+def _objetivo_largo(slide, arm):
+    """Lámina de objetivo extenso: frase introductoria y objetivos numerados en romanos (Arial 14,
+    numeración dorada); si no cabe, baja la letra de a un punto."""
+    forma = _forma(slide, F["objetivo_largo"])
+    pars = forma.text_frame.paragraphs
+    p_intro = copy.deepcopy(pars[0]._p)
+    r_intro = copy.deepcopy(pars[0].runs[0]._r)
+    p_item = copy.deepcopy(next(p for p in pars if p._p.pPr is not None and p._p.pPr.get("marL"))._p)
+    r_item = copy.deepcopy(r_intro)
+    vacio = copy.deepcopy(pars[1]._p)
+    numerar = len(arm.objetivos) > 1
+    textos = ([arm.objetivo_intro] if arm.objetivo_intro else []) + arm.objetivos
+    ancho = forma.width / EMU_PT - 14
+    alto = (PIE - forma.top) / EMU_PT - 20
+    tam = 14
+    while tam > 10 and sum(_lineas(t, ancho - (31 if numerar else 0), tam) for t in textos) * tam * 1.2 \
+            + (tam * 1.2 if arm.objetivo_intro else 0) > alto:
+        tam -= 1
+    txb = forma.text_frame._txBody
+    for p in list(forma.text_frame.paragraphs):
+        txb.remove(p._p)
+
+    def agregar(p_xml, r_xml, texto):
+        nuevo = copy.deepcopy(p_xml)
+        for hijo in list(nuevo):
+            if hijo.tag in (f"{NS_A}r", f"{NS_A}br"):
+                nuevo.remove(hijo)
+        run = copy.deepcopy(r_xml)
+        run.find(f"{NS_A}t").text = texto
+        if tam != 14:
+            run.find(f"{NS_A}rPr").set("sz", str(tam * 100))
+        fin = nuevo.find(f"{NS_A}endParaRPr")
+        (fin.addprevious(run) if fin is not None else nuevo.append(run))
+        sp = nuevo.find(f"{NS_A}pPr/{NS_A}lnSpc/{NS_A}spcPts")
+        if sp is not None and tam != 14:
+            sp.set("val", str(int(tam * 120)))
+        txb.append(nuevo)
+
+    if arm.objetivo_intro:
+        agregar(p_intro, r_intro, arm.objetivo_intro)
+        txb.append(copy.deepcopy(vacio))
+    for t in arm.objetivos:
+        agregar(p_item if numerar else p_intro, r_item, t)
+
+
+def _partir_forma_pago(texto: str) -> list[str]:
+    partes = [x.strip() for x in re.split(r"\n|(?<=;\sy,)\s+|(?<=\.)\s+(?=[A-ZÁÉÍÓÚ][^.]{0,25}:)", texto) if x and x.strip()]
+    return partes or [texto]
+
+
+def _honorarios_varios(slide, arm):
+    """Lámina de honorarios con varios servicios y/o exclusiones: filas como las de la plantilla
+    (servicio justificado, honorario centrado, forma de pago en viñetas) y cuadro de exclusiones."""
+    marco = next(sh for sh in slide.shapes if sh.has_table)
+    tabla = marco.table
+    fila_modelo = tabla._tbl.tr_lst[1]
+    for tr in tabla._tbl.tr_lst[1:]:
+        tabla._tbl.remove(tr)
+    anchos = [c.width / EMU_PT for c in tabla.columns]
+    filas = [(h["servicio"], h["honorario"], _partir_forma_pago(h["forma_pago"])) for h in arm.honorarios]
+    notas = _forma(slide, F["hon_exclusiones"])
+    cierre = _forma(slide, F["hon_notas"])
+    texto_notas = arm.notas
+
+    def alto(tam):
+        filas_alto = sum(max(_lineas(a, anchos[0] - 14, tam), _lineas(b, anchos[1] - 14, tam),
+                             sum(_lineas(x, anchos[2] - 48, tam) for x in c)) * tam * 1.2 + 8 for a, b, c in filas)
+        n_alto = sum(_lineas(n, notas.width / EMU_PT - 14, min(tam, 12)) for n in texto_notas) * min(tam, 12) * 1.2
+        return tabla.rows[0].height / EMU_PT + filas_alto + n_alto + 30 + 40
+
+    tam = 14
+    disponible = (PIE - marco.top) / EMU_PT - 10
+    while tam > 10 and alto(tam) > disponible:
+        tam -= 1
+    total = tabla.rows[0].height
+    for servicio, honorario, pagos in filas:
+        tr = copy.deepcopy(fila_modelo)
+        tabla._tbl.append(tr)
+        fila = tabla.rows[len(tabla.rows) - 1]
+        celdas = fila.cells
+        _escribir(celdas[0], [servicio], tamano=None if tam == 14 else tam)
+        _escribir(celdas[1], [honorario], tamano=None if tam == 14 else tam)
+        modelo_pago = next(p for p in celdas[2].text_frame.paragraphs if p.runs)
+        p_xml, r_xml = copy.deepcopy(modelo_pago._p), copy.deepcopy(modelo_pago.runs[0]._r)
+        if len(pagos) == 1:                                  # una sola condición: sin viñeta
+            ppr = p_xml.find(f"{NS_A}pPr")
+            ppr.set("marL", "0"); ppr.set("indent", "0")
+            for hijo in list(ppr):
+                if hijo.tag in (f"{NS_A}buChar", f"{NS_A}buFont", f"{NS_A}buClr", f"{NS_A}buSzPts"):
+                    ppr.remove(hijo)
+            from lxml import etree
+            ppr.insert(3, etree.Element(f"{NS_A}buNone"))
+        _escribir(celdas[2], pagos, p_xml, r_xml, tamano=None if tam == 14 else tam)
+        n = max(_lineas(servicio, anchos[0] - 14, tam), _lineas(honorario, anchos[1] - 14, tam),
+                sum(_lineas(x, anchos[2] - 48, tam) for x in pagos))
+        fila.height = int((n * tam * 1.2 + 8) * EMU_PT)
+        total += fila.height
+    marco.height = total
+    y = marco.top + total + 150000
+    if texto_notas:
+        r0 = notas.text_frame.paragraphs[0].runs[0]._r
+        _escribir(notas, texto_notas, copy.deepcopy(notas.text_frame.paragraphs[0]._p), copy.deepcopy(r0),
+                  tamano=None if tam >= 12 else tam)
+        notas.top = y
+        y += int((sum(_lineas(n, notas.width / EMU_PT - 14, min(tam, 12)) for n in texto_notas) * min(tam, 12) * 1.2 + 10) * EMU_PT)
+    else:
+        notas._element.getparent().remove(notas._element)
+    cierre.top = max(y - 2 * 12 * EMU_PT, marco.top + total)     # el cuadro empieza con dos líneas vacías
+
+
 PIE = 6302352                      # borde superior de la franja inferior de la plantilla (EMU)
 
 
@@ -446,11 +590,21 @@ def escribir_pptx(arm: PropuestaArmada, salida: Path) -> Path:
             _titulo_continuacion(d, F["antec_titulo"])
     extra = len(paginas) - 1
 
-    # 5. Objetivo
+    # 5. Objetivo: lámina corta (un objetivo, recuadro oscuro, Arial 18) o lámina larga (lista I., II., ...)
     s_obj, s_alc, s_hon = S_OBJ + extra, S_ALC + extra, S_HON + extra
-    for par in _forma(s[s_obj], F["objetivo"]).text_frame.paragraphs:
-        _reemplazar_marcadores(par, {"objetivo": arm.objetivo})
-
+    descartar = []
+    corto = _objetivo_corto(s[s_obj], arm)
+    if corto:
+        forma = _forma(s[s_obj], F["objetivo"])
+        for par in forma.text_frame.paragraphs:
+            _reemplazar_marcadores(par, {"objetivo": arm.objetivos[0] if arm.objetivos else ""})
+        if corto < 18:
+            for run in forma.text_frame.paragraphs[0].runs:
+                run.font.size = Pt(corto)
+        descartar.append(s[s_obj + 1])
+    else:
+        _objetivo_largo(s[s_obj + 1], arm)
+        descartar.append(s[s_obj])
     # 6. Alcance: Arial 14, viñetas cuadradas doradas como en la plantilla
     lineas = []
     for titulo, items in arm.alcance:
@@ -482,7 +636,16 @@ def escribir_pptx(arm: PropuestaArmada, salida: Path) -> Path:
             _titulo_continuacion(d, F["alc_titulo"])
     s_hon += max(len(bloques), 1) - 1
 
-    # 7. Honorarios: filas de la tabla con el formato de la fila modelo (Arial 14)
+    # 7. Honorarios: lámina simple (un servicio, sin notas) o lámina de varios servicios / exclusiones
+    if len(arm.honorarios) > 1 or arm.notas:
+        _honorarios_varios(s[s_hon + 1], arm)
+        descartar.append(s[s_hon])
+        for d in descartar:
+            _eliminar(prs, d)
+        salida.parent.mkdir(parents=True, exist_ok=True)
+        prs.save(str(salida))
+        return salida
+    descartar.append(s[s_hon + 1])
     d = s[s_hon]
     marco = next(sh for sh in d.shapes if sh.has_table)
     tabla = marco.table
@@ -535,6 +698,8 @@ def escribir_pptx(arm: PropuestaArmada, salida: Path) -> Path:
         for i, par in enumerate(aux.text_frame._txBody.findall(f"{NS_A}p")):
             cierre._p.addprevious(par)
     notas.top = int(max(marco.top + alto_total + 120000, notas.top))
+    for d in descartar:
+        _eliminar(prs, d)
 
     salida.parent.mkdir(parents=True, exist_ok=True)
     prs.save(str(salida))

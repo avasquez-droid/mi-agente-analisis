@@ -12,12 +12,14 @@ description: Elabora la propuesta de servicios profesionales en PowerPoint con l
    tributario, cartera, objeto social) — no inventarlos.
 4. **Adaptar al contexto.** Si el usuario cuenta el caso (antecedentes, hechos, alcance especial),
    redacta los párrafos ajustados al servicio y pásalos en un YAML con `--variables`:
-   `antecedentes` (lista, reemplaza los del servicio), `antecedentes_extra` (agrega), `objetivo`,
+   `antecedentes` (lista, reemplaza los del servicio), `antecedentes_extra` (agrega), `objetivo` (texto o
+   lista de objetivos; con varios o con uno largo se usa la lámina de objetivos numerados), `objetivo_intro`,
    `alcance` (lista, reemplaza), `alcance_extra` (agrega), `referencia` (texto de la carta tras
    "relacionados con los servicios de"), `tratamiento` (Señor / Señora / Señores; persona natural).
 5. **Otros servicios en la misma propuesta.** Si la propuesta ofrece más de un servicio (p. ej.
    planificación tributaria + ISD), agrega `--adicional <servicio>` por cada uno: suma su alcance
-   (con subtítulo) y su fila de honorarios.
+   (con subtítulo) y su fila de honorarios. Con varios servicios o con notas, la lámina de honorarios
+   es la de varios servicios (forma de pago en viñetas y cuadro de exclusiones).
 6. **Notas opcionales: preguntar antes.** Las notas que excluyen cosas (gastos notariales, peritajes,
    implementación de figuras jurídicas, periodos sin Census...) NO se incluyen solas. Antes de generar,
    pregunta al usuario cuáles van y pásalas con `--confirmar <clave>` (p. ej. `--confirmar gastos`).
