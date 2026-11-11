@@ -104,8 +104,16 @@ def armar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = No
             return ""
         return re.sub(r"[ \t]+", " ", env.from_string(str(texto)).render(**ctx)).strip()
 
+    v.setdefault("institucional", not v.get("cartera"))
+
     def activo(bloque) -> bool:
-        return not (isinstance(bloque, dict) and bloque.get("si") and not v.get(bloque["si"]))
+        if not isinstance(bloque, dict):
+            return True
+        if bloque.get("si") and not v.get(bloque["si"]):
+            return False
+        if bloque.get("no_si") and v.get(bloque["no_si"]):
+            return False
+        return True
 
     ctx["asunto"] = r(p.get("asunto"))
     carta = ["De nuestra consideración:", ""]
@@ -127,7 +135,7 @@ def armar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = No
         honorarios_intro=r(comunes["honorarios_intro"]) + (" " + r(hon["intro_extra"]) if hon.get("intro_extra") else ""),
         honorarios=[{k: r(f.get(k)) for k in ("servicio", "honorario", "forma_pago")}
                     for f in hon.get("filas", []) if activo(f)],
-        notas=[r(n) for n in hon.get("notas", [])] + [r(comunes["honorarios_cierre"])],
+        notas=[x for x in (r(n) for n in hon.get("notas", [])) if x] + [r(comunes["honorarios_cierre"])],
     )
     arm.pendientes = sorted(set(re.findall(r"\[COMPLETAR: ([^\]]+)\]", arm.texto())))
     for k, m in (p.get("variables") or {}).items():
@@ -259,7 +267,7 @@ def escribir_pptx(arm: PropuestaArmada, salida: Path) -> Path:
         _escribir(_forma(d, F["antec_cuerpo"]), _con_espacios(parrafos), _tamano(parrafos, 14))
 
     s_obj, s_alc, s_hon = S_OBJ + extra, S_ALC + extra, S_HON + extra
-    _escribir(_forma(s[s_obj], F["objetivo"]), [arm.objetivo], 18 if len(arm.objetivo) < 260 else 15)
+    _escribir(_forma(s[s_obj], F["objetivo"]), [arm.objetivo], 18 if len(arm.objetivo) < 200 else 16 if len(arm.objetivo) < 280 else 14)
 
     # Alcance: todas las líneas, repartidas en una o varias diapositivas
     lineas = []

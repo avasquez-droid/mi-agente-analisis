@@ -174,6 +174,12 @@ def cmd_base(a):
         print(f"\n… y {len(encontrados) - 5} coincidencias más.")
 
 
+def cmd_presentacion_cobranza(a):
+    from .presentacion_cobranzas import generar_presentacion
+    ruta = generar_presentacion(" ".join(a.cliente), a.tipo, a.salida)
+    print(f"Presentación generada: {ruta}")
+
+
 def main(argv: list[str] | None = None) -> int:
     for flujo in (sys.stdout, sys.stderr):           # Windows: forzar UTF-8
         if hasattr(flujo, "reconfigure"):
@@ -223,6 +229,12 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("texto", nargs="*", help="RUC o parte del nombre (para 'cliente')")
     b.add_argument("--archivo", default=None)
     b.set_defaults(f=cmd_base)
+
+    pc = sub.add_parser("presentacion-cobranza", help="Presentación institucional de Census Cobranzas (PDF) para un cliente")
+    pc.add_argument("cliente", nargs="+", help="Razón social como debe aparecer")
+    pc.add_argument("--tipo", default="empresa", choices=["financiera", "cooperativa", "empresa"])
+    pc.add_argument("--salida", default=None)
+    pc.set_defaults(f=cmd_presentacion_cobranza)
 
     a = p.parse_args(argv)
     a.f(a)

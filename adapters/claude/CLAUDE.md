@@ -31,6 +31,7 @@ python -m core.cli variables <servicio>                  # datos que pide el con
 python -m core.cli contrato <servicio> --cliente c.yaml --var clave=valor
 python -m core.cli confidencialidad --cliente c.yaml --var sector=farmacéutico
 python -m core.cli propuesta <servicio> --cliente c.yaml --var clave=valor
+python -m core.cli presentacion-cobranza "CLIENTE" --tipo financiera|cooperativa|empresa
 python -m pytest tests -q
 ```
 

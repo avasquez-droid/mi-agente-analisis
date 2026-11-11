@@ -1,33 +1,74 @@
 # Base: propuesta 2026 de cobranza extrajudicial y judicial + presentación corporativa de Census Cobranzas.
-portada: COBRANZA EXTRAJUDICIAL Y JUDICIAL
+# Dos usos:
+#   - con `cartera` (deudores concretos): propuesta de cobranza de casos puntuales;
+#   - sin `cartera` (p. ej. bancos y cooperativas): presentación del servicio de gestión de cartera
+#     masiva, con metodología, gestión por edad de mora y controles (presentación institucional).
+portada: "{{ 'GESTIÓN DE COBRANZA DE CARTERA' if not v.cartera else 'COBRANZA EXTRAJUDICIAL Y JUDICIAL' }}"
 variables:
   cartera:
-    descripcion: "Lista de deudores [{deudor, dias_vencido, valor, via (Extrajudicial/Judicial), demanda_iniciada}]"
+    descripcion: "Opcional. Deudores concretos [{deudor, dias_vencido, valor, via, demanda_iniciada}]. Sin cartera: presentación institucional"
     ejemplo: [{deudor: "DEUDOR S.A.", dias_vencido: 1400, valor: 36519.53, via: Judicial, demanda_iniciada: false}]
-    requerido: true
+  tipo_entidad: {descripcion: "financiera | cooperativa | empresa (adapta antecedentes)", ejemplo: financiera}
   umbral_extrajudicial: {descripcion: "Cuantía bajo la cual se prioriza la vía extrajudicial", ejemplo: 3000}
-asunto: el servicio de cobranza extrajudicial y judicial
+  honorario_por_definir: {descripcion: "true = honorarios se acuerdan según la cartera asignada", ejemplo: false}
+asunto: >-
+  {{ 'el servicio de gestión de cobranza extrajudicial y judicial de su cartera vencida' if not v.cartera else 'el servicio de cobranza extrajudicial y judicial' }}
 antecedentes:
   - >-
-    {{ cliente.razon_social }} mantiene cuentas por cobrar vencidas por un total de
-    {{ v.cartera | sum(attribute='valor') | usd }} ({{ v.cartera | length }} deudores).
+    {% if v.cartera %}{{ cliente.razon_social }} mantiene cuentas por cobrar vencidas por un total de
+    {{ v.cartera | sum(attribute='valor') | usd }} ({{ v.cartera | length }} deudores).{% elif v.tipo_entidad in ('financiera', 'cooperativa') %}{{ cliente.razon_social }},
+    como entidad del sistema {{ 'financiero' if v.tipo_entidad == 'financiera' else 'financiero popular y solidario' }},
+    administra una cartera de crédito cuya recuperación oportuna incide directamente en sus
+    indicadores de morosidad, provisiones y liquidez.{% else %}{{ cliente.razon_social }} mantiene una cartera
+    de clientes con obligaciones vencidas cuya recuperación incide en su flujo de caja.{% endif %}
   - >-
-    En este contexto, requiere acompañamiento para la recuperación de su cartera vencida mediante
-    acciones de cobranza extrajudicial o judicial, según cada caso, con el propósito de recuperar
-    los valores adeudados y resguardar sus derechos como acreedor.
+    En este contexto, requiere un aliado especializado para la recuperación de su cartera vencida
+    mediante gestiones de cobranza extrajudicial y, cuando el caso lo amerite, acciones judiciales,
+    con el propósito de recuperar los valores adeudados y resguardar sus derechos como acreedor.
+  - >-
+    {% if not v.cartera %}Census Cobranzas está calificada por la Superintendencia de Bancos como
+    compañía de servicios auxiliares de las entidades de los sectores financieros público y privado
+    para prestar servicios de cobranza, y por la Superintendencia de Economía Popular y Solidaria
+    para el sector financiero popular y solidario.{% endif %}
 secciones:
   - titulo: Census Cobranzas
     parrafos:
       - >-
         Census Cobranzas forma parte del grupo Census y está calificada por la Superintendencia de
-        Bancos (Resolución SB-IRG-DRTL-2025-0440) y por la Superintendencia de Economía Popular y
-        Solidaria (Resolución SEPS-INSEPS-2024-0227) para prestar servicios auxiliares de cobranza.
+        Bancos (Resolución SB-IRG-DRTL-2025-0440 de 25 de junio de 2025) y por la Superintendencia de
+        Economía Popular y Solidaria (Resolución SEPS-INSEPS-2024-0227 de 27 de agosto de 2024) para
+        prestar servicios auxiliares de cobranza.
+      - "- Cobertura nacional: dos oficinas en Guayaquil, una en Quito y una en Cuenca."
       - "- Gestión telefónica (call center y marcación predictiva), campañas masivas de SMS, WhatsApp, mailing e IVR, e interacción con inteligencia artificial."
       - "- Visitas de campo a los deudores de mayor mora; actualización de datos; CRM con grabación de llamadas y reportes en línea."
-      - "- Reportes semanales y comités quincenales de medición de la recuperación."
+  - si: institucional
+    titulo: Metodología de trabajo
+    parrafos:
+      - "- **Análisis de la cartera:** valores adeudados, días de mora y segmentación para definir la estrategia."
+      - "- **Motor de datos:** minería y actualización de teléfonos, correos y direcciones para el contacto inicial."
+      - "- **Asignación:** segmentación y asignación de la cartera a ejecutivos."
+      - "- **Gestión masiva:** campañas de SMS, WhatsApp, mailing e IVR complementarias a la gestión telefónica."
+      - "- **Gestión de terreno:** visitas a los deudores con mora más alta para frenar el deterioro de la cartera."
+      - "- **Focalización de compromisos de pago:** seguimiento de cada compromiso hasta su cumplimiento."
+  - si: institucional
+    titulo: Gestión por edad de la cartera
+    parrafos:
+      - "- **Cartera temprana:** campañas masivas semanales, gestiones con inteligencia artificial (compromisos de pago, medios de pago y recordatorios) y correos con enlace a un agente."
+      - "- **Cartera dura:** marcación predictiva y gestión manual de ejecutivos para generar compromisos de pago; campañas de descuento con aprobación del cliente."
+      - "- **Cartera en etapa prejudicial:** negociación con mayor presión, visitas de campo semanales y, con autorización del cliente, inicio de acciones judiciales en los casos de mayor cuantía."
+  - si: institucional
+    titulo: Transparencia y control
+    parrafos:
+      - "- Reportes diarios de seguimiento en el formato de la entidad y reportes semanales de gestión y recuperación."
+      - "- Comités quincenales con el área de crédito y cobranza para medir la recuperación frente a las metas."
+      - "- Integración segura con los sistemas de la entidad (SFTP, Drive u otro canal requerido) y plan de contingencia tecnológica."
+      - "- Disponibilidad permanente para auditorías internas o externas; confidencialidad y protección de datos conforme a la normativa vigente."
 objetivo: >-
-  Gestionar la recuperación de los valores adeudados mediante cobranza extrajudicial y judicial
-  y, según la estrategia de cada caso, iniciar las acciones legales ante la justicia ordinaria.
+  {% if v.cartera %}Gestionar la recuperación de los valores adeudados mediante cobranza extrajudicial y
+  judicial y, según la estrategia de cada caso, iniciar las acciones legales ante la justicia
+  ordinaria.{% else %}Recuperar la cartera vencida asignada por {{ cliente.razon_social }}, gestionando la
+  totalidad de la cartera dentro de cada mes, con medición semanal de la recuperación y escalamiento
+  a la vía judicial de los casos que lo ameriten.{% endif %}
 alcance:
   - titulo: Fase extrajudicial
     items:
@@ -44,21 +85,30 @@ alcance:
       - Asistencia a audiencias e impulso del proceso hasta la recuperación.
 honorarios:
   filas:
-    - servicio: Cobranza extrajudicial
+    - si: honorario_por_definir
+      servicio: Gestión de cobranza extrajudicial y judicial de la cartera asignada
+      honorario: Porcentaje sobre lo efectivamente recuperado, definido según la edad de mora, el volumen y la cuantía de la cartera asignada.
+      forma_pago: Contra recuperación de valores, con liquidación mensual.
+    - no_si: honorario_por_definir
+      servicio: Cobranza extrajudicial
       honorario: "{{ v.pct_extrajudicial | default(20) | pct }} + IVA"
       forma_pago: Contra recuperación de valores.
-    - servicio: Cobranza judicial
+    - no_si: honorario_por_definir
+      servicio: Cobranza judicial
       honorario: "Fijo por etapas + {{ v.pct_judicial | default(15) | pct }} de éxito (18 % si la demanda ya está iniciada)"
       forma_pago: "Demanda nueva: USD 600 a la aceptación, USD 900 a la presentación de la demanda y USD 300 a la citación. Demanda iniciada: USD 450 a la aceptación (incluye sustitución de patrocinio y diagnóstico). Éxito: contra recuperación."
   notas:
     - >-
-      La vía extrajudicial se aplica, en principio, a obligaciones menores a
+      {% if v.honorario_por_definir %}La propuesta económica definitiva se presentará una vez recibida
+      la información de la cartera a asignar (número de operaciones, saldos y días de mora).{% else %}La vía
+      extrajudicial se aplica, en principio, a obligaciones menores a
       {{ v.umbral_extrajudicial | default(3000) | usd }}, porque las acciones judiciales podrían costar más
-      que lo recuperable; cada caso se evalúa en particular.
+      que lo recuperable; cada caso se evalúa en particular.{% endif %}
     - >-
       Se considera recuperado todo monto que ingrese al patrimonio del cliente (capital, intereses,
       costas y accesorios) por cualquier vía durante el contrato. Los honorarios no incluyen
       casación ni gastos (notariales, registro, copias, peritos, depositarios).
     - >-
-      Si el cliente revoca el patrocinio sin causa imputable a Census o llega a acuerdos directos con
-      el deudor, el fee de éxito se considera devengado; el fijo no es reembolsable.
+      {% if v.cartera %}Si el cliente revoca el patrocinio sin causa imputable a Census o llega a
+      acuerdos directos con el deudor, el fee de éxito se considera devengado; el fijo no es
+      reembolsable.{% endif %}

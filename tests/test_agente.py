@@ -223,3 +223,13 @@ def test_cargo_gerente_siempre_gerente_general():
     assert normalizar_cargo("Gerente General") == "Gerente General"
     c = armar_contrato("devolucion_iva", {**CLIENTE, "cargo": "Gerente"}, {"periodo": "diciembre 2026"}, date(2026, 11, 9))
     assert "por intermedio de su Gerente General," in c.clausulas[0].parrafos[0]
+
+
+def test_presentacion_cobranza(tmp_path):
+    from core.presentacion_cobranzas import PLANTILLA, generar_presentacion
+    if not PLANTILLA.exists():
+        pytest.skip("La presentación de Census Cobranzas es privada (privado/plantillas/presentacion_cobranzas.pdf)")
+    import pymupdf
+    ruta = generar_presentacion("EMPRESA DEMO S.A.", "financiera", tmp_path)
+    texto = "".join(p.get_text() for p in pymupdf.open(str(ruta))).replace("\xa0", " ")   # la Arial embebida mapea el espacio a NBSP
+    assert "EMPRESA DEMO S.A." in texto and "Etatex" not in texto and "cooperativa" not in texto

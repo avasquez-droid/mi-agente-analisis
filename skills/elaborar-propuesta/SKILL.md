@@ -23,3 +23,11 @@ description: Elabora la propuesta de servicios profesionales en PowerPoint con l
 - Honorarios: salen del tarifario (provisional). Si el usuario pide otro valor, pasarlo con --var.
 - Textos por servicio en `conocimiento/propuestas/`; inconsistencias conocidas en `docs/revision-propuestas.md`.
 - Después de la propuesta vienen el acuerdo de confidencialidad (si aún no se firmó) y, al aceptarse, el contrato.
+
+## Presentación institucional de cobranzas (formato Census Cobranzas)
+Para bancos, cooperativas o empresas que piden "la presentación de cobranzas":
+```bash
+python -m core.cli presentacion-cobranza "BANCO X S.A." --tipo financiera
+```
+Toma la presentación corporativa (privado/plantillas/presentacion_cobranzas.pdf, 27 láminas) y solo
+cambia el nombre del cliente y las menciones al tipo de entidad. Sale en PDF.
