@@ -1,13 +1,19 @@
-"""Generación de propuestas de servicios (PPTX) con la plantilla de Census.
+"""Generación de propuestas de servicios (PPTX) con la PLANTILLA DE PROPUESTAS 2026 de Census.
 
-La plantilla (plantillas/census/propuesta_base.pptx, o privado/plantillas/ si existe una versión local) es una propuesta real de Census: portada,
-introducción, socios, antecedentes, objetivo, alcance, honorarios, gerentes, coordinadores,
-clientes, certificaciones y cierre. Se queda fuera del repositorio público porque contiene fotos
-del equipo y logos de clientes.
+Plantilla: plantillas/census/propuesta_base.pptx (o privado/plantillas/ si existe una versión local).
+Las láminas fijas (socios, gerentes, jefes y coordinadores, clientes, certificaciones, cierre) no se
+tocan. En las variables solo se reemplazan los marcadores <<...>> que dejó el área comercial,
+conservando el texto, la fuente, el tamaño y el color de la plantilla:
 
-El agente reemplaza los textos de las diapositivas variables con conocimiento/propuestas/<x>.yaml
-y duplica diapositivas cuando hacen falta secciones extra (base legal, plazos...) o más alcance.
-Las diapositivas fijas (equipo, clientes, certificaciones, cierre) no se tocan.
+  1 Portada ........ <<Nombre de servicio>>
+  2 Introducción ... <<Señor, Señores, Señora>>, <<razón social>>, <<Ciudad>>, <<nombre del servicio, periodo>>
+  4 Antecedentes ... <<Antecedentes>>           (Arial 15, justificado)
+  5 Objetivo ....... <<Objetivo del servicio>>  (Arial 12, blanco)
+  6 Alcance ........ <<Alcance de servicio>>    (Arial 14, viñetas cuadradas doradas)
+  7 Honorarios ..... tabla <<nombre del servicio>> | <<Honorario>> | <<Forma de pago>> (Arial 14)
+
+Si el contenido no cabe, se agregan láminas de continuación (copias de la misma lámina) en lugar
+de achicar la letra.
 """
 from __future__ import annotations
 
@@ -27,24 +33,22 @@ from .contratos import _entorno
 PLANTILLA = kb.plantilla("propuesta_base.pptx")
 CARPETA = kb.CARPETA / "propuestas"
 
-# Índices (0-based) y nombres de formas en la plantilla
 S_PORTADA, S_INTRO, S_SOCIOS, S_ANTEC, S_OBJ, S_ALC, S_HON = 0, 1, 2, 3, 4, 5, 6
 F = {
     "portada": "Google Shape;91;p1",
-    "destinatario": "Google Shape;101;p2",
-    "carta": "Google Shape;102;p2",
-    "antec_titulo": "Google Shape;117;p3",
-    "antec_cuerpo": "Google Shape;118;p3",
+    "destinatario": "Google Shape;102;p2",
+    "carta": "Google Shape;103;p2",
+    "antec_titulo": "Google Shape;158;p3",
+    "antec_cuerpo": "CuadroTexto 2",
     "objetivo": "Google Shape;149;p5",
-    "alc_intro": "Google Shape;161;p6",
-    "alc_cuerpo": "Google Shape;159;p6",
     "alc_titulo": "Google Shape;158;p6",
-    "hon_titulo": "Google Shape;181;p7",
-    "hon_intro": "Google Shape;182;p7",
+    "alc_cuerpo": "Google Shape;159;p6",
     "hon_notas": "Google Shape;183;p7",
 }
 VINETAS_ALC = {f"Google Shape;{n};p6" for n in (160, 162, 164, 166, 167, 168)}
+ORO = "BDA02D"                                   # color de las viñetas cuadradas de la plantilla
 NS_A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+EMU_PT = 12700
 
 
 # ----------------------------------------------------------------- contenido
@@ -52,27 +56,29 @@ NS_A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 class PropuestaArmada:
     servicio_id: str
     portada: str
-    destinatario: list[str]
-    carta: list[str]
+    tratamiento: str
+    destinatario: str
+    ciudad: str
+    referencia: str
     antecedentes: list[str]
     secciones: list[tuple[str, list[str]]]
     objetivo: str
     alcance: list[tuple[str, list[str]]]
-    honorarios_intro: str
     honorarios: list[dict]
     notas: list[str]
+    por_confirmar: list[tuple[str, str]] = field(default_factory=list)   # (clave, texto) de notas opcionales
     archivo: Path | None = None
     pendientes: list[str] = field(default_factory=list)
 
     def texto(self) -> str:
-        l = [self.portada, *self.destinatario, *self.carta, "ANTECEDENTES", *self.antecedentes]
+        l = [self.portada, self.tratamiento, self.destinatario, self.ciudad, self.referencia, "ANTECEDENTES",
+             *self.antecedentes]
         for t, ps in self.secciones:
             l += [t.upper(), *ps]
         l += ["OBJETIVO", self.objetivo, "ALCANCE"]
         for t, items in self.alcance:
             l += ([t] if t else []) + [f"- {x}" for x in items]
-        l += ["HONORARIOS", self.honorarios_intro]
-        l += [f"{h['servicio']} | {h['honorario']} | {h['forma_pago']}" for h in self.honorarios]
+        l += ["HONORARIOS"] + [f"{h['servicio']} | {h['honorario']} | {h['forma_pago']}" for h in self.honorarios]
         return "\n".join(l + self.notas)
 
 
@@ -83,30 +89,52 @@ def plantilla_servicio(servicio_id: str) -> dict:
     return yaml.safe_load((CARPETA / archivo).read_text(encoding="utf-8"))
 
 
+def notas_opcionales(servicio_id: str) -> list[dict]:
+    """Notas que solo se incluyen si el usuario lo confirma (p. ej. exclusión de gastos notariales)."""
+    notas = (plantilla_servicio(servicio_id).get("honorarios") or {}).get("notas") or []
+    return [n for n in notas if isinstance(n, dict) and n.get("confirmar")]
+
+
+def _lista(x) -> list[str]:
+    if x is None:
+        return []
+    return [str(i) for i in x] if isinstance(x, (list, tuple)) else [str(x)]
+
+
+def _unir(partes: list[str]) -> str:
+    partes = [p for p in partes if p]
+    return partes[0] if len(partes) == 1 else ", ".join(partes[:-1]) + " y " + partes[-1]
+
+
 def armar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = None,
-                    fecha: date | None = None) -> PropuestaArmada:
-    comunes = yaml.safe_load((CARPETA / "comunes.yaml").read_text(encoding="utf-8"))
-    p = plantilla_servicio(servicio_id)
-    srv = kb.servicio(servicio_id)
-    t = kb.tarifario().get(srv.get("propuesta_tarifa") or srv.get("tarifa", servicio_id), {})
-    v = dict(srv.get("propuesta_vars") or {})
-    if t.get("valor") is not None:
-        v["porcentaje" if t.get("modelo") in {"porcentaje", "etapas"} else "honorario"] = t["valor"]
-    v.update({k: x for k, x in (variables or {}).items() if x not in (None, "")})
+                    fecha: date | None = None, adicionales: list[str] | None = None) -> PropuestaArmada:
+    """Arma el contenido. Variables generales que el agente puede pasar para adaptar la propuesta al
+    contexto que da el usuario (sin tocar la plantilla del servicio):
+      antecedentes (lista: reemplaza), antecedentes_extra (lista: agrega), objetivo (texto),
+      alcance (lista: reemplaza), alcance_extra (lista: agrega), referencia (texto de la carta),
+      tratamiento (Señor/Señora/Señores), confirmadas (claves de notas opcionales a incluir)."""
+    env = _entorno()
+    v0 = dict(variables or {})
+    confirmadas = set(_lista(v0.get("confirmadas")))
     cliente = {"ciudad": "Guayaquil", **{k: x for k, x in cliente.items() if x not in (None, "")}}
 
-    env = _entorno()
-    ctx = {"cliente": cliente, "v": v, "t": t, "fecha": fecha or date.today(),
-           "tarifa": lambda k: kb.tarifario().get(k, {})}
+    def contexto(sid):
+        srv = kb.servicio(sid)
+        t = kb.tarifario().get(srv.get("propuesta_tarifa") or srv.get("tarifa", sid), {})
+        v = dict(srv.get("propuesta_vars") or {})
+        if t.get("valor") is not None:
+            v["porcentaje" if t.get("modelo") in {"porcentaje", "etapas"} else "honorario"] = t["valor"]
+        v.update({k: x for k, x in v0.items() if x not in (None, "")})
+        v.setdefault("institucional", not v.get("cartera"))
+        return srv, v, {"cliente": cliente, "v": v, "t": t, "fecha": fecha or date.today(),
+                        "tarifa": lambda k: kb.tarifario().get(k, {})}
 
-    def r(texto) -> str:
+    def render(ctx, texto) -> str:
         if texto is None:
             return ""
         return re.sub(r"[ \t]+", " ", env.from_string(str(texto)).render(**ctx)).strip()
 
-    v.setdefault("institucional", not v.get("cartera"))
-
-    def activo(bloque) -> bool:
+    def activo(bloque, v) -> bool:
         if not isinstance(bloque, dict):
             return True
         if bloque.get("si") and not v.get(bloque["si"]):
@@ -115,27 +143,79 @@ def armar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = No
             return False
         return True
 
-    ctx["asunto"] = r(p.get("asunto"))
-    carta = ["De nuestra consideración:", ""]
-    for parrafo in comunes["introduccion"]:
-        carta += [r(parrafo), ""]
-    carta += ["Muy atentamente,", "", "**Census Consultores S.A.S.**"]
+    def notas_de(p, ctx, v, por_confirmar):
+        salida = []
+        for n in (p.get("honorarios") or {}).get("notas") or []:
+            if isinstance(n, dict):
+                if not activo(n, v):
+                    continue
+                texto = render(ctx, n.get("texto"))
+                if n.get("confirmar") and n["confirmar"] not in confirmadas:
+                    if texto:
+                        por_confirmar.append((n["confirmar"], texto))
+                    continue
+            else:
+                texto = render(ctx, n)
+            if texto:
+                salida.append(texto)
+        return salida
 
-    hon = p.get("honorarios", {})
+    p = plantilla_servicio(servicio_id)
+    srv, v, ctx = contexto(servicio_id)
+    r = lambda x: render(ctx, x)
+
+    antecedentes = ([x for a in v0["antecedentes"] for x in str(a).split("\n") if x.strip()]
+                    if v0.get("antecedentes") else
+                    [x for x in (r(a) for a in p.get("antecedentes", [])) for x in x.split("\n") if x.strip()])
+    antecedentes += _lista(v0.get("antecedentes_extra"))
+
+    items_base = _lista(v0["alcance"]) if v0.get("alcance") else None
+    alcance = ([("", items_base)] if items_base else
+               [(r(b.get("titulo")), [r(i) for i in b["items"]]) for b in p.get("alcance", []) if activo(b, v)])
+    if v0.get("alcance_extra"):
+        alcance[-1] = (alcance[-1][0], alcance[-1][1] + _lista(v0["alcance_extra"]))
+
+    por_confirmar: list[tuple[str, str]] = []
+    honorarios = [{k: r(f.get(k)) for k in ("servicio", "honorario", "forma_pago")}
+                  for f in (p.get("honorarios") or {}).get("filas", []) if activo(f, v)]
+    notas = notas_de(p, ctx, v, por_confirmar)
+    referencias = [r(p.get("referencia") or p.get("asunto"))]
+
+    # Servicios adicionales ofrecidos en la misma propuesta
+    adicionales = [a for a in (adicionales or []) if a != servicio_id]
+    if adicionales and alcance and not alcance[0][0]:
+        alcance[0] = (srv.get("nombre_corto") or srv["nombre"], alcance[0][1])
+    for sid in adicionales:
+        pa = plantilla_servicio(sid)
+        srv_a, va, ctx_a = contexto(sid)
+        ra = lambda x, c=ctx_a: render(c, x)
+        nombre = srv_a.get("nombre_corto") or srv_a["nombre"]
+        for b in pa.get("alcance", []):
+            if activo(b, va):
+                alcance.append((ra(b.get("titulo")) or nombre, [ra(i) for i in b["items"]]))
+        honorarios += [{k: ra(f.get(k)) for k in ("servicio", "honorario", "forma_pago")}
+                       for f in (pa.get("honorarios") or {}).get("filas", []) if activo(f, va)]
+        for n in notas_de(pa, ctx_a, va, por_confirmar):
+            if n not in notas:
+                notas.append(n)
+        referencias.append(ra(pa.get("referencia") or pa.get("asunto")))
+
+    vistos = set()
+    por_confirmar = [(c, t) for c, t in por_confirmar if not (t in vistos or vistos.add(t))]
     arm = PropuestaArmada(
         servicio_id=servicio_id,
         portada=r(p["portada"]).upper(),
-        destinatario=["Señores", cliente.get("razon_social", "[COMPLETAR: cliente]"),
-                      f"{cliente['ciudad']}, Ecuador"],
-        carta=carta,
-        antecedentes=[x for x in (r(a) for a in p.get("antecedentes", [])) for x in x.split("\n") if x.strip()],
-        secciones=[(r(s["titulo"]), [r(x) for x in s["parrafos"]]) for s in p.get("secciones", []) if activo(s)],
-        objetivo=r(p.get("objetivo")),
-        alcance=[(r(b.get("titulo")), [r(i) for i in b["items"]]) for b in p.get("alcance", []) if activo(b)],
-        honorarios_intro=r(comunes["honorarios_intro"]) + (" " + r(hon["intro_extra"]) if hon.get("intro_extra") else ""),
-        honorarios=[{k: r(f.get(k)) for k in ("servicio", "honorario", "forma_pago")}
-                    for f in hon.get("filas", []) if activo(f)],
-        notas=[x for x in (r(n) for n in hon.get("notas", [])) if x] + [r(comunes["honorarios_cierre"])],
+        tratamiento=str(v0.get("tratamiento") or "Señores"),
+        destinatario=cliente.get("razon_social", "[COMPLETAR: cliente]"),
+        ciudad=cliente["ciudad"],
+        referencia=str(v0["referencia"]) if v0.get("referencia") else _unir(referencias),
+        antecedentes=antecedentes,
+        secciones=[(r(s["titulo"]), [r(x) for x in s["parrafos"]]) for s in p.get("secciones", []) if activo(s, v)],
+        objetivo=str(v0["objetivo"]) if v0.get("objetivo") else r(p.get("objetivo")),
+        alcance=alcance,
+        honorarios=honorarios,
+        notas=notas,
+        por_confirmar=por_confirmar,
     )
     arm.pendientes = sorted(set(re.findall(r"\[COMPLETAR: ([^\]]+)\]", arm.texto())))
     for k, m in (p.get("variables") or {}).items():
@@ -152,12 +232,41 @@ def _forma(slide, nombre):
     raise KeyError(f"La plantilla no tiene la forma '{nombre}'")
 
 
-def _escribir(shape, parrafos: list[str], tamano: float | None = None):
-    """Reemplaza el texto conservando el formato del primer párrafo con texto."""
+def _reemplazar_marcadores(parrafo, valores: dict[str, str]) -> bool:
+    """Sustituye <<...>> dentro de un párrafo conservando el formato del primer run.
+    `valores` mapea un fragmento del marcador (sin <<>>, minúsculas) al texto nuevo."""
+    texto = "".join(r.text for r in parrafo.runs)
+    if "<<" not in texto:
+        return False
+
+    def sustituto(m):
+        clave = m.group(1).strip().lower()
+        for k, val in valores.items():
+            if k in clave:
+                return val
+        return m.group(0)
+
+    nuevo = re.sub(r"<<(.*?)>>", sustituto, texto)
+    runs = parrafo.runs
+    # el run con el marcador manda el formato (en la carta, el marcador va en su propio run)
+    runs[0].text = nuevo
+    for extra in runs[1:]:
+        extra._r.getparent().remove(extra._r)
+    return True
+
+
+def _parrafos_modelo(shape):
     tf = shape.text_frame
     modelo = next((p for p in tf.paragraphs if p.runs), tf.paragraphs[0])
-    p_xml = copy.deepcopy(modelo._p)
-    r_xml = copy.deepcopy(modelo.runs[0]._r) if modelo.runs else None
+    return copy.deepcopy(modelo._p), (copy.deepcopy(modelo.runs[0]._r) if modelo.runs else None)
+
+
+def _escribir(shape, parrafos: list[str], p_xml=None, r_xml=None, tamano: float | None = None):
+    """Reemplaza todo el texto de la forma clonando el párrafo y el run modelo (formato de la plantilla).
+    `- ` al inicio = viñeta cuadrada dorada; `**x**` = negrita."""
+    tf = shape.text_frame
+    if p_xml is None:
+        p_xml, r_xml = _parrafos_modelo(shape)
     for p in list(tf.paragraphs):
         p._p.getparent().remove(p._p)
     for texto in parrafos:
@@ -168,22 +277,16 @@ def _escribir(shape, parrafos: list[str], tamano: float | None = None):
         tf._txBody.append(nuevo)
         if not texto:
             continue
-        vineta = texto.startswith("- ")
-        if vineta:
-            texto = "▪ " + texto[2:]
         for trozo in re.split(r"(\*\*[^*]+\*\*)", texto):
             if not trozo:
                 continue
-            run = copy.deepcopy(r_xml) if r_xml is not None else None
-            if run is None:
-                nuevo_run = tf.paragraphs[-1].add_run()
+            run = copy.deepcopy(r_xml)
+            fin = nuevo.find(f"{NS_A}endParaRPr")       # PowerPoint exige los runs ANTES de endParaRPr
+            if fin is not None:
+                fin.addprevious(run)
             else:
-                fin = nuevo.find(f"{NS_A}endParaRPr")       # PowerPoint exige runs ANTES de endParaRPr
-                if fin is not None:
-                    fin.addprevious(run)
-                else:
-                    nuevo.append(run)
-                nuevo_run = tf.paragraphs[-1].runs[-1]
+                nuevo.append(run)
+            nuevo_run = tf.paragraphs[-1].runs[-1]
             negrita = trozo.startswith("**")
             nuevo_run.text = trozo[2:-2] if negrita else trozo
             if negrita:
@@ -192,9 +295,54 @@ def _escribir(shape, parrafos: list[str], tamano: float | None = None):
                 nuevo_run.font.size = Pt(tamano)
 
 
-def _tamano(parrafos: list[str], base: float, limites=((700, 0), (1100, -2), (1500, -3), (99999, -4))) -> float:
-    largo = sum(len(p) for p in parrafos)
-    return base + next(d for lim, d in limites if largo <= lim)
+def _vinetas(shape, sangria_emu: int, separacion_pt: float):
+    """Convierte los párrafos que empiezan con viñeta en viñetas cuadradas doradas (como las de la
+    plantilla) con sangría francesa; los subtítulos (negrita) quedan sin viñeta."""
+    from lxml import etree
+    for p in shape.text_frame.paragraphs:
+        if not p.runs:
+            continue
+        pPr = p._p.get_or_add_pPr()
+        for hijo in list(pPr):
+            if hijo.tag in (f"{NS_A}buNone", f"{NS_A}buChar", f"{NS_A}buClr", f"{NS_A}buSzPct",
+                            f"{NS_A}buSzPts", f"{NS_A}buFont", f"{NS_A}spcAft", f"{NS_A}spcBef"):
+                pPr.remove(hijo)
+        es_titulo = all(r.font.bold for r in p.runs)
+        pPr.set("marL", str(0 if es_titulo else sangria_emu))
+        pPr.set("indent", str(0 if es_titulo else -sangria_emu))
+        aft = etree.SubElement(pPr, f"{NS_A}spcAft")
+        etree.SubElement(aft, f"{NS_A}spcPts").set("val", str(int(separacion_pt * 100)))
+        # orden del esquema: lnSpc, spcBef, spcAft, buClr..., buFont, buChar
+        lnspc = pPr.find(f"{NS_A}lnSpc")
+        if lnspc is not None:
+            pPr.remove(lnspc)
+            pPr.insert(0, lnspc)
+        if es_titulo:
+            etree.SubElement(pPr, f"{NS_A}buNone")
+        else:
+            clr = etree.SubElement(pPr, f"{NS_A}buClr")
+            etree.SubElement(clr, f"{NS_A}srgbClr").set("val", ORO)
+            etree.SubElement(pPr, f"{NS_A}buSzPct").set("val", "75000")
+            etree.SubElement(pPr, f"{NS_A}buFont").set("typeface", "Arial")
+            etree.SubElement(pPr, f"{NS_A}buChar").set("char", "■")
+
+
+def _lineas(texto: str, ancho_pt: float, tamano: float) -> int:
+    por_linea = max(int(ancho_pt / (tamano * 0.5)), 10)
+    return max(-(-len(texto) // por_linea), 1)
+
+
+def _repartir(parrafos: list[str], ancho_pt: float, alto_pt: float, tamano: float, separacion_pt: float):
+    """Agrupa párrafos en láminas según la altura disponible (estimada)."""
+    grupos, actual, usado = [], [], 0.0
+    for x in parrafos:
+        alto = _lineas(x.replace("**", ""), ancho_pt, tamano) * tamano * 1.2 + separacion_pt
+        if actual and usado + alto > alto_pt:
+            grupos.append(actual)
+            actual, usado = [], 0.0
+        actual.append(x)
+        usado += alto
+    return grupos + ([actual] if actual else [])
 
 
 def _duplicar(prs, indice: int, despues_de: int):
@@ -228,76 +376,133 @@ def _duplicar(prs, indice: int, despues_de: int):
     return nueva
 
 
-def _partir(items: list[str], max_chars=1100, max_items=7) -> list[list[str]]:
-    grupos, actual, largo = [], [], 0
-    for x in items:
-        if actual and (largo + len(x) > max_chars or len(actual) >= max_items):
-            grupos.append(actual)
-            actual, largo = [], 0
-        actual.append(x)
-        largo += len(x)
-    return grupos + ([actual] if actual else [])
+def _titulo_continuacion(slide, nombre_forma: str):
+    forma = _forma(slide, nombre_forma)
+    par = next(p for p in forma.text_frame.paragraphs if p.runs)
+    _poner_titulo(forma, "".join(r.text for r in par.runs).rstrip() + " (cont.)")
+
+
+def _poner_titulo(forma, texto: str):
+    """Cambia el título conservando su formato; si no cabe en una línea, ensancha el cuadro (centrado)
+    y, como último recurso, baja la letra."""
+    par = next(p for p in forma.text_frame.paragraphs if p.runs)
+    par.runs[0].text = texto
+    for extra in par.runs[1:]:
+        extra._r.getparent().remove(extra._r)
+    tam = (par.runs[0].font.size or Pt(36)).pt
+    necesario = len(texto) * tam * 0.52 * EMU_PT + 2 * 91425
+    if necesario > forma.width:
+        centro = forma.left + forma.width // 2
+        ancho = int(min(necesario, 2 * centro - 2 * 150000))
+        forma.left, forma.width = centro - ancho // 2, ancho
+        if necesario > ancho:
+            par.runs[0].font.size = Pt(int(tam * ancho / necesario))
+
+
+PIE = 6302352                      # borde superior de la franja inferior de la plantilla (EMU)
 
 
 def escribir_pptx(arm: PropuestaArmada, salida: Path) -> Path:
     if not PLANTILLA.exists():
-        raise FileNotFoundError(
-            f"Falta la plantilla {PLANTILLA}. Copie una propuesta de Census (.pptx) con la "
-            "estructura estándar en esa ruta.")
+        raise FileNotFoundError(f"Falta la plantilla {PLANTILLA} (PLANTILLA DE PROPUESTAS 2026).")
     prs = Presentation(str(PLANTILLA))
     s = prs.slides
 
-    _escribir(_forma(s[S_PORTADA], F["portada"]), [arm.portada], 20 if len(arm.portada) < 60 else 14)
+    # 1. Portada
+    portada = _forma(s[S_PORTADA], F["portada"])
+    for par in portada.text_frame.paragraphs:
+        _reemplazar_marcadores(par, {"servicio": arm.portada})
+    if len(arm.portada) > 110:                           # no cabe en tres líneas a 20 pt
+        for run in portada.text_frame.paragraphs[0].runs:
+            run.font.size = Pt(16)
 
-    dest = _forma(s[S_INTRO], F["destinatario"]).text_frame.paragraphs
-    for par, texto in zip(dest, arm.destinatario):
-        if par.runs:
-            par.runs[0].text = texto
-            for extra in par.runs[1:]:
-                extra.text = ""
-    _escribir(_forma(s[S_INTRO], F["carta"]), arm.carta, _tamano(arm.carta, 12, ((1200, 0), (1600, -1), (99999, -2))))
+    # 2. Introducción (solo se reemplazan los marcadores)
+    for par in _forma(s[S_INTRO], F["destinatario"]).text_frame.paragraphs:
+        _reemplazar_marcadores(par, {"señor": arm.tratamiento, "razon social": arm.destinatario,
+                                     "razón social": arm.destinatario, "ciudad": arm.ciudad})
+    for par in _forma(s[S_INTRO], F["carta"]).text_frame.paragraphs:
+        _reemplazar_marcadores(par, {"servicio": arm.referencia.rstrip(".") + "."})
 
-    # Antecedentes y secciones extra (copias de la diapositiva de antecedentes)
-    _escribir(_forma(s[S_ANTEC], F["antec_cuerpo"]), _con_espacios(arm.antecedentes), _tamano(arm.antecedentes, 14))
-    extra = 0
+    # 4. Antecedentes (+ secciones extra y continuaciones), Arial 15 de la plantilla
+    cuerpo = _forma(s[S_ANTEC], F["antec_cuerpo"])
+    foto = max((sh for sh in s[S_ANTEC].shapes if sh.shape_type == 13 and sh.left > cuerpo.left),
+               key=lambda sh: sh.width * sh.height, default=None)
+    if foto is not None and cuerpo.left + cuerpo.width > foto.left - 150000:
+        cuerpo.width = foto.left - 150000 - cuerpo.left       # el cuadro de la plantilla invade la foto
+    modelo = _parrafos_modelo(cuerpo)
+    ancho = cuerpo.width / EMU_PT - 14
+    alto = (PIE - cuerpo.top) / EMU_PT - 30
+    paginas = [("", g) for g in _repartir(arm.antecedentes, ancho, alto, 15, 14)] or [("", [])]
     for titulo, parrafos in arm.secciones:
-        d = _duplicar(prs, S_ANTEC, S_ANTEC + extra)
-        extra += 1
-        _escribir(_forma(d, F["antec_titulo"]), [titulo], 30 if len(titulo) < 22 else 22)
-        _escribir(_forma(d, F["antec_cuerpo"]), _con_espacios(parrafos), _tamano(parrafos, 14))
+        paginas += [(titulo, g) for g in _repartir(parrafos, ancho, alto, 15, 14)]
+    for i in range(1, len(paginas)):
+        _duplicar(prs, S_ANTEC, S_ANTEC + i - 1)
+    for i, (titulo, parrafos) in enumerate(paginas):
+        d = s[S_ANTEC + i]
+        _escribir(_forma(d, F["antec_cuerpo"]), parrafos, *modelo)
+        if titulo:
+            _poner_titulo(_forma(d, F["antec_titulo"]), titulo if paginas[i - 1][0] != titulo else titulo + " (cont.)")
+        elif i:
+            _titulo_continuacion(d, F["antec_titulo"])
+    extra = len(paginas) - 1
 
+    # 5. Objetivo
     s_obj, s_alc, s_hon = S_OBJ + extra, S_ALC + extra, S_HON + extra
-    _escribir(_forma(s[s_obj], F["objetivo"]), [arm.objetivo], 18 if len(arm.objetivo) < 200 else 16 if len(arm.objetivo) < 280 else 14)
+    for par in _forma(s[s_obj], F["objetivo"]).text_frame.paragraphs:
+        _reemplazar_marcadores(par, {"objetivo": arm.objetivo})
 
-    # Alcance: todas las líneas, repartidas en una o varias diapositivas
+    # 6. Alcance: Arial 14, viñetas cuadradas doradas como en la plantilla
     lineas = []
     for titulo, items in arm.alcance:
-        lineas += ([f"**{titulo}**"] if titulo else []) + [f"- {x}" for x in items]
-    bloques = _partir(lineas, max_chars=1150, max_items=12)
+        lineas += ([f"**{titulo}**"] if titulo else []) + items
+    cuerpo = _forma(s[s_alc], F["alc_cuerpo"])
+    vineta_x = min(sh.left for sh in s[s_alc].shapes if sh.name in VINETAS_ALC)
+    texto_x = cuerpo.left
+    derecha = cuerpo.left + cuerpo.width
+    ancho = (derecha - texto_x) / EMU_PT - 14
+    alto = (PIE - cuerpo.top) / EMU_PT - 30
+    bloques = _repartir(lineas, ancho, alto, 14, 10)
+    for i in range(len(bloques) - 1):
+        if bloques[i] and bloques[i][-1].startswith("**"):      # no dejar un subtítulo huérfano
+            bloques[i + 1].insert(0, bloques[i].pop())
     for i in range(1, len(bloques)):
         _duplicar(prs, s_alc, s_alc + i - 1)
     for i, bloque in enumerate(bloques):
-        if bloque and bloque[-1].startswith("**"):            # no dejar un subtítulo huérfano
-            bloques[i + 1].insert(0, bloque.pop())
         d = s[s_alc + i]
         for sh in list(d.shapes):
             if sh.name in VINETAS_ALC:
                 sh._element.getparent().remove(sh._element)
-        _escribir(_forma(d, F["alc_cuerpo"]), _con_espacios(bloque), _tamano(bloque, 14))
+        forma = _forma(d, F["alc_cuerpo"])
+        p_xml, r_xml = _parrafos_modelo(forma)
+        _escribir(forma, bloque, p_xml, r_xml)
+        forma.left = vineta_x - 91425                     # la viñeta queda donde estaba el cuadrado
+        forma.width = derecha - forma.left
+        _vinetas(forma, texto_x - vineta_x + 91425, 10)   # el texto queda donde estaba
         if i:
-            _escribir(_forma(d, F["alc_titulo"]), ["Alcance del Servicio (cont.)"], 30)
+            _titulo_continuacion(d, F["alc_titulo"])
     s_hon += max(len(bloques), 1) - 1
 
-    # Honorarios
+    # 7. Honorarios: filas de la tabla con el formato de la fila modelo (Arial 14)
     d = s[s_hon]
-    _escribir(_forma(d, F["hon_intro"]), [arm.honorarios_intro], 11 if len(arm.honorarios_intro) < 450 else 10)
-    tabla = next(sh for sh in d.shapes if sh.has_table).table
+    marco = next(sh for sh in d.shapes if sh.has_table)
+    tabla = marco.table
     fila_modelo = tabla._tbl.tr_lst[1]
     for tr in tabla._tbl.tr_lst[1:]:
         tabla._tbl.remove(tr)
-    largo = sum(len(h["honorario"]) + len(h["forma_pago"]) for h in arm.honorarios)
-    tam = 11 if largo < 500 else 10 if largo < 900 else 9
-    anchos_pt = [c.width / 12700 for c in tabla.columns]
+    anchos_pt = [c.width / EMU_PT for c in tabla.columns]
+
+    def alto_filas(tam):
+        total = 0
+        for h in arm.honorarios:
+            textos = (h["servicio"], h["honorario"], h["forma_pago"])
+            n = max(_lineas(x, w - 14, tam) for x, w in zip(textos, anchos_pt))
+            total += max(n * tam * 1.2 + 14, 98.2)          # 98,2 pt = alto de la fila de la plantilla
+        return total
+
+    tam = 14
+    espacio = (PIE - 1750000) / EMU_PT - 21.8 - 60
+    while tam > 10 and alto_filas(tam) > espacio:
+        tam -= 1
     alto_total = tabla.rows[0].height
     for h in arm.honorarios:
         tr = copy.deepcopy(fila_modelo)
@@ -305,36 +510,41 @@ def escribir_pptx(arm: PropuestaArmada, salida: Path) -> Path:
         fila = tabla.rows[len(tabla.rows) - 1]
         textos = (h["servicio"], h["honorario"], h["forma_pago"])
         for celda, texto in zip(fila.cells, textos):
-            _escribir(celda, [texto], tam)
-        lineas_fila = max(-(-len(x) // max(int(w / (tam * 0.5)) - 2, 10)) for x, w in zip(textos, anchos_pt))
-        fila.height = int((lineas_fila * tam * 1.25 + 14) * 12700)
+            _escribir(celda, [texto], tamano=None if tam == 14 else tam)
+        n = max(_lineas(x, w - 14, tam) for x, w in zip(textos, anchos_pt))
+        fila.height = int(max(n * tam * 1.2 + 14, 98.2) * EMU_PT)
         alto_total += fila.height
-    marco = next(sh for sh in d.shapes if sh.has_table)
     if marco.top + alto_total > 4300000:                      # tabla grande: subirla
         marco.top = 1750000
     notas = _forma(d, F["hon_notas"])
-    notas.top = max(marco.top + alto_total + 150000, notas.top if marco.top + alto_total < notas.top else 0)
-    _escribir(_forma(d, F["hon_notas"]), [f"*{n}" if i < len(arm.notas) - 1 else n for i, n in enumerate(arm.notas)],
-              10 if sum(len(n) for n in arm.notas) < 600 else 9)
+    if arm.notas:
+        txb = notas.text_frame._txBody
+        pars = notas.text_frame.paragraphs
+        cierre = next(p for p in pars if p.runs)              # "Creemos que el alcance..." (Arial 14)
+        for p in pars:
+            if p is not cierre and not p.runs and txb.index(p._p) < txb.index(cierre._p):
+                txb.remove(p._p)
+        p_nota = copy.deepcopy(cierre._p)
+        r_nota = copy.deepcopy(cierre.runs[0]._r)
+        largo = sum(len(n) for n in arm.notas)
+        tam_notas = 12 if largo < 500 else 11 if largo < 800 else 10
+        temporal = copy.deepcopy(notas._element)                # escribir las notas en una copia y moverlas
+        from pptx.shapes.autoshape import Shape
+        aux = Shape(temporal, notas._parent)
+        _escribir(aux, [f"* {n}" for n in arm.notas] + [""], p_nota, r_nota, tamano=tam_notas)
+        for i, par in enumerate(aux.text_frame._txBody.findall(f"{NS_A}p")):
+            cierre._p.addprevious(par)
+    notas.top = int(max(marco.top + alto_total + 120000, notas.top))
 
     salida.parent.mkdir(parents=True, exist_ok=True)
     prs.save(str(salida))
     return salida
 
 
-def _con_espacios(parrafos: list[str]) -> list[str]:
-    salida = []
-    for i, p in enumerate(parrafos):
-        salida.append(p)
-        siguiente = parrafos[i + 1] if i + 1 < len(parrafos) else None
-        if siguiente is not None:
-            salida.append("")
-    return salida
-
-
 def generar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = None,
-                      fecha: date | None = None, carpeta_salida: str | Path | None = None) -> PropuestaArmada:
-    arm = armar_propuesta(servicio_id, cliente, variables, fecha)
+                      fecha: date | None = None, carpeta_salida: str | Path | None = None,
+                      adicionales: list[str] | None = None) -> PropuestaArmada:
+    arm = armar_propuesta(servicio_id, cliente, variables, fecha, adicionales)
     nombre = re.sub(r"[^\w\s.-]", "", cliente.get("razon_social", "CLIENTE")).strip()
     carpeta = Path(carpeta_salida) if carpeta_salida else kb.RAIZ / "salidas"
     srv = kb.servicio(servicio_id)

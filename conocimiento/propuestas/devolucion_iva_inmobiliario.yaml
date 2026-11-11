@@ -2,6 +2,8 @@
 portada: DEVOLUCIÓN DEL IMPUESTO AL VALOR AGREGADO EN PROYECTOS INMOBILIARIOS
 variables:
   via_judicial: {descripcion: "true = incluye demanda por el límite del 6,5 %", ejemplo: false}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: devolución del IVA en proyectos inmobiliarios
 asunto: >-
   el servicio de recuperación del saldo a favor que mantendría la compañía por devolución de IVA
   de los proyectos inmobiliarios que realice, de acuerdo con la Ley de Eficiencia Económica y
@@ -51,4 +53,4 @@ honorarios:
       honorario: "{% if v.via_judicial %}{{ v.pct_administrativo | default(2) | pct }} + IVA en etapa administrativa; {{ v.pct_judicial | default(20) | pct }} + IVA en etapa judicial, calculados sobre los valores recuperados.{% else %}Calculado sobre el IVA recuperado según la fecha de la resolución favorable, contada desde la presentación: hasta 80 días hábiles, 2,5 % + IVA; de 81 a 120 días hábiles, 2 % + IVA; desde 121 días hábiles, 1,5 % + IVA.{% endif %}"
       forma_pago: Los honorarios se pagarán contra acreditación de la nota de crédito a favor de la compañía.
   notas:
-    - Los gastos notariales, tasas, peritajes y cualquier otro gasto no están incluidos y serán cancelados de forma directa por el cliente.
+    - {confirmar: gastos, texto: "Los gastos notariales, tasas, peritajes y cualquier otro gasto no están incluidos y serán cancelados de forma directa por el cliente."}

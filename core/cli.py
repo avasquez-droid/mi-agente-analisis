@@ -47,6 +47,10 @@ def cmd_variables(a):
         for k, m in (plantilla_servicio(a.servicio).get("variables") or {}).items():
             req = " (obligatoria)" if m.get("requerido") else ""
             print(f"  {k}{req}: {m.get('descripcion')}  — ej.: {m.get('ejemplo')}")
+        print("  (generales) antecedentes, antecedentes_extra, objetivo, alcance, alcance_extra, referencia, tratamiento")
+        from .propuestas import notas_opcionales
+        for n in notas_opcionales(a.servicio):
+            print(f"  nota opcional [{n['confirmar']}] (preguntar si se incluye): {' '.join(str(n.get('texto')).split())}")
     if not srv.get("clausulas"):
         print("(sin contrato tipo)")
         return
@@ -126,13 +130,19 @@ def cmd_propuesta(a):
     for par in a.var or []:
         k, _, v = par.partition("=")
         variables[k.strip()] = _valor(v)
+    if a.confirmar:
+        variables["confirmadas"] = list(variables.get("confirmadas") or []) + a.confirmar
     fecha = date.fromisoformat(a.fecha) if a.fecha else date.today()
-    p = generar_propuesta(a.servicio, cliente, variables, fecha, a.salida)
+    p = generar_propuesta(a.servicio, cliente, variables, fecha, a.salida, a.adicional)
     print(f"Propuesta generada: {p.archivo}")
     if p.pendientes:
         print("Pendientes por completar:")
         for x in p.pendientes:
             print(f"  - {x}")
+    if p.por_confirmar:
+        print("Notas NO incluidas: confirmar con el usuario si se agregan (--confirmar <clave>):")
+        for clave, texto in p.por_confirmar:
+            print(f"  - [{clave}] {texto}")
 
 
 def _usd(v):
@@ -220,6 +230,8 @@ def main(argv: list[str] | None = None) -> int:
     pr.add_argument("--cliente", help="YAML con razon_social y ciudad")
     pr.add_argument("--variables", help="YAML con las variables de la propuesta")
     pr.add_argument("--var", action="append", help="variable=valor (se puede repetir)")
+    pr.add_argument("--adicional", action="append", help="Otro servicio ofrecido en la misma propuesta (se puede repetir)")
+    pr.add_argument("--confirmar", action="append", help="Clave de una nota opcional confirmada (p. ej. gastos)")
     pr.add_argument("--fecha", help="AAAA-MM-DD")
     pr.add_argument("--salida", default=None)
     pr.set_defaults(f=cmd_propuesta)

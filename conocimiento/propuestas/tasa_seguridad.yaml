@@ -1,6 +1,8 @@
 # Base: propuesta 2026 (Aduana).
 portada: SERVICIO LEGAL Y TRIBUTARIO PARA LA RECUPERACIÓN DE PAGOS INDEBIDOS POR TASA DE SEGURIDAD EN IMPORTACIONES DESDE COLOMBIA
 variables: {}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: recuperación de pagos indebidos por tasa de seguridad en importaciones desde Colombia
 asunto: >-
   la asesoría legal tributaria y patrocinio en la recuperación de valores pagados por concepto de
   la tasa de seguridad aplicada a importaciones provenientes de Colombia
@@ -51,4 +53,4 @@ honorarios:
       honorario: "{{ t.valor | pct }} + IVA"
       forma_pago: "{% for e in t.etapas %}{{ e.valor | pct }} {{ e.hito.split(',')[0] }}{{ '; ' if not loop.last else '.' }}{% endfor %} Si la sentencia de primera instancia no es favorable, todo se paga contra la nota de crédito."
   notas:
-    - Los honorarios no incluyen gastos notariales, peritajes ni otros costos del trámite.
+    - {confirmar: gastos, texto: "Los honorarios no incluyen gastos notariales, peritajes ni otros costos del trámite."}

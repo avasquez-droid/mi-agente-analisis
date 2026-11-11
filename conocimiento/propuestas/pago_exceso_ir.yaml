@@ -6,6 +6,8 @@ variables:
   ejercicio: {descripcion: "Ejercicio fiscal", ejemplo: 2025, requerido: true}
   antecedentes_caso: {descripcion: "Hechos del caso (liquidaciones, reclamos, resoluciones). Lista de párrafos", ejemplo: ["..."]}
   monto: {descripcion: "Valor estimado pagado en exceso (USD)", ejemplo: 8427.18}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: "solicitud de pago en exceso del Impuesto a la Renta del ejercicio fiscal {{ v.ejercicio }}"
 asunto: >-
   la asesoría legal y tributaria en la presentación de una solicitud de pago en exceso del
   Impuesto a la Renta del ejercicio fiscal {{ v.ejercicio }}
@@ -32,4 +34,4 @@ honorarios:
       honorario: "Un honorario variable del {{ v.porcentaje | pct }} más IVA calculado sobre los valores que efectivamente se obtengan a favor de la compañía, incluidos intereses."
       forma_pago: El 100 % del honorario se pagará cuando el Servicio de Rentas Internas emita la resolución que reconozca los valores pagados en exceso y la nota de crédito desmaterializada.
   notas:
-    - Los honorarios no incluyen gastos en que se pueda incurrir dentro del trámite.
+    - {confirmar: gastos, texto: Los honorarios no incluyen gastos en que se pueda incurrir dentro del trámite.}

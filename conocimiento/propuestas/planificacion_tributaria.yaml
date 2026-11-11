@@ -3,6 +3,8 @@ portada: "PLANIFICACIÓN TRIBUTARIA {{ v.ejercicio }}"
 variables:
   ejercicio: {descripcion: "Ejercicio a planificar", ejemplo: 2026, requerido: true}
   honorario: {descripcion: "Fijo USD (por defecto: tarifario)", ejemplo: 3000}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: "planificación tributaria {{ v.ejercicio }}"
 asunto: "la planificación tributaria {{ v.ejercicio }}"
 antecedentes:
   - >-
@@ -38,6 +40,9 @@ honorarios:
       honorario: "Honorario fijo: {{ v.honorario | usd }} + IVA. Honorario variable: {{ t.variable_pct | pct }} sobre el ahorro en participación de trabajadores e Impuesto a la Renta."
       forma_pago: "Fijo: {{ t.anticipo_pct | pct }} a la aceptación y saldo a la presentación del informe. Variable: 100 % concluida la implementación de las estrategias."
   notas:
-    - >-
-      No incluye tasas notariales, de Registro Mercantil u otros gastos, ni la implementación de
-      figuras jurídicas dentro o fuera del país (si se recomienda constituir una compañía, se cotiza aparte).
+    - confirmar: gastos
+      texto: No incluye tasas notariales, de Registro Mercantil u otros gastos.
+    - confirmar: implementacion
+      texto: >-
+        No incluye la implementación de figuras jurídicas dentro o fuera del país (si se recomienda
+        constituir una compañía, se cotiza aparte).

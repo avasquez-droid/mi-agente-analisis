@@ -8,6 +8,8 @@ variables:
     ejemplo: [{anio: 2024, monto: 24665.48}, {anio: 2025, monto: 20301.60}]
     requerido: true
   porcentaje: {descripcion: "Honorario (%) sobre lo recuperado; por defecto el del tarifario", ejemplo: 7}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: "devolución del Impuesto a la Renta {% set anios = v.ejercicios | map(attribute='anio') | list %}{{ 'del ejercicio fiscal ' ~ anios[0] if anios | length == 1 else 'de los ejercicios fiscales ' ~ (anios[:-1] | join(', ')) ~ ' y ' ~ anios[-1] }}"
 asunto: >-
   el servicio profesional de recuperación de valores pagados en exceso por concepto de impuesto a
   la renta que mantiene hasta la presente fecha

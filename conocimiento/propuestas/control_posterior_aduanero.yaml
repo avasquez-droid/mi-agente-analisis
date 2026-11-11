@@ -8,6 +8,8 @@ variables:
   informe: {descripcion: "Número del Informe Preliminar de Resultados de Control", ejemplo: "JCP1-2024-0023-P1"}
   monto: {descripcion: "Total de la obligación determinada preliminarmente (USD)", ejemplo: 105830.52, requerido: true}
   plazo_descargos: {descripcion: "Plazo para descargos", ejemplo: "diez (10) días desde la notificación"}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: "asesoría legal y patrocinio en el control posterior de las declaraciones de importación de {{ v.mercancia }} ({{ v.periodo }})"
 asunto: >-
   la asesoría legal especializada en el análisis y defensa en sede administrativa y judicial del
   control posterior sobre las declaraciones de importación de {{ v.mercancia }} realizadas de
@@ -49,7 +51,7 @@ honorarios:
       honorario: "{{ t.etapas[3].valor | pct }} sobre los valores ratificados ({{ (v.monto * t.etapas[3].valor / 100) | usd }}) + IVA"
       forma_pago: "{{ t.etapas[3].fijo_inicial_usd | usd }} contra la respuesta al recurso; saldo contra inadmisión o sentencia de la Corte Nacional que ratifique la de instancia."
   notas:
-    - Los honorarios no incluyen gastos notariales ni peritajes.
+    - {confirmar: gastos, texto: Los honorarios no incluyen gastos notariales ni peritajes.}
     - >-
       Importante: para suspender la coactiva en vía judicial se debe rendir una caución del 10 % de
       la obligación (efectivo, póliza o garantía bancaria), que se aplicará a la obligación en caso

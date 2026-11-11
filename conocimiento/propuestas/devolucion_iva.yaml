@@ -4,6 +4,8 @@ variables:
   periodo: {descripcion: "Hasta qué periodo se recupera", ejemplo: "diciembre 2026", requerido: true}
   monto: {descripcion: "IVA estimado a recuperar (USD)", ejemplo: 310000}
   ejercicio: {descripcion: "Ejercicio fiscal", ejemplo: 2026}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: "devolución de retenciones de IVA hasta {{ v.periodo }}"
 asunto: >-
   el servicio profesional de recuperación de los saldos a favor que mantenga la compañía por
   crédito tributario por retenciones de IVA hasta {{ v.periodo }}

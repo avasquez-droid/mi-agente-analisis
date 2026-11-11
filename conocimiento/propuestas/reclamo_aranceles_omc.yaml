@@ -6,6 +6,8 @@ variables:
   hasta: {descripcion: "Fin del periodo identificado", ejemplo: "04-2026", requerido: true}
   importaciones_hasta: {descripcion: "Hasta cuándo se incluyen importaciones futuras", ejemplo: "diciembre 2026"}
   porcentaje: {descripcion: "Honorario % (por defecto: tarifario)", ejemplo: 11}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: "reclamos por pago indebido de impuestos aduaneros{{ ' desde ' ~ v.desde if v.desde }}"
 asunto: >-
   la asesoría legal tributaria y patrocinio judicial en la presentación de reclamos
   administrativos por pago indebido de impuestos aduaneros ante el Servicio Nacional de Aduana del
@@ -50,6 +52,7 @@ honorarios:
       honorario: "{{ v.porcentaje | default(t.administrativo) | pct }} + IVA"
       forma_pago: Los honorarios serán a resultados, es decir, se pagarán contra acreditación de la nota de crédito a favor de la compañía.
   notas:
-    - >-
-      El informe pericial requerido para el juicio será cubierto por el cliente (aproximadamente
-      USD 800), así como peritajes, gastos notariales y cualquier gasto adicional.
+    - confirmar: gastos
+      texto: >-
+        El informe pericial requerido para el juicio será cubierto por el cliente (aproximadamente
+        USD 800), así como peritajes, gastos notariales y cualquier gasto adicional.

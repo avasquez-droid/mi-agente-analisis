@@ -138,7 +138,7 @@ def test_pptx_de_propuesta(tmp_path):
                           {"mercancia": "neumáticos", "periodo": "2024", "monto": 100000}, date(2026, 11, 9), tmp_path)
     prs = Presentation(str(p.archivo))
     textos = "\n".join(sh.text_frame.text for s in prs.slides for sh in s.shapes if sh.has_text_frame)
-    assert "EMPRESA DEMO S.A." in textos and "[COMPLETAR" not in textos
+    assert "EMPRESA DEMO S.A." in textos and "[COMPLETAR" not in textos and "<<" not in textos
     tabla = next(sh.table for s in prs.slides for sh in s.shapes if sh.has_table)
     assert len(tabla.rows) == 5          # cabecera + 4 etapas
     # PowerPoint ignora el texto que va después de <a:endParaRPr>: debe ser siempre el último
@@ -148,6 +148,27 @@ def test_pptx_de_propuesta(tmp_path):
             hijos = [c.tag for c in par]
             if f"{ns}endParaRPr" in hijos:
                 assert hijos.index(f"{ns}endParaRPr") == len(hijos) - 1
+
+
+def test_propuesta_adicionales_y_notas_opcionales(tmp_path):
+    from core.propuestas import PLANTILLA, armar_propuesta, generar_propuesta
+    cliente = {"razon_social": "EMPRESA DEMO S.A."}
+    sin = armar_propuesta("planificacion_tributaria", cliente, {"ejercicio": 2026}, date(2026, 11, 9))
+    assert {c for c, _ in sin.por_confirmar} == {"gastos", "implementacion"} and not any("notariales" in n for n in sin.notas)
+    con = armar_propuesta("planificacion_tributaria", cliente, {"ejercicio": 2026, "confirmadas": ["gastos"],
+                          "antecedentes": ["Contexto dado por el usuario."]}, date(2026, 11, 9), ["planificacion_isd"])
+    assert any("notariales" in n for n in con.notas) and con.antecedentes == ["Contexto dado por el usuario."]
+    assert len(con.honorarios) == 2 and len(con.alcance) == 2 and " y " in con.referencia
+    if not PLANTILLA.exists():
+        return
+    from pptx import Presentation
+    p = generar_propuesta("devolucion_iva", cliente, {"periodo": "diciembre 2026"}, date(2026, 11, 9), tmp_path)
+    prs = Presentation(str(p.archivo))
+    textos = "\n".join(sh.text_frame.text for s in prs.slides for sh in s.shapes if sh.has_text_frame)
+    assert "<<" not in textos and "devolución de retenciones de IVA hasta diciembre 2026." in textos
+    fuentes = {r.font.name for s in prs.slides for sh in s.shapes if sh.has_text_frame
+               for par in sh.text_frame.paragraphs for r in par.runs if r.font.name}
+    assert fuentes <= {"Arial"}
 
 
 def test_fuente_del_documento(tmp_path):

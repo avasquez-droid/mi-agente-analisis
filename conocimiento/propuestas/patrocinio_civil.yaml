@@ -2,6 +2,8 @@
 portada: SERVICIO DE PATROCINIO Y ASESORÍA LEGAL
 variables:
   procesos: {descripcion: "Descripción de los procesos en contra", ejemplo: "una acción de ejecución de acta de transacción", requerido: true}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: patrocinio y asesoría legal
 asunto: el servicio de patrocinio y asesoría legal
 antecedentes:
   - >-
@@ -29,4 +31,4 @@ honorarios:
       honorario: "Honorario fijo: {{ t.fijo_pct_cuantia | pct }} de la cuantía de cada proceso + IVA. Fee de éxito: {{ t.exito_pct | pct }} + IVA sobre la contingencia evitada (cuantía demandada menos valor efectivamente pagado). El fijo es anticipo del fee de éxito y se descuenta al liquidarlo."
       forma_pago: "Fijo en tres pagos de 1,33 % de la cuantía + IVA: a la aceptación; al mandamiento de ejecución o citación; y al concluir el proceso. Éxito: al concluir el proceso, siempre que exista ahorro respecto de la cuantía."
   notas:
-    - Los honorarios no incluyen gastos notariales, inscripciones, peritajes ni otros costos del servicio.
+    - {confirmar: gastos, texto: "Los honorarios no incluyen gastos notariales, inscripciones, peritajes ni otros costos del servicio."}

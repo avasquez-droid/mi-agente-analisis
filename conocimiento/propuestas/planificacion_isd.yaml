@@ -4,6 +4,8 @@ variables:
   actividad: {descripcion: "Actividad del cliente (para antecedentes)", ejemplo: "la importación y comercialización de equipos industriales"}
   isd_por_anio: {descripcion: "ISD pagado por año {2024: x, 2025: y}", ejemplo: {2024: 92804.40, 2025: 45824.04}}
   porcentaje: {descripcion: "Honorario % sobre el ahorro (por defecto: tarifario)", ejemplo: 10}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: planificación tributaria del Impuesto a la Salida de Divisas
 asunto: >-
   la planificación tributaria respecto de la exoneración del Impuesto a la Salida de Divisas por
   intereses de crédito externo e importaciones de bienes
@@ -57,10 +59,11 @@ honorarios:
       honorario: "Un honorario del {{ v.porcentaje | pct }} + IVA sobre el ahorro de ISD."
       forma_pago: "{% if t.retainer_usd %}Retainer inicial de {{ t.retainer_usd | usd }}, atribuible al honorario total y descontable del primer ahorro efectivo. {% endif %}El honorario será pagadero contra cada pago que la compañía realice a su proveedor en el exterior, durante un año calendario."
   notas:
-    - >-
-      Incluye la defensa en sede administrativa ante el SRI respecto de los periodos en los que
-      Census haya brindado efectivamente el acompañamiento; no incluye periodos realizados por el
-      cliente sin participación de Census.
+    - confirmar: periodos_sin_census
+      texto: >-
+        Incluye la defensa en sede administrativa ante el SRI respecto de los periodos en los que
+        Census haya brindado efectivamente el acompañamiento; no incluye periodos realizados por el
+        cliente sin participación de Census.
     - >-
       Duración: doce (12) meses contados desde el primer desembolso al exterior que incluya la
       optimización del ISD.

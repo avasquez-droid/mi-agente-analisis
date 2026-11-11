@@ -11,6 +11,8 @@ variables:
   tipo_entidad: {descripcion: "financiera | cooperativa | empresa (adapta antecedentes)", ejemplo: financiera}
   umbral_extrajudicial: {descripcion: "Cuantía bajo la cual se prioriza la vía extrajudicial", ejemplo: 3000}
   honorario_por_definir: {descripcion: "true = honorarios se acuerdan según la cartera asignada", ejemplo: false}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: "{{ 'gestión de cobranza extrajudicial y judicial de su cartera vencida' if not v.cartera else 'cobranza extrajudicial y judicial' }}"
 asunto: >-
   {{ 'el servicio de gestión de cobranza extrajudicial y judicial de su cartera vencida' if not v.cartera else 'el servicio de cobranza extrajudicial y judicial' }}
 antecedentes:
@@ -106,8 +108,9 @@ honorarios:
       que lo recuperable; cada caso se evalúa en particular.{% endif %}
     - >-
       Se considera recuperado todo monto que ingrese al patrimonio del cliente (capital, intereses,
-      costas y accesorios) por cualquier vía durante el contrato. Los honorarios no incluyen
-      casación ni gastos (notariales, registro, copias, peritos, depositarios).
+      costas y accesorios) por cualquier vía durante el contrato.
+    - confirmar: gastos
+      texto: Los honorarios no incluyen casación ni gastos (notariales, registro, copias, peritos, depositarios).
     - >-
       {% if v.cartera %}Si el cliente revoca el patrocinio sin causa imputable a Census o llega a
       acuerdos directos con el deudor, el fee de éxito se considera devengado; el fijo no es

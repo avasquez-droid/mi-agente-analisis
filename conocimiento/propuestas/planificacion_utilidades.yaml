@@ -5,6 +5,8 @@ variables:
   utilidad_acumulada: {descripcion: "Utilidad acumulada al cierre anterior (USD)", ejemplo: 1850790.23}
   impuesto_estimado: {descripcion: "Anticipo/impuesto aproximado (USD)", ejemplo: 23134.88}
   incluir_reestructuracion: {descripcion: "true = cotiza también aumento de capital u holding", ejemplo: true}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: planificación para la optimización del impuesto sobre utilidades no distribuidas
 asunto: >-
   la asesoría y planificación para la optimización del impuesto sobre utilidades no distribuidas
   {%- if v.incluir_reestructuracion %}, incluido el aumento de capital o la constitución de una holding{% endif %}
@@ -49,4 +51,4 @@ honorarios:
       honorario: "{{ tarifa('reestructuracion_societaria').valor | usd }} + IVA"
       forma_pago: 50 % a la aceptación y saldo contra la entrega del RUC de la compañía.
   notas:
-    - Los gastos no están incluidos en los honorarios y serán cubiertos por el cliente.
+    - {confirmar: gastos, texto: Los gastos no están incluidos en los honorarios y serán cubiertos por el cliente.}

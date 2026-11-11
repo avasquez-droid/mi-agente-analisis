@@ -2,6 +2,8 @@
 portada: IMPLEMENTACIÓN DE DEPÓSITO ADUANERO
 variables:
   honorario: {descripcion: "Honorario fijo USD (por defecto: tarifario)", ejemplo: 15000}
+# Texto de la carta: "...relacionados con los servicios de <referencia>."
+referencia: implementación de un depósito aduanero
 asunto: los servicios profesionales relacionados con la implementación de un depósito aduanero
 antecedentes:
   - >-
@@ -45,7 +47,8 @@ honorarios:
       honorario: "{{ v.honorario | usd }} + IVA"
       forma_pago: "{{ t.anticipo_pct | pct }} + IVA a la aceptación de la propuesta; y saldo contra la emisión de la resolución favorable."
   notas:
-    - >-
-      Los honorarios no incluyen análisis tributario ni gastos (notariales, peritajes, traducciones,
-      apostillas, legalizaciones, certificaciones), ni movilización, hospedaje o alimentación fuera
-      de Guayaquil; estos valores serán asumidos directamente por el cliente.
+    - confirmar: gastos
+      texto: >-
+        Los honorarios no incluyen análisis tributario ni gastos (notariales, peritajes, traducciones,
+        apostillas, legalizaciones, certificaciones), ni movilización, hospedaje o alimentación fuera
+        de Guayaquil; estos valores serán asumidos directamente por el cliente.
