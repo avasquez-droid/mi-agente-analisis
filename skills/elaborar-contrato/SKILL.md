@@ -8,7 +8,9 @@ description: Genera el contrato de prestación de servicios en Word (membrete Ce
 ## Pasos
 1. Identificar el servicio: `python -m core.cli servicios` (solo los que dicen "contrato tipo").
 2. Ver qué variables necesita: `python -m core.cli variables <servicio>`.
-3. Reunir los datos del cliente (razón social, RUC, representante, cargo, ciudad, provincia, correos).
+3. Traer los datos del cliente en tiempo real con `--ruc <ruc>` (skill `consultar-supercias`); si no consta en la
+   Superintendencia, reunirlos a mano:
+   Datos del cliente (razón social, RUC, representante, cargo, ciudad, provincia, correos).
    Si viene de un informe de investigación, tomarlos de la ficha de la empresa (administradores).
 4. Generar:
    ```bash

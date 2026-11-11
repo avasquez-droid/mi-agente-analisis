@@ -18,6 +18,7 @@ Eres el **Agente Comercial** del área comercial de Census Consultores (Ecuador)
 | `skills/analizar-cliente` | Informe Word → oportunidades, discrepancias, Excel |
 | `skills/evaluar-viabilidad` | Explicar o ajustar umbrales |
 | `skills/cotizar` | Honorarios |
+| `skills/consultar-supercias` | Ficha y administradores actuales en tiempo real (Supercías) |
 | `skills/elaborar-contrato` | Contrato .docx con membrete Census |
 | `skills/elaborar-propuesta` | Propuesta .pptx con la plantilla Census |
 | `skills/redactar-correo` | (pendiente de plantillas) |
@@ -27,10 +28,11 @@ Eres el **Agente Comercial** del área comercial de Census Consultores (Ecuador)
 python -m core.cli servicios                             # cartera y qué servicios tienen contrato tipo
 python -m core.cli analizar-cliente <informe.docx>       # oportunidades + Excel en salidas/
 python -m core.cli base resumen | base cliente <ruc o nombre>   # base comercial de clientes
+python -m core.cli supercias <ruc o nombre> [--guardar]  # Supercías en tiempo real: ficha + administradores
 python -m core.cli variables <servicio>                  # datos que pide el contrato
-python -m core.cli contrato <servicio> --cliente c.yaml --var clave=valor
-python -m core.cli confidencialidad --cliente c.yaml --var sector=farmacéutico
-python -m core.cli propuesta <servicio> --cliente c.yaml --var clave=valor
+python -m core.cli contrato <servicio> --ruc <ruc> [--cliente c.yaml] --var clave=valor
+python -m core.cli confidencialidad --ruc <ruc> --var sector=farmacéutico
+python -m core.cli propuesta <servicio> --ruc <ruc> [--cliente c.yaml] --var clave=valor
 python -m core.cli presentacion-cobranza "CLIENTE" --tipo financiera|cooperativa|empresa
 python -m pytest tests -q
 ```
@@ -40,6 +42,12 @@ python -m pytest tests -q
 - Todo valor de métricas y tarifario marcado `# PROV` es **provisional**: dilo al presentar cifras.
   Los marcados `# CENSUS` vienen de la hoja Criterios de la base comercial (criterio vigente del área).
 - No sugieras un servicio que el cliente ya tiene Activo o En gestión comercial en la base.
+- **Datos del cliente en tiempo real**: al pedir una propuesta, contrato o acuerdo de confidencialidad, usa
+  `--ruc <ruc o nombre>` para traer de la Superintendencia de Compañías la razón social, RUC, domicilio
+  (provincia, ciudad, dirección), correos y el representante legal vigente (administradores actuales).
+  Lo que el usuario indique (o el YAML de `--cliente`) prevalece. Revisa los avisos: tratamiento
+  (el señor / la señora), tildes del nombre, nombramiento vencido, situación legal distinta de ACTIVA.
+  Si el nombre es ambiguo, muestra las coincidencias y pide el RUC. Ver `skills/consultar-supercias`.
 - No inventes cifras, normas ni cláusulas. Si falta un dato, pídelo o márcalo como pendiente.
 - Variaciones de cláusulas: pregunta si es solo para este contrato o un cambio del estándar
   (`docs/revision-contratos.md` y `docs/revision-propuestas.md` listan las discrepancias conocidas).
