@@ -21,7 +21,7 @@ CAMPOS = {"Expediente": "700001", "R.U.C.": "0990000001001", "Fecha de constituc
           "Tipo de compañía": "ANÓNIMA", "Situación legal": "ACTIVA", "Provincia": "GUAYAS" + " " * 40,
           "Cantón": "SAMBORONDON", "Ciudad": "SAMBORONDON", "Calle": "AV. FICTICIA", "Número": "123",
           "Intersección": "CALLE DEMO", "Edificio/Centro comercial": "TORRE DEMO", "Piso": "4",
-          "Celular": "0990000000", "Correo 1": "GERENCIA@IMPORTADORADEMO.EC", "Correo 2": "",
+          "Celular": "0990000000", "Teléfono 1": "0990000000", "Barrio": "N/A", "Correo 1": "GERENCIA@IMPORTADORADEMO.EC", "Correo 2": "",
           "Fecha última actualización societaria": "2026-03-17 10:37:56"}
 ADMIN = [("0900000001   ", "DE LA CRUZ PEREZ MARIA JOSE", "ECUADOR   ", "GERENTE GENERAL    ", "2025-01-10", "5", "100", "2025-02-01", "RL"),
          ("0900000002", "DEMO FICTICIO JUAN", "ECUADOR", "PRESIDENTE", "2025-01-10", "5", "101", "2025-02-01", "ADM")]
@@ -127,7 +127,7 @@ def test_consulta_por_ruc(portal):
     assert cliente["razon_social"] == "IMPORTADORA DEMO S.A." and cliente["ruc"] == "0990000001001"
     assert (cliente["provincia"], cliente["ciudad"]) == ("Guayas", "Samborondon")
     assert cliente["direccion"] == "AV. FICTICIA 123 y CALLE DEMO, Edif. TORRE DEMO, piso 4"
-    assert cliente["correos"] == ["gerencia@importadorademo.ec"]
+    assert cliente["correos"] == ["gerencia@importadorademo.ec"] and cliente["telefonos"] == ["0990000000"]
     assert cliente["representante"] == "Maria Jose de la Cruz Perez"
     assert (cliente["cargo"], cliente["cedula"]) == ("Gerente General", "0900000001")
     assert [a["tipo"] for a in cliente["administradores"]] == ["RL", "ADM"]

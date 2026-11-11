@@ -147,6 +147,9 @@ def leer_administradores(texto: str) -> list[Administrador] | None:
     return filas
 
 
+_VACIOS = {"N/A", "NA", "N.A.", "NO APLICA", "NINGUNO", "NINGUNA", "-", "--", "."}   # relleno del registro
+
+
 # ------------------------------------------------------------------ cliente HTTP
 class ConsultaSupercias:
     """Una sesión del portal. `sesion` es inyectable para pruebas (interfaz de requests.Session)."""
@@ -244,7 +247,7 @@ class ConsultaSupercias:
                                  (": " + "; ".join(_mensajes(r)) if _mensajes(r) else " (verificación o sesión)."))
         pagina = self._pedir("get", URL_INFO, headers={"Referer": URL_BUSQUEDA})
         self.vs = _viewstate(pagina)
-        general = leer_informacion_general(pagina)
+        general = {k: ("" if v.strip().upper() in _VACIOS else v) for k, v in leer_informacion_general(pagina).items()}
         if not general.get("R.U.C.") and not general.get("Expediente"):
             raise SuperciasError("No se pudo leer la información general (¿cambió el portal?).")
         return general
@@ -376,7 +379,7 @@ def a_cliente(ficha: Ficha) -> tuple[dict, list[str]]:
         "direccion": direccion(g),
         "referencia_ubicacion": g.get("Referencia ubicación", ""),
         "correos": correos,
-        "telefonos": [t for t in (g.get("Celular"), g.get("Teléfono 1"), g.get("Teléfono 2")) if t],
+        "telefonos": list(dict.fromkeys(t for t in (g.get("Celular"), g.get("Teléfono 1"), g.get("Teléfono 2")) if t)),
         "sitio_web": (g.get("Sitio web") or "").lower(),
         "objeto_social": g.get("Objeto social", ""),
         "ciiu": g.get("CIIU actividad principal", ""),
