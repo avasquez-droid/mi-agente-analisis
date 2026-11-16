@@ -18,17 +18,22 @@ La verificación ALTCHA es una prueba de trabajo (ver supercias_altcha.py): se c
 lo hace el navegador. Es información pública; no constituye certificación. Usar con moderación
 (una consulta por cliente), no para descargas masivas.
 
-Requiere salida a internet hacia appscvsgen.supercias.gob.ec (desde el PC del usuario).
+Requiere salida a internet hacia appscvsgen.supercias.gob.ec (desde el PC del usuario), directa o por
+proxies propios con IP fija (balanceo entre salidas: ver `salidas()` y adapters/mcp/README.md).
 """
 from __future__ import annotations
 
 import html
+import os
+import random
 import re
+import threading
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
+from pathlib import Path
 
-from .supercias_altcha import resolver_challenge
+from .supercias_altcha import AltchaError, resolver_challenge
 
 BASE = "https://appscvsgen.supercias.gob.ec/consultaCompanias"
 URL_BUSQUEDA = f"{BASE}/societario/busquedaCompanias.jsf"
@@ -42,6 +47,10 @@ F = "frmBusquedaCompanias"
 
 class SuperciasError(Exception):
     """No se pudo completar la consulta (red, cambio del portal o compañía no encontrada)."""
+
+
+class SinConexion(SuperciasError):
+    """Falla de red o del proxy: la consulta puede reintentarse por otra salida."""
 
 
 class VariasCoincidencias(SuperciasError):
@@ -77,6 +86,7 @@ class Ficha:
     administradores: list[Administrador] = field(default_factory=list)
     consultado: str = ""
     avisos: list[str] = field(default_factory=list)
+    salida: str = ""                                    # proxy usado (sin credenciales); vacío = directa
 
     def a_dict(self) -> dict:
         return asdict(self)
@@ -147,11 +157,78 @@ def leer_administradores(texto: str) -> list[Administrador] | None:
     return filas
 
 
+_VACIOS = {"N/A", "NA", "N.A.", "NO APLICA", "NINGUNO", "NINGUNA", "-", "--", "."}   # relleno del registro
+
+
+# ------------------------------------------------------------------ salidas (proxies propios)
+ARCHIVO_SALIDAS = Path(__file__).resolve().parent.parent / "privado" / "proxies.txt"
+
+
+def _ocultar(texto: str) -> str:
+    """Quita usuario y clave de cualquier URL de proxy antes de mostrarla."""
+    return re.sub(r"(\w+://)[^/@\s]+@", r"\1***@", str(texto))
+
+
+def salidas() -> list[str]:
+    """Proxies configurados, uno por salida (IP fija). Orden de búsqueda:
+    variable de entorno SUPERCIAS_PROXIES (separados por coma o salto de línea) o privado/proxies.txt
+    (uno por línea, # para comentarios). Formato: http://usuario:clave@host:puerto. Vacío = conexión directa."""
+    texto = os.environ.get("SUPERCIAS_PROXIES")
+    if texto is None and ARCHIVO_SALIDAS.exists():
+        texto = ARCHIVO_SALIDAS.read_text(encoding="utf-8")
+    lineas = [x.split("#", 1)[0].strip() for x in re.split(r"[,\n]", texto or "")]
+    return [x if "://" in x else f"http://{x}" for x in lineas if x]
+
+
+class Balanceador:
+    """Reparte las consultas entre las salidas por turnos (round-robin) y aparta temporalmente las que fallan.
+    Cada consulta usa UNA sola salida de principio a fin: la sesión JSF del portal va atada a su cookie."""
+
+    def __init__(self, proxies: list[str], castigo_seg: float = 300):
+        self.proxies, self.castigo = list(proxies), castigo_seg
+        self.turno = random.randrange(len(self.proxies)) if self.proxies else 0
+        self.fuera_hasta: dict[str, float] = {}
+        self.lock = threading.Lock()
+
+    def orden(self) -> list[str]:
+        """Salidas a probar para la próxima consulta: primero las sanas, empezando por la del turno."""
+        with self.lock:
+            n = len(self.proxies)
+            rotadas = [self.proxies[(self.turno + i) % n] for i in range(n)]
+            self.turno = (self.turno + 1) % n
+            ahora = time.monotonic()
+            return ([p for p in rotadas if self.fuera_hasta.get(p, 0) <= ahora]
+                    + [p for p in rotadas if self.fuera_hasta.get(p, 0) > ahora])
+
+    def fallo(self, proxy: str):
+        with self.lock:
+            self.fuera_hasta[proxy] = time.monotonic() + self.castigo
+
+    def exito(self, proxy: str):
+        with self.lock:
+            self.fuera_hasta.pop(proxy, None)
+
+
+_BALANCEADOR: Balanceador | None = None
+
+
+def balanceador() -> Balanceador | None:
+    """Balanceador compartido del proceso (el conector MCP lo reutiliza entre consultas)."""
+    global _BALANCEADOR
+    proxies = salidas()
+    if not proxies:
+        return None
+    if _BALANCEADOR is None or _BALANCEADOR.proxies != proxies:
+        _BALANCEADOR = Balanceador(proxies)
+    return _BALANCEADOR
+
+
 # ------------------------------------------------------------------ cliente HTTP
 class ConsultaSupercias:
     """Una sesión del portal. `sesion` es inyectable para pruebas (interfaz de requests.Session)."""
 
-    def __init__(self, sesion=None, espera: float = 0.4, timeout: float = 40):
+    def __init__(self, sesion=None, espera: float = 0.4, timeout: float = 40, proxy: str | None = None):
+        self.proxy = proxy
         if sesion is None:
             try:
                 import requests
@@ -159,6 +236,9 @@ class ConsultaSupercias:
                 raise SuperciasError("Falta la librería requests: pip install -r requirements.txt") from e
             sesion = requests.Session()
             sesion.headers.update({"User-Agent": AGENTE, "Accept-Language": "es-419,es;q=0.9"})
+            if proxy:
+                sesion.proxies.update({"http": proxy, "https": proxy})
+                sesion.trust_env = False          # que no se mezcle con el proxy del sistema
         self.s, self.espera, self.timeout = sesion, espera, timeout
         self.vs: str | None = None
 
@@ -170,8 +250,10 @@ class ConsultaSupercias:
         except SuperciasError:
             raise
         except Exception as e:
-            raise SuperciasError(
-                f"No se pudo conectar con el portal de la Superintendencia de Compañías ({type(e).__name__}: {e}). "
+            via = f" por la salida {_ocultar(self.proxy)}" if self.proxy else ""
+            raise SinConexion(
+                f"No se pudo conectar con el portal de la Superintendencia de Compañías{via} "
+                f"({type(e).__name__}: {_ocultar(e)}). "
                 "La consulta necesita salida a internet hacia appscvsgen.supercias.gob.ec.") from e
         if self.espera:
             time.sleep(self.espera)
@@ -193,7 +275,10 @@ class ConsultaSupercias:
             r.raise_for_status()
             return resolver_challenge(r.json())
         except Exception as e:
-            raise SuperciasError(f"No se pudo resolver la verificación ALTCHA del portal ({e}).") from e
+            if isinstance(e, AltchaError):
+                raise SuperciasError(f"No se pudo resolver la verificación ALTCHA del portal ({e}).") from e
+            raise SinConexion(f"No se pudo obtener la verificación ALTCHA del portal ({type(e).__name__}: "
+                              f"{_ocultar(e)}).") from e
 
     def _campos_navegador(self) -> dict:
         return {f"{F}:browser": "Chrome", f"{F}:altoBrowser": "730", f"{F}:anchoBrowser": "944",
@@ -244,7 +329,7 @@ class ConsultaSupercias:
                                  (": " + "; ".join(_mensajes(r)) if _mensajes(r) else " (verificación o sesión)."))
         pagina = self._pedir("get", URL_INFO, headers={"Referer": URL_BUSQUEDA})
         self.vs = _viewstate(pagina)
-        general = leer_informacion_general(pagina)
+        general = {k: ("" if v.strip().upper() in _VACIOS else v) for k, v in leer_informacion_general(pagina).items()}
         if not general.get("R.U.C.") and not general.get("Expediente"):
             raise SuperciasError("No se pudo leer la información general (¿cambió el portal?).")
         return general
@@ -289,7 +374,28 @@ def _elegir(texto: str, tipo: str, candidatos: list[Candidato]) -> Candidato:
 
 
 def consultar(texto: str, sesion=None, con_administradores: bool = True) -> Ficha:
-    """Consulta completa por RUC, expediente o nombre. Lanza VariasCoincidencias si el nombre es ambiguo."""
+    """Consulta completa por RUC, expediente o nombre. Lanza VariasCoincidencias si el nombre es ambiguo.
+
+    Sin `sesion` y con salidas configuradas, la consulta va por la salida del turno; si esa salida falla
+    por red, se repite completa por la siguiente (como máximo una vez por salida)."""
+    bal = balanceador() if sesion is None else None
+    if bal is None:
+        return _consultar(texto, sesion, con_administradores)
+    errores = []
+    for proxy in bal.orden():
+        try:
+            ficha = _consultar(texto, ConsultaSupercias(proxy=proxy), con_administradores)
+        except SinConexion as e:
+            bal.fallo(proxy)
+            errores.append(str(e))
+            continue
+        bal.exito(proxy)
+        ficha.salida = _ocultar(proxy)
+        return ficha
+    raise SinConexion(f"Ninguna de las {len(bal.proxies)} salidas configuradas respondió. Último error: {errores[-1]}")
+
+
+def _consultar(texto: str, sesion, con_administradores: bool) -> Ficha:
     portal = ConsultaSupercias(sesion) if not isinstance(sesion, ConsultaSupercias) else sesion
     tipo, candidatos = portal.buscar(texto)
     ficha = Ficha(consultado=datetime.now().isoformat(timespec="seconds"))
@@ -376,7 +482,7 @@ def a_cliente(ficha: Ficha) -> tuple[dict, list[str]]:
         "direccion": direccion(g),
         "referencia_ubicacion": g.get("Referencia ubicación", ""),
         "correos": correos,
-        "telefonos": [t for t in (g.get("Celular"), g.get("Teléfono 1"), g.get("Teléfono 2")) if t],
+        "telefonos": list(dict.fromkeys(t for t in (g.get("Celular"), g.get("Teléfono 1"), g.get("Teléfono 2")) if t)),
         "sitio_web": (g.get("Sitio web") or "").lower(),
         "objeto_social": g.get("Objeto social", ""),
         "ciiu": g.get("CIIU actividad principal", ""),
@@ -414,9 +520,32 @@ def a_cliente(ficha: Ficha) -> tuple[dict, list[str]]:
     if not correos:
         avisos.append("La compañía no registra correo en la Superintendencia: pídalo al cliente.")
     cliente["fuente"] = {"origen": "Superintendencia de Compañías (consultaCompanias)", "consultado": ficha.consultado,
+                         **({"salida": ficha.salida} if ficha.salida else {}),
                          "ultima_actualizacion_societaria": g.get("Fecha última actualización societaria", "")}
     return {k: v for k, v in cliente.items() if v not in ("", [], None)}, avisos
 
 
 def cliente_desde_supercias(texto: str, sesion=None) -> tuple[dict, list[str]]:
     return a_cliente(consultar(texto, sesion))
+
+
+def probar_salidas(timeout: float = 20) -> list[dict]:
+    """Abre la página de búsqueda por cada salida configurada y mide si responde (sin consultar compañías)."""
+    import requests
+    resultado = []
+    for proxy in salidas() or [None]:
+        s = requests.Session()
+        s.headers.update({"User-Agent": AGENTE})
+        if proxy:
+            s.proxies.update({"http": proxy, "https": proxy})
+            s.trust_env = False
+        inicio = time.monotonic()
+        try:
+            r = s.get(URL_BUSQUEDA, timeout=timeout)
+            ok = r.status_code == 200 and _viewstate(r.text) is not None
+            detalle = f"HTTP {r.status_code}" + ("" if ok else " (sin formulario: ¿bloqueo o página distinta?)")
+        except Exception as e:
+            ok, detalle = False, f"{type(e).__name__}: {_ocultar(e)}"[:220]
+        resultado.append({"salida": _ocultar(proxy) if proxy else "directa", "ok": ok,
+                          "segundos": round(time.monotonic() - inicio, 2), "detalle": detalle})
+    return resultado

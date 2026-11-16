@@ -21,7 +21,7 @@ CAMPOS = {"Expediente": "700001", "R.U.C.": "0990000001001", "Fecha de constituc
           "Tipo de compañía": "ANÓNIMA", "Situación legal": "ACTIVA", "Provincia": "GUAYAS" + " " * 40,
           "Cantón": "SAMBORONDON", "Ciudad": "SAMBORONDON", "Calle": "AV. FICTICIA", "Número": "123",
           "Intersección": "CALLE DEMO", "Edificio/Centro comercial": "TORRE DEMO", "Piso": "4",
-          "Celular": "0990000000", "Correo 1": "GERENCIA@IMPORTADORADEMO.EC", "Correo 2": "",
+          "Celular": "0990000000", "Teléfono 1": "0990000000", "Barrio": "N/A", "Correo 1": "GERENCIA@IMPORTADORADEMO.EC", "Correo 2": "",
           "Fecha última actualización societaria": "2026-03-17 10:37:56"}
 ADMIN = [("0900000001   ", "DE LA CRUZ PEREZ MARIA JOSE", "ECUADOR   ", "GERENTE GENERAL    ", "2025-01-10", "5", "100", "2025-02-01", "RL"),
          ("0900000002", "DEMO FICTICIO JUAN", "ECUADOR", "PRESIDENTE", "2025-01-10", "5", "101", "2025-02-01", "ADM")]
@@ -127,7 +127,7 @@ def test_consulta_por_ruc(portal):
     assert cliente["razon_social"] == "IMPORTADORA DEMO S.A." and cliente["ruc"] == "0990000001001"
     assert (cliente["provincia"], cliente["ciudad"]) == ("Guayas", "Samborondon")
     assert cliente["direccion"] == "AV. FICTICIA 123 y CALLE DEMO, Edif. TORRE DEMO, piso 4"
-    assert cliente["correos"] == ["gerencia@importadorademo.ec"]
+    assert cliente["correos"] == ["gerencia@importadorademo.ec"] and cliente["telefonos"] == ["0990000000"]
     assert cliente["representante"] == "Maria Jose de la Cruz Perez"
     assert (cliente["cargo"], cliente["cedula"]) == ("Gerente General", "0900000001")
     assert [a["tipo"] for a in cliente["administradores"]] == ["RL", "ADM"]
@@ -160,3 +160,73 @@ def test_contrato_con_ruc(portal, tmp_path, monkeypatch, capsys):
     texto = "\n".join(p.text for p in docx.Document(next(tmp_path.glob("*.docx"))).paragraphs)
     for esperado in ("IMPORTADORA DEMO S.A.", "0990000001001", "la señora Maria Jose de la Cruz Perez", "otro@demo.ec"):
         assert esperado in texto
+
+
+def test_herramienta_mcp(portal, monkeypatch):
+    pytest.importorskip("mcp")
+    import importlib.util
+    espec = importlib.util.spec_from_file_location("supercias_server", RAIZ / "adapters" / "mcp" / "supercias_server.py")
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    monkeypatch.setattr(modulo, "consultar", lambda texto: sc.consultar(texto, portal))
+    r = modulo.consultar_supercias("0990000001001")
+    assert r["estado"] == "ok" and r["cliente"]["ruc"] == "0990000001001" and r["avisos"]
+    monkeypatch.setattr(modulo, "consultar", lambda texto: sc.consultar(texto, sc.ConsultaSupercias(PortalSimulado(), espera=0)))
+    assert modulo.consultar_supercias("importadora demo")["estado"] == "varias_coincidencias"
+    assert modulo.consultar_supercias("no existe")["estado"] == "error"
+
+
+# ------------------------------------------------------------------ salidas (proxies propios)
+class SinRed:
+    def get(self, *a, **k):
+        raise ConnectionError("Tunnel connection failed: 407 http://usuario:clave@10.0.0.9:3128")
+    post = get
+
+
+def test_lista_de_salidas(monkeypatch, tmp_path):
+    monkeypatch.setenv("SUPERCIAS_PROXIES", "http://u:c@1.1.1.1:8080, 2.2.2.2:3128 # comentario\n\n")
+    assert sc.salidas() == ["http://u:c@1.1.1.1:8080", "http://2.2.2.2:3128"]
+    monkeypatch.delenv("SUPERCIAS_PROXIES")
+    archivo = tmp_path / "proxies.txt"
+    archivo.write_text("# salidas Census\nhttp://a:b@3.3.3.3:80\n", encoding="utf-8")
+    monkeypatch.setattr(sc, "ARCHIVO_SALIDAS", archivo)
+    assert sc.salidas() == ["http://a:b@3.3.3.3:80"]
+    assert sc._ocultar("ProxyError http://user:secreto@3.3.3.3:80") == "ProxyError http://***@3.3.3.3:80"
+
+
+def test_turnos_y_castigo():
+    b = sc.Balanceador(["A", "B", "C"])
+    b.turno = 0
+    assert [b.orden()[0] for _ in range(4)] == ["A", "B", "C", "A"]
+    b.fallo("C")
+    assert b.orden() == ["B", "A", "C"]          # la caída pasa al final
+    b.exito("C")
+    assert b.orden() == ["C", "A", "B"]
+
+
+def test_failover_entre_salidas(monkeypatch):
+    usadas = []
+
+    class Portal(sc.ConsultaSupercias):
+        def __init__(self, sesion=None, espera=0, timeout=40, proxy=None):
+            usadas.append(proxy)
+            super().__init__(SinRed() if "caida" in proxy else PortalSimulado(), espera=0, proxy=proxy)
+
+    monkeypatch.setattr(sc, "ConsultaSupercias", Portal)
+    monkeypatch.setattr(sc, "_BALANCEADOR", None)
+    monkeypatch.setenv("SUPERCIAS_PROXIES", "http://u:c@caida:1,http://u:c@sana:2")
+    sc.balanceador().turno = 0
+    ficha = sc.consultar("0990000001001")
+    assert usadas == ["http://u:c@caida:1", "http://u:c@sana:2"]
+    assert ficha.salida == "http://***@sana:2" and ficha.general["R.U.C."] == "0990000001001"
+    cliente, _ = sc.a_cliente(ficha)
+    assert cliente["fuente"]["salida"] == "http://***@sana:2"
+    usadas.clear()
+    sc.consultar("0990000001001")                 # la caída quedó apartada: va directo a la sana
+    assert usadas == ["http://u:c@sana:2"]
+
+    monkeypatch.setattr(sc, "_BALANCEADOR", None)
+    monkeypatch.setenv("SUPERCIAS_PROXIES", "http://u:c@caida:1")
+    with pytest.raises(sc.SinConexion) as e:
+        sc.consultar("0990000001001")
+    assert "clave" not in str(e.value) and "***@" in str(e.value)

@@ -91,7 +91,8 @@ def _cliente(a) -> dict:
         return archivo
     print(f"Supercías (tiempo real): {registro.get('razon_social')} · RUC {registro.get('ruc')} · "
           f"{registro.get('situacion_legal', 's/d')} · {registro.get('ciudad', 's/d')}, {registro.get('provincia', 's/d')} · "
-          f"representante: {registro.get('representante', '[pendiente]')} ({registro.get('cargo', 's/d')})")
+          f"representante: {registro.get('representante', '[pendiente]')} ({registro.get('cargo', 's/d')})"
+          + (f" · salida {registro['fuente']['salida']}" if registro.get("fuente", {}).get("salida") else ""))
     _avisos_supercias(avisos)
     return {**registro, **{k: v for k, v in archivo.items() if v not in (None, "", [])}}
 
@@ -114,6 +115,8 @@ def cmd_supercias(a):
     else:
         g = ficha.general
         print(f"{cliente.get('razon_social')} · RUC {cliente.get('ruc')} · expediente {cliente.get('expediente')}")
+        if ficha.salida:
+            print(f"  (consultado por la salida {ficha.salida})")
         print(f"  {cliente.get('tipo_compania', '')} · {cliente.get('situacion_legal', '')} · constituida {cliente.get('fecha_constitucion', 's/d')}"
               f" · capital suscrito {g.get('Capital suscrito') or 's/d'}")
         print(f"  Domicilio: {cliente.get('direccion', 's/d')} — {cliente.get('ciudad', 's/d')}, {cliente.get('provincia', 's/d')}")
@@ -132,6 +135,15 @@ def cmd_supercias(a):
         ruta.write_text("# Datos de la Superintendencia de Compañías. Revise tratamiento, tildes y correos antes de usar.\n"
                         + yaml.safe_dump(cliente, allow_unicode=True, sort_keys=False), encoding="utf-8")
         print(f"Cliente guardado: {ruta}")
+
+
+def cmd_salidas(_):
+    from .supercias import probar_salidas, salidas
+    if not salidas():
+        print("Sin salidas configuradas: se usa la conexión directa. Configure privado/proxies.txt "
+              "(un proxy por línea) o la variable SUPERCIAS_PROXIES.")
+    for r in probar_salidas():
+        print(f"  {'OK   ' if r['ok'] else 'FALLA'} {r['salida']:40} {r['segundos']:>6}s  {r['detalle']}")
 
 
 def _base_opcional():
@@ -328,6 +340,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="Guarda el YAML del cliente (por defecto privado/clientes/<ruc>.yaml)")
     sc.add_argument("--json", action="store_true")
     sc.set_defaults(f=cmd_supercias)
+
+    sub.add_parser("salidas", help="Prueba cada proxy configurado para Supercías (privado/proxies.txt)"
+                   ).set_defaults(f=cmd_salidas)
 
     pc = sub.add_parser("presentacion-cobranza", help="Presentación institucional de Census Cobranzas (PDF) para un cliente")
     pc.add_argument("cliente", nargs="+", help="Razón social como debe aparecer")
