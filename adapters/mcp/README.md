@@ -1,5 +1,7 @@
 # Conector local de Supercías para la app de escritorio de Claude
 
+> ¿Prefiere un conector en un servidor de Census, usable desde web, móvil y tareas en la nube? Ver `CONECTOR_REMOTO.md`.
+
 Permite que Claude consulte la Superintendencia de Compañías **desde su PC**, sin abrir una terminal:
 la app de escritorio arranca este servidor y Claude lo usa como una herramienta más
 (`consultar_supercias`).
