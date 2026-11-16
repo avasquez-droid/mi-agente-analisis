@@ -22,6 +22,13 @@ description: Consulta en tiempo real la Superintendencia de Compañías (portal 
    otros correos, otro firmante) prevalece sobre el registro.
 3. Informar al usuario los **avisos** que imprime el comando antes de entregar.
 
+## Si existe la herramienta `consultar_supercias` (conector local, `adapters/mcp/`)
+Cuando el comando no tiene conexión (sesión en la nube) pero la herramienta está disponible, úsala:
+1. Llamar `consultar_supercias` con el RUC o el nombre.
+2. `varias_coincidencias` → mostrar los candidatos y pedir el RUC. `error` → decirlo y pedir los datos.
+3. `ok` → guardar `cliente` como YAML en `privado/clientes/<ruc>.yaml` y generar con `--cliente` (sin `--ruc`).
+   Leer al usuario los `avisos`.
+
 ## Qué trae
 - Compañía: razón social, RUC, expediente, tipo, situación legal, fecha de constitución, provincia, cantón,
   ciudad, dirección, referencia, correos, teléfonos, sitio web, objeto social, CIIU.
@@ -38,5 +45,8 @@ description: Consulta en tiempo real la Superintendencia de Compañías (portal 
   ni bancos): en esos casos pedir los datos al usuario o tomarlos de la base comercial.
 - Necesita internet hacia `appscvsgen.supercias.gob.ec` (funciona desde el PC del usuario). Si no hay
   conexión, decirlo y continuar con los datos del usuario/base, marcando lo demás como pendiente.
+- Salidas por proxy: si existe `privado/proxies.txt` (o `SUPERCIAS_PROXIES`), las consultas se reparten entre
+  esas IP fijas y, si una falla, se reintenta por otra. `python -m core.cli salidas` diagnostica cada una.
+  Nunca muestres ni copies las credenciales de los proxies.
 - Una consulta por cliente; no usar para descargas masivas. La información no constituye certificación.
 - Los YAML guardados contienen cédulas: solo en `privado/` (ignorado por Git).
