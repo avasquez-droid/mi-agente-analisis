@@ -6,6 +6,7 @@ Ejemplos:
     python -m core.cli contrato devolucion_iva --cliente cliente.yaml --var periodo="diciembre 2026"
     python -m core.cli variables devolucion_iva
     python -m core.cli supercias 0990000001001 --guardar
+    python -m core.cli accionistas 0990000001001
     python -m core.cli contrato devolucion_iva --ruc 0990000001001 --var periodo="diciembre 2026"
 """
 from __future__ import annotations
@@ -135,6 +136,43 @@ def cmd_supercias(a):
         ruta.write_text("# Datos de la Superintendencia de Compañías. Revise tratamiento, tildes y correos antes de usar.\n"
                         + yaml.safe_dump(cliente, allow_unicode=True, sort_keys=False), encoding="utf-8")
         print(f"Cliente guardado: {ruta}")
+
+
+def cmd_accionistas(a):
+    from .supercias import SuperciasError, VariasCoincidencias, consultar, participaciones
+    texto = " ".join(a.texto)
+    try:
+        ficha = consultar(texto, con_administradores=False, con_accionistas=True)
+    except VariasCoincidencias as e:
+        print(e)
+        for c in e.candidatos:
+            print(f"  {c.ruc}  exp. {c.expediente}  {c.nombre}")
+        raise SystemExit(2)
+    except SuperciasError as e:
+        raise SystemExit(f"Supercías: {e}")
+    g = ficha.general
+    filas = participaciones(ficha.accionistas)
+    if a.json:
+        print(json.dumps({"compania": g.get("Nombre"), "ruc": g.get("R.U.C."),
+                          "capital_suscrito": g.get("Capital suscrito"),
+                          "accionistas": [{**vars(x), "capital_usd": x.capital_usd, "porcentaje": round(p, 4),
+                                           "persona_natural": x.persona_natural} for x, p in filas],
+                          "avisos": ficha.avisos}, ensure_ascii=False, indent=1))
+        return
+    print(f"{g.get('Nombre')} · RUC {g.get('R.U.C.')} · capital suscrito {g.get('Capital suscrito') or 's/d'}")
+    if ficha.salida:
+        print(f"  (consultado por la salida {ficha.salida})")
+    print(f"  Accionistas ({len(filas)}, {sum(x.persona_natural for x, _ in filas)} personas naturales):")
+    def ec(n: float) -> str:                       # 990000.0 → 990.000,00
+        return f"{n:,.2f}".replace(",", "_").replace(".", ",").replace("_", ".")
+
+    for x, p in filas:
+        restr = " · con restricción" if x.restriccion.upper().startswith("S") else ""
+        print(f"    - {x.nombre} · {x.identificacion} · {x.nacionalidad} ({x.tipo_inversion}) · "
+              f"capital {ec(x.capital_usd)} · {ec(p)} %{restr}")
+    if not filas:
+        print("    (sin datos)")
+    _avisos_supercias(ficha.avisos)
 
 
 def cmd_salidas(_):
@@ -340,6 +378,12 @@ def main(argv: list[str] | None = None) -> int:
                     help="Guarda el YAML del cliente (por defecto privado/clientes/<ruc>.yaml)")
     sc.add_argument("--json", action="store_true")
     sc.set_defaults(f=cmd_supercias)
+
+    ac = sub.add_parser("accionistas", help="Accionistas actuales de una compañía en la Superintendencia de "
+                                            "Compañías (tiempo real), con su porcentaje del capital")
+    ac.add_argument("texto", nargs="+", help="RUC, expediente o nombre")
+    ac.add_argument("--json", action="store_true")
+    ac.set_defaults(f=cmd_accionistas)
 
     sub.add_parser("salidas", help="Prueba cada proxy configurado para Supercías (privado/proxies.txt)"
                    ).set_defaults(f=cmd_salidas)

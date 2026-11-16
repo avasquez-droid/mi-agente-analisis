@@ -27,6 +27,19 @@ ADMIN = [("0900000001   ", "DE LA CRUZ PEREZ MARIA JOSE", "ECUADOR   ", "GERENTE
          ("0900000002", "DEMO FICTICIO JUAN", "ECUADOR", "PRESIDENTE", "2025-01-10", "5", "101", "2025-02-01", "ADM")]
 
 
+ACCIONISTAS = [("1", "0900000003", "OTRO DEMO PEDRO", "ECUADOR", "NACIONAL", "2.500,0000", "N"),
+               ("2", "0900000001", "DE LA CRUZ PEREZ MARIA JOSE", "ECUADOR", "NACIONAL", "7.500,0000", "S")]
+
+
+def _tabla_accionistas():
+    filas = "".join(
+        f'<tr data-ri="{i}" class="ui-widget-content" role="row">'
+        + "".join(f'<td role="gridcell"><center><a href="#"><label class="ui-outputlabel">{c}</label></a></center></td>'
+                  for c in a) + "</tr>" for i, a in enumerate(ACCIONISTAS))
+    return (f'<partial-response><changes><update id="p"><![CDATA[<tbody id="frmInformacionCompanias:'
+            f'tblAccionistas_data" class="ui-datatable-data">{filas}</tbody>]]></update></changes></partial-response>')
+
+
 def _pagina_info():
     filas = "".join(
         f'<td role="gridcell" class="c1"><label id="x" class="ui-outputlabel">{k}:</label></td><td role="gridcell">'
@@ -99,11 +112,13 @@ class PortalSimulado:
             self.pasos.append("consultar")
             return Respuesta('<partial-response><extension>{"procesamientoCorrecto":true}</extension></partial-response>')
         assert url == sc.URL_INFO and data["javax.faces.ViewState"] == VS2
-        if fuente == "frmMenu:menuAdministradoresActuales":
+        if fuente in ("frmMenu:menuAdministradoresActuales", "frmMenu:menuAccionistas"):
+            self.menu = fuente
             return Respuesta("<partial-response><update id='dlgCaptcha'/></partial-response>")
         assert fuente == "frmCaptcha:btnPresentarContenido"
         self._verificar(data["altcha"])
-        return Respuesta(_tabla_admin())
+        self.pasos.append(self.menu)
+        return Respuesta(_tabla_accionistas() if self.menu.endswith("Accionistas") else _tabla_admin())
 
 
 @pytest.fixture
@@ -133,6 +148,39 @@ def test_consulta_por_ruc(portal):
     assert [a["tipo"] for a in cliente["administradores"]] == ["RL", "ADM"]
     assert cliente["tratamiento"].startswith("[COMPLETAR")
     assert "Objeto social" in ficha.general and any("tratamiento" in a for a in avisos)
+
+
+def test_accionistas(portal):
+    ficha = sc.consultar("0990000001001", portal, con_administradores=False, con_accionistas=True)
+    assert "frmMenu:menuAdministradoresActuales" not in portal.s.pasos
+    assert [a.nombre for a in ficha.accionistas] == ["OTRO DEMO PEDRO", "DE LA CRUZ PEREZ MARIA JOSE"]
+    assert ficha.accionistas[0].capital_usd == 2500.0 and ficha.accionistas[1].persona_natural
+    pares = sc.participaciones(ficha.accionistas)
+    assert [(a.identificacion, p) for a, p in pares] == [("0900000001", 75.0), ("0900000003", 25.0)]
+    assert sc.participaciones([]) == []
+
+
+def test_accionistas_y_administradores_en_la_misma_sesion(portal):
+    ficha = sc.consultar("0990000001001", portal, con_accionistas=True)
+    assert len(ficha.administradores) == 2 and len(ficha.accionistas) == 2 and not ficha.avisos
+
+
+def test_accionistas_tabla_ausente():
+    assert sc.leer_accionistas("<partial-response/>") is None
+    assert sc.leer_accionistas('<tbody id="f:tblAccionistas_data"></tbody>') == []
+
+
+def test_comando_accionistas(portal, monkeypatch, capsys):
+    original = sc.consultar
+    monkeypatch.setattr(sc, "consultar", lambda texto, **kw: original(texto, portal, **kw))
+    assert main(["accionistas", "0990000001001"]) in (0, None)
+    salida = capsys.readouterr().out
+    assert "Accionistas (2, 2 personas naturales)" in salida
+    assert "DE LA CRUZ PEREZ MARIA JOSE · 0900000001" in salida and "capital 7.500,00 · 75,00 % · con restricción" in salida
+    monkeypatch.setattr(sc, "consultar", lambda texto, **kw: original(texto, sc.ConsultaSupercias(PortalSimulado(), espera=0), **kw))
+    assert main(["accionistas", "0990000001001", "--json"]) in (0, None)
+    datos = json.loads(capsys.readouterr().out)
+    assert datos["ruc"] == "0990000001001" and datos["accionistas"][0]["porcentaje"] == 75.0
 
 
 def test_nombre_ambiguo_y_exacto(portal):

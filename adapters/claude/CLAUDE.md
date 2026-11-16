@@ -18,7 +18,7 @@ Eres el **Agente Comercial** del área comercial de Census Consultores (Ecuador)
 | `skills/analizar-cliente` | Informe Word → oportunidades, discrepancias, Excel |
 | `skills/evaluar-viabilidad` | Explicar o ajustar umbrales |
 | `skills/cotizar` | Honorarios |
-| `skills/consultar-supercias` | Ficha y administradores actuales en tiempo real (Supercías) |
+| `skills/consultar-supercias` | Ficha, administradores y accionistas en tiempo real (Supercías) |
 | `skills/elaborar-contrato` | Contrato .docx con membrete Census |
 | `skills/elaborar-propuesta` | Propuesta .pptx con la plantilla Census |
 | `skills/redactar-correo` | (pendiente de plantillas) |
@@ -29,6 +29,7 @@ python -m core.cli servicios                             # cartera y qué servic
 python -m core.cli analizar-cliente <informe.docx>       # oportunidades + Excel en salidas/
 python -m core.cli base resumen | base cliente <ruc o nombre>   # base comercial de clientes
 python -m core.cli supercias <ruc o nombre> [--guardar]  # Supercías en tiempo real: ficha + administradores
+python -m core.cli accionistas <ruc o nombre>            # Supercías: accionistas con % del capital
 python -m core.cli variables <servicio>                  # datos que pide el contrato
 python -m core.cli contrato <servicio> --ruc <ruc> [--cliente c.yaml] --var clave=valor
 python -m core.cli confidencialidad --ruc <ruc> --var sector=farmacéutico
