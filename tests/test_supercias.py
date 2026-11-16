@@ -230,3 +230,24 @@ def test_failover_entre_salidas(monkeypatch):
     with pytest.raises(sc.SinConexion) as e:
         sc.consultar("0990000001001")
     assert "clave" not in str(e.value) and "***@" in str(e.value)
+
+
+def test_conector_remoto_token():
+    pytest.importorskip("mcp")
+    pytest.importorskip("httpx")
+    import importlib.util
+    from starlette.testclient import TestClient
+    espec = importlib.util.spec_from_file_location("servidor_remoto", RAIZ / "adapters" / "mcp" / "servidor_remoto.py")
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    with pytest.raises(SystemExit):
+        modulo.crear_app("corto")
+    token = "x" * 40
+    with TestClient(modulo.crear_app(token)) as c:
+        assert c.get("/salud").text == "ok"
+        assert c.post("/mcp/otro-token", json={}).status_code == 404
+        assert c.post("/mcp", json={}).status_code == 404
+        r = c.post(f"/mcp/{token}", headers={"Accept": "application/json, text/event-stream"}, json={
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "t", "version": "1"}}})
+        assert r.status_code == 200 and "supercias-census" in r.text
