@@ -49,7 +49,7 @@ python -m pytest tests -q
   Lo que el usuario indique (o el YAML de `--cliente`) prevalece. Revisa los avisos: tratamiento
   (el señor / la señora), tildes del nombre, nombramiento vencido, situación legal distinta de ACTIVA.
   Si el nombre es ambiguo, muestra las coincidencias y pide el RUC. Ver `skills/consultar-supercias`.
-  Sin conexión al portal: usa la herramienta `consultar_supercias` si está disponible (conector local, `adapters/mcp/`).
+  Sin conexión al portal: usa las herramientas `consultar_supercias` y `consultar_accionistas` si están disponibles (conector local, `adapters/mcp/`).
 - No inventes cifras, normas ni cláusulas. Si falta un dato, pídelo o márcalo como pendiente.
 - Variaciones de cláusulas: pregunta si es solo para este contrato o un cambio del estándar
   (`docs/revision-contratos.md` y `docs/revision-propuestas.md` listan las discrepancias conocidas).

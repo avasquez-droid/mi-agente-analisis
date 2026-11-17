@@ -19,7 +19,7 @@ try:                                    # SDK mcp 2.x
 except ImportError:                     # SDK mcp 1.x
     from mcp.server.fastmcp import FastMCP as _Servidor
 
-from core.supercias import SuperciasError, VariasCoincidencias, a_cliente, consultar  # noqa: E402
+from core.supercias import SuperciasError, VariasCoincidencias, a_cliente, consultar, participaciones  # noqa: E402
 
 servidor = _Servidor(
     "supercias-census",
@@ -58,6 +58,39 @@ def consultar_supercias(consulta: str) -> dict:
     return {"estado": "ok", "cliente": cliente, "avisos": avisos,
             "informacion_general": {k: v for k, v in ficha.general.items() if v}}
 
+
+
+@servidor.tool()
+def consultar_accionistas(consulta: str) -> dict:
+    """Accionistas actuales de una compañía en la Superintendencia de Compañías del Ecuador (tiempo real).
+
+    Úsala cuando pregunten por accionistas, socios o dueños de una compañía.
+
+    Args:
+        consulta: RUC (13 dígitos, preferido), número de expediente o nombre de la compañía.
+
+    Returns:
+        estado "ok": `compania`, `ruc`, `capital_suscrito` y `accionistas` (identificación, nombre, nacionalidad,
+            tipo de inversión, capital en USD, porcentaje del capital, restricción y si es persona natural),
+            ordenados de mayor a menor participación. Los accionistas con RUC de 13 dígitos son sociedades y
+            pueden consultarse a su vez. Son datos personales: no los copies fuera del entregable.
+        estado "varias_coincidencias": `candidatos`; pedir el RUC y volver a consultar.
+        estado "error": `mensaje`.
+    """
+    try:
+        ficha = consultar(consulta, con_administradores=False, con_accionistas=True)
+    except VariasCoincidencias as e:
+        return {"estado": "varias_coincidencias", "mensaje": str(e),
+                "candidatos": [{"ruc": c.ruc, "expediente": c.expediente, "nombre": c.nombre} for c in e.candidatos]}
+    except SuperciasError as e:
+        return {"estado": "error", "mensaje": str(e)}
+    g = ficha.general
+    return {"estado": "ok", "compania": g.get("Nombre"), "ruc": g.get("R.U.C."),
+            "capital_suscrito": g.get("Capital suscrito"), "avisos": ficha.avisos,
+            "accionistas": [{"identificacion": a.identificacion, "nombre": a.nombre, "nacionalidad": a.nacionalidad,
+                             "tipo_inversion": a.tipo_inversion, "capital_usd": a.capital_usd,
+                             "porcentaje": round(p, 4), "restriccion": a.restriccion,
+                             "persona_natural": a.persona_natural} for a, p in participaciones(ficha.accionistas)]}
 
 if __name__ == "__main__":
     servidor.run()

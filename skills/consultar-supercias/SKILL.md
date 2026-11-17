@@ -31,6 +31,8 @@ Cuando el comando no tiene conexión (sesión en la nube) pero la herramienta es
 3. `ok` → guardar `cliente` como YAML en `privado/clientes/<ruc>.yaml` y generar con `--cliente` (sin `--ruc`).
    Leer al usuario los `avisos`.
 
+Para accionistas, la herramienta equivalente es `consultar_accionistas` (mismos estados).
+
 ## Qué trae
 - Compañía: razón social, RUC, expediente, tipo, situación legal, fecha de constitución, provincia, cantón,
   ciudad, dirección, referencia, correos, teléfonos, sitio web, objeto social, CIIU.

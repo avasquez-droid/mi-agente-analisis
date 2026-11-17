@@ -299,3 +299,16 @@ def test_conector_remoto_token():
             "jsonrpc": "2.0", "id": 1, "method": "initialize",
             "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "t", "version": "1"}}})
         assert r.status_code == 200 and "supercias-census" in r.text
+
+
+def test_herramienta_mcp_accionistas(portal, monkeypatch):
+    pytest.importorskip("mcp")
+    import importlib.util
+    espec = importlib.util.spec_from_file_location("supercias_server", RAIZ / "adapters" / "mcp" / "supercias_server.py")
+    modulo = importlib.util.module_from_spec(espec)
+    espec.loader.exec_module(modulo)
+    monkeypatch.setattr(modulo, "consultar", lambda texto, **kw: sc.consultar(texto, portal, **kw))
+    r = modulo.consultar_accionistas("0990000001001")
+    assert r["estado"] == "ok" and r["ruc"] == "0990000001001" and r["accionistas"]
+    assert abs(sum(a["porcentaje"] for a in r["accionistas"]) - 100) < 0.01
+    assert r["accionistas"][0]["porcentaje"] >= r["accionistas"][-1]["porcentaje"]
