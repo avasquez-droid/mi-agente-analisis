@@ -81,9 +81,32 @@ class Administrador:
 
 
 @dataclass
+class Accionista:
+    numero: str
+    identificacion: str      # cédula (10 dígitos), RUC de sociedad (13) o pasaporte
+    nombre: str              # como consta en el registro: APELLIDOS NOMBRES o razón social
+    nacionalidad: str
+    tipo_inversion: str      # NACIONAL | EXTRANJERA ...
+    capital: str             # como lo escribe el portal: 990.000,0000
+    restriccion: str         # S | N
+
+    @property
+    def capital_usd(self) -> float:
+        try:
+            return float(self.capital.replace(".", "").replace(",", "."))
+        except ValueError:
+            return 0.0
+
+    @property
+    def persona_natural(self) -> bool:
+        return len(re.sub(r"\D", "", self.identificacion)) == 10
+
+
+@dataclass
 class Ficha:
     general: dict = field(default_factory=dict)        # etiqueta del portal → valor
     administradores: list[Administrador] = field(default_factory=list)
+    accionistas: list[Accionista] = field(default_factory=list)
     consultado: str = ""
     avisos: list[str] = field(default_factory=list)
     salida: str = ""                                    # proxy usado (sin credenciales); vacío = directa
@@ -155,6 +178,26 @@ def leer_administradores(texto: str) -> list[Administrador] | None:
         if len(c) >= 9:
             filas.append(Administrador(*c[:9]))
     return filas
+
+
+def leer_accionistas(texto: str) -> list[Accionista] | None:
+    """Filas de la tabla de accionistas; None si la tabla no viene en la respuesta."""
+    m = re.search(r'<tbody id="[^"]*tblAccionistas_data"[^>]*>(.*?)</tbody>', texto, re.S)
+    if not m:
+        return None
+    filas = []
+    for fila in re.findall(r"<tr[^>]*data-ri=[^>]*>(.*?)</tr>", m.group(1), re.S):
+        c = [_limpio(x) for x in re.findall(r'<td[^>]*role="gridcell"[^>]*>(.*?)</td>', fila, re.S)]
+        if len(c) >= 7:
+            filas.append(Accionista(*c[:7]))
+    return filas
+
+
+def participaciones(accionistas: list[Accionista]) -> list[tuple[Accionista, float]]:
+    """Cada accionista con su porcentaje del capital (0–100), de mayor a menor."""
+    total = sum(a.capital_usd for a in accionistas)
+    pares = [(a, a.capital_usd * 100 / total if total else 0.0) for a in accionistas]
+    return sorted(pares, key=lambda p: -p[1])
 
 
 _VACIOS = {"N/A", "NA", "N.A.", "NO APLICA", "NINGUNO", "NINGUNA", "-", "--", "."}   # relleno del registro
@@ -335,12 +378,18 @@ class ConsultaSupercias:
         return general
 
     def administradores(self) -> list[Administrador]:
+        return self._seccion("frmMenu:menuAdministradoresActuales", leer_administradores, "administradores")
+
+    def accionistas(self) -> list[Accionista]:
+        return self._seccion("frmMenu:menuAccionistas", leer_accionistas, "accionistas")
+
+    def _seccion(self, menu: str, lector, nombre: str) -> list:
+        """Abre una opción del menú de la ficha; si el portal pide la verificación, la resuelve."""
         r = self._ajax(URL_INFO, {
-            "javax.faces.source": "frmMenu:menuAdministradoresActuales",
-            "javax.faces.partial.execute": "frmMenu:menuAdministradoresActuales",
+            "javax.faces.source": menu, "javax.faces.partial.execute": menu,
             "javax.faces.partial.render": "frmInformacionCompanias:panelGroupInformacionCompanias dlgCaptcha",
-            "frmMenu:menuAdministradoresActuales": "frmMenu:menuAdministradoresActuales"})
-        filas = leer_administradores(r)
+            menu: menu})
+        filas = lector(r)
         if filas is None:                         # el portal pide la verificación antes de mostrar la tabla
             payload = self._altcha(URL_INFO)
             r = self._ajax(URL_INFO, {
@@ -353,9 +402,9 @@ class ConsultaSupercias:
                                               "panelInformacionPersona",
                 "frmCaptcha:btnPresentarContenido": "frmCaptcha:btnPresentarContenido", "frmCaptcha": "frmCaptcha",
                 "altcha": payload, "frmCaptcha:payloadOcultoPopup": payload})
-            filas = leer_administradores(r)
+            filas = lector(r)
         if filas is None:
-            raise SuperciasError("El portal no devolvió la tabla de administradores" +
+            raise SuperciasError(f"El portal no devolvió la tabla de {nombre}" +
                                  (": " + "; ".join(_mensajes(r)) if _mensajes(r) else "."))
         return filas
 
@@ -373,18 +422,18 @@ def _elegir(texto: str, tipo: str, candidatos: list[Candidato]) -> Candidato:
     raise VariasCoincidencias(texto, candidatos)
 
 
-def consultar(texto: str, sesion=None, con_administradores: bool = True) -> Ficha:
+def consultar(texto: str, sesion=None, con_administradores: bool = True, con_accionistas: bool = False) -> Ficha:
     """Consulta completa por RUC, expediente o nombre. Lanza VariasCoincidencias si el nombre es ambiguo.
 
     Sin `sesion` y con salidas configuradas, la consulta va por la salida del turno; si esa salida falla
     por red, se repite completa por la siguiente (como máximo una vez por salida)."""
     bal = balanceador() if sesion is None else None
     if bal is None:
-        return _consultar(texto, sesion, con_administradores)
+        return _consultar(texto, sesion, con_administradores, con_accionistas)
     errores = []
     for proxy in bal.orden():
         try:
-            ficha = _consultar(texto, ConsultaSupercias(proxy=proxy), con_administradores)
+            ficha = _consultar(texto, ConsultaSupercias(proxy=proxy), con_administradores, con_accionistas)
         except SinConexion as e:
             bal.fallo(proxy)
             errores.append(str(e))
@@ -395,7 +444,7 @@ def consultar(texto: str, sesion=None, con_administradores: bool = True) -> Fich
     raise SinConexion(f"Ninguna de las {len(bal.proxies)} salidas configuradas respondió. Último error: {errores[-1]}")
 
 
-def _consultar(texto: str, sesion, con_administradores: bool) -> Ficha:
+def _consultar(texto: str, sesion, con_administradores: bool, con_accionistas: bool = False) -> Ficha:
     portal = ConsultaSupercias(sesion) if not isinstance(sesion, ConsultaSupercias) else sesion
     tipo, candidatos = portal.buscar(texto)
     ficha = Ficha(consultado=datetime.now().isoformat(timespec="seconds"))
@@ -409,6 +458,13 @@ def _consultar(texto: str, sesion, con_administradores: bool) -> Ficha:
             ficha.administradores = portal.administradores()
         except SuperciasError as e:
             ficha.avisos.append(f"Administradores no disponibles: {e}")
+    if con_accionistas:
+        try:
+            ficha.accionistas = portal.accionistas()
+        except SinConexion:
+            raise
+        except SuperciasError as e:
+            ficha.avisos.append(f"Accionistas no disponibles: {e}")
     return ficha
 
 

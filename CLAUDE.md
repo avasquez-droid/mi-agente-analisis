@@ -18,7 +18,7 @@ Eres el **Agente Comercial** del área comercial de Census Consultores (Ecuador)
 | `skills/analizar-cliente` | Informe Word → oportunidades, discrepancias, Excel |
 | `skills/evaluar-viabilidad` | Explicar o ajustar umbrales |
 | `skills/cotizar` | Honorarios |
-| `skills/consultar-supercias` | Ficha y administradores actuales en tiempo real (Supercías) |
+| `skills/consultar-supercias` | Ficha, administradores y accionistas en tiempo real (Supercías) |
 | `skills/elaborar-contrato` | Contrato .docx con membrete Census |
 | `skills/elaborar-propuesta` | Propuesta .pptx con la plantilla Census |
 | `skills/redactar-correo` | (pendiente de plantillas) |
@@ -29,6 +29,7 @@ python -m core.cli servicios                             # cartera y qué servic
 python -m core.cli analizar-cliente <informe.docx>       # oportunidades + Excel en salidas/
 python -m core.cli base resumen | base cliente <ruc o nombre>   # base comercial de clientes
 python -m core.cli supercias <ruc o nombre> [--guardar]  # Supercías en tiempo real: ficha + administradores
+python -m core.cli accionistas <ruc o nombre>            # Supercías: accionistas con % del capital
 python -m core.cli variables <servicio>                  # datos que pide el contrato
 python -m core.cli contrato <servicio> --ruc <ruc> [--cliente c.yaml] --var clave=valor
 python -m core.cli confidencialidad --ruc <ruc> --var sector=farmacéutico
@@ -48,7 +49,7 @@ python -m pytest tests -q
   Lo que el usuario indique (o el YAML de `--cliente`) prevalece. Revisa los avisos: tratamiento
   (el señor / la señora), tildes del nombre, nombramiento vencido, situación legal distinta de ACTIVA.
   Si el nombre es ambiguo, muestra las coincidencias y pide el RUC. Ver `skills/consultar-supercias`.
-  Sin conexión al portal: usa la herramienta `consultar_supercias` si está disponible (conector local, `adapters/mcp/`).
+  Sin conexión al portal: usa las herramientas `consultar_supercias` y `consultar_accionistas` si están disponibles (conector local, `adapters/mcp/`).
 - No inventes cifras, normas ni cláusulas. Si falta un dato, pídelo o márcalo como pendiente.
 - Variaciones de cláusulas: pregunta si es solo para este contrato o un cambio del estándar
   (`docs/revision-contratos.md` y `docs/revision-propuestas.md` listan las discrepancias conocidas).
