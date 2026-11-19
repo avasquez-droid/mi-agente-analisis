@@ -1,0 +1,34 @@
+# Nota de gastos de la lámina de Honorarios — OBLIGATORIA en todas las propuestas (criterio Census, nov-2026).
+# - planificacion: propuestas de estructuración del negocio, planificación patrimonial, planificación de ISD,
+#   pago indebido de ISD e ISD diferenciado (por servicio o por el título de la propuesta).
+# - general: todas las demás propuestas.
+# Reemplaza a las notas opcionales `confirmar: gastos` de cada servicio.
+
+general: >-
+  Los honorarios no incluyen gastos notariales, peritajes, costos de legalización o apostilla,
+  traducciones, certificaciones, tasas o contribuciones oficiales, trámites ante entidades públicas o
+  privadas, ni cualquier otro gasto adicional que se genere con ocasión de la ejecución del servicio.
+
+planificacion: >-
+  Los honorarios no incluyen gastos notariales, peritajes, costos de legalización o apostilla,
+  traducciones, certificaciones, tasas o contribuciones oficiales, trámites ante entidades públicas o
+  privadas, ni cualquier otro gasto adicional que se genere con ocasión de la ejecución del servicio.
+  El servicio de planificación tributaria no se encuentra incluido dentro de los servicios, en caso de
+  requerirse, se acordarán por separado entre las partes.
+
+# Servicios del agente que llevan la nota de planificación
+servicios_planificacion:
+  - planificacion_isd
+  - pago_indebido_isd
+  - proteccion_patrimonial
+
+# Títulos que llevan la nota de planificación (se comparan sin tildes ni mayúsculas con el título de
+# la portada y el nombre de cada servicio de la propuesta)
+titulos_planificacion:
+  - estructuracion del negocio
+  - planificacion patrimonial
+  - planificacion isd
+  - planificacion tributaria del impuesto a la salida de divisas
+  - pago indebido isd
+  - pago indebido de isd
+  - isd diferenciado

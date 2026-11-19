@@ -36,6 +36,10 @@ description: Elabora la propuesta de servicios profesionales en PowerPoint con l
   el de la plantilla al 100 % (texto, colores, fuente, tamaño): solo se reemplazan sus marcadores
   `<<...>>`. Nunca edites el PPTX a mano ni cambies textos fijos (carta, cierre, equipo).
   Si el contenido no cabe, el generador agrega láminas "(cont.)" en lugar de achicar la letra.
+- Nota de gastos: va SIEMPRE en la lámina de Honorarios (ver `conocimiento/notas_honorarios.yaml`). Las
+  propuestas de estructuración del negocio, planificación patrimonial, planificación de ISD, pago indebido de
+  ISD e ISD diferenciado llevan la versión que excluye la planificación tributaria; las demás, la general.
+  Si se arma una propuesta a mano o con un servicio nuevo, aplicar la misma regla.
 - Honorarios: salen del tarifario (provisional). Si el usuario pide otro valor, pasarlo con --var.
 - Textos por servicio en `conocimiento/propuestas/`; inconsistencias conocidas en `docs/revision-propuestas.md`.
 - Después de la propuesta vienen el acuerdo de confidencialidad (si aún no se firmó) y, al aceptarse, el contrato.

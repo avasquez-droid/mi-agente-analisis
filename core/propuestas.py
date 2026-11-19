@@ -93,6 +93,23 @@ def plantilla_servicio(servicio_id: str) -> dict:
     return yaml.safe_load((CARPETA / archivo).read_text(encoding="utf-8"))
 
 
+def _sin_tildes(texto: str) -> str:
+    import unicodedata
+    t = unicodedata.normalize("NFD", str(texto or "").lower())
+    return re.sub(r"\s+", " ", "".join(c for c in t if unicodedata.category(c) != "Mn")).strip()
+
+
+def nota_gastos(servicios: list[str], titulos: list[str]) -> str:
+    """Nota obligatoria de gastos (conocimiento/notas_honorarios.yaml): la de planificación si algún
+    servicio o título de la propuesta es de estructuración, planificación patrimonial, ISD (planificación,
+    pago indebido o diferenciado); si no, la general."""
+    cfg = kb._yaml(kb.CARPETA / "notas_honorarios.yaml")
+    textos = " | ".join(_sin_tildes(t) for t in titulos)
+    es_plan = (any(s in (cfg.get("servicios_planificacion") or []) for s in servicios)
+               or any(_sin_tildes(t) in textos for t in cfg.get("titulos_planificacion") or []))
+    return re.sub(r"\s+", " ", cfg["planificacion" if es_plan else "general"]).strip()
+
+
 def notas_opcionales(servicio_id: str) -> list[dict]:
     """Notas que solo se incluyen si el usuario lo confirma (p. ej. exclusión de gastos notariales)."""
     notas = (plantilla_servicio(servicio_id).get("honorarios") or {}).get("notas") or []
@@ -152,7 +169,7 @@ def armar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = No
         salida = []
         for n in (p.get("honorarios") or {}).get("notas") or []:
             if isinstance(n, dict):
-                if not activo(n, v):
+                if not activo(n, v) or n.get("confirmar") == "gastos":   # la reemplaza la nota obligatoria
                     continue
                 texto = render(ctx, n.get("texto"))
                 if n.get("confirmar") and n["confirmar"] not in confirmadas:
@@ -204,6 +221,9 @@ def armar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = No
             if n not in notas:
                 notas.append(n)
         referencias.append(ra(pa.get("referencia") or pa.get("asunto")))
+
+    titulos = [r(p["portada"]), srv["nombre"]] + [kb.servicio(sid)["nombre"] for sid in adicionales]
+    notas.insert(0, nota_gastos([servicio_id, *adicionales], titulos))
 
     objetivos = ([str(x) for x in _lista(v0["objetivo"])] if v0.get("objetivo") else
                  [r(x) for x in _lista(p.get("objetivo"))])

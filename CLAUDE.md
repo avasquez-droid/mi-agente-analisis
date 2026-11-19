@@ -50,6 +50,10 @@ python -m pytest tests -q
   (el señor / la señora), tildes del nombre, nombramiento vencido, situación legal distinta de ACTIVA.
   Si el nombre es ambiguo, muestra las coincidencias y pide el RUC. Ver `skills/consultar-supercias`.
   Sin conexión al portal: usa las herramientas `consultar_supercias` y `consultar_accionistas` si están disponibles (conector local, `adapters/mcp/`).
+- **Nota de gastos obligatoria en Honorarios** (`conocimiento/notas_honorarios.yaml`): toda propuesta lleva
+  la nota general de gastos; las de estructuración del negocio, planificación patrimonial, planificación de
+  ISD, pago indebido de ISD e ISD diferenciado llevan además la frase de que la planificación tributaria no
+  está incluida. El generador la agrega siempre; no la quites ni la pidas como nota opcional.
 - No inventes cifras, normas ni cláusulas. Si falta un dato, pídelo o márcalo como pendiente.
 - Variaciones de cláusulas: pregunta si es solo para este contrato o un cambio del estándar
   (`docs/revision-contratos.md` y `docs/revision-propuestas.md` listan las discrepancias conocidas).

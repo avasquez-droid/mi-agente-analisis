@@ -154,10 +154,12 @@ def test_propuesta_adicionales_y_notas_opcionales(tmp_path):
     from core.propuestas import PLANTILLA, armar_propuesta, generar_propuesta
     cliente = {"razon_social": "EMPRESA DEMO S.A."}
     sin = armar_propuesta("planificacion_tributaria", cliente, {"ejercicio": 2026}, date(2026, 11, 9))
-    assert {c for c, _ in sin.por_confirmar} == {"gastos", "implementacion"} and not any("notariales" in n for n in sin.notas)
+    assert {c for c, _ in sin.por_confirmar} == {"implementacion"}
+    assert sin.notas[0].startswith("Los honorarios no incluyen gastos notariales") and "planificación tributaria no" not in sin.notas[0]
     con = armar_propuesta("planificacion_tributaria", cliente, {"ejercicio": 2026, "confirmadas": ["gastos"],
                           "antecedentes": ["Contexto dado por el usuario."]}, date(2026, 11, 9), ["planificacion_isd"])
-    assert any("notariales" in n for n in con.notas) and con.antecedentes == ["Contexto dado por el usuario."]
+    assert sum("notariales" in n for n in con.notas) == 1 and con.antecedentes == ["Contexto dado por el usuario."]
+    assert "El servicio de planificación tributaria no se encuentra incluido" in con.notas[0]   # incluye ISD
     assert len(con.honorarios) == 2 and len(con.alcance) == 2 and " y " in con.referencia
     if not PLANTILLA.exists():
         return
@@ -254,3 +256,17 @@ def test_presentacion_cobranza(tmp_path):
     ruta = generar_presentacion("EMPRESA DEMO S.A.", "financiera", tmp_path)
     texto = "".join(p.get_text() for p in pymupdf.open(str(ruta))).replace("\xa0", " ")   # la Arial embebida mapea el espacio a NBSP
     assert "EMPRESA DEMO S.A." in texto and "Etatex" not in texto and "cooperativa" not in texto
+
+
+def test_nota_gastos_obligatoria():
+    from core.propuestas import armar_propuesta, nota_gastos
+    plan = "El servicio de planificación tributaria no se encuentra incluido"
+    cliente = {"razon_social": "EMPRESA DEMO S.A."}
+    isd = armar_propuesta("planificacion_isd", cliente, {}, date(2026, 11, 9))
+    assert plan in isd.notas[0] and sum("notariales" in n for n in isd.notas) == 1
+    iva = armar_propuesta("devolucion_iva", cliente, {"periodo": "diciembre 2026"}, date(2026, 11, 9))
+    assert iva.notas[0].startswith("Los honorarios no incluyen") and plan not in iva.notas[0]
+    assert not any(c == "gastos" for c, _ in iva.por_confirmar)
+    for titulo in ("ESTRUCTURACIÓN DEL NEGOCIO", "Planificación Patrimonial", "ISD diferenciado", "Pago indebido de ISD"):
+        assert plan in nota_gastos(["otro"], [titulo])
+    assert plan not in nota_gastos(["devolucion_iva"], ["Devolución de IVA"])
