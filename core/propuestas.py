@@ -25,6 +25,7 @@ from pathlib import Path
 
 import yaml
 from pptx import Presentation
+from pptx.dml.color import RGBColor
 from pptx.util import Pt
 
 from . import conocimiento as kb
@@ -582,8 +583,13 @@ def escribir_pptx(arm: PropuestaArmada, salida: Path) -> Path:
 
     # 2. Introducción (solo se reemplazan los marcadores)
     for par in _forma(s[S_INTRO], F["destinatario"]).text_frame.paragraphs:
+        es_razon_social = "razon social" in "".join(r.text for r in par.runs).lower().replace("ó", "o")
         _reemplazar_marcadores(par, {"señor": arm.tratamiento, "razon social": arm.destinatario,
                                      "razón social": arm.destinatario, "ciudad": arm.ciudad})
+        if es_razon_social:                    # la razón social va en negrita y en el dorado de Census
+            for run in par.runs:
+                run.font.bold = True
+                run.font.color.rgb = RGBColor.from_string(ORO)
     for par in _forma(s[S_INTRO], F["carta"]).text_frame.paragraphs:
         _reemplazar_marcadores(par, {"servicio": arm.referencia.rstrip(".") + "."})
 
@@ -733,6 +739,6 @@ def generar_propuesta(servicio_id: str, cliente: dict, variables: dict | None = 
     nombre = re.sub(r"[^\w\s.-]", "", cliente.get("razon_social", "CLIENTE")).strip()
     carpeta = Path(carpeta_salida) if carpeta_salida else kb.RAIZ / "salidas"
     srv = kb.servicio(servicio_id)
-    titulo = (srv.get("nombre_corto") or srv["nombre"])[:60].replace("/", "-")
+    titulo = (srv.get("nombre_corto") or srv["nombre"])[:60].replace("/", "-").strip()
     arm.archivo = escribir_pptx(arm, carpeta / f"Propuesta {titulo} - {nombre}.pptx")
     return arm

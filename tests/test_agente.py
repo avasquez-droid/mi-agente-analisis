@@ -168,6 +168,9 @@ def test_propuesta_adicionales_y_notas_opcionales(tmp_path):
     prs = Presentation(str(p.archivo))
     textos = "\n".join(sh.text_frame.text for s in prs.slides for sh in s.shapes if sh.has_text_frame)
     assert "<<" not in textos and "devolución de retenciones de IVA hasta diciembre 2026." in textos
+    razon = next(r for sh in prs.slides[1].shapes if sh.has_text_frame for par in sh.text_frame.paragraphs
+                 for r in par.runs if r.text == "EMPRESA DEMO S.A.")
+    assert razon.font.bold and str(razon.font.color.rgb) == "BDA02D"
     fuentes = {r.font.name for s in prs.slides for sh in s.shapes if sh.has_text_frame
                for par in sh.text_frame.paragraphs for r in par.runs if r.font.name}
     assert fuentes <= {"Arial"}
